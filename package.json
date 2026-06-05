@@ -3,8 +3,15 @@
   "version": "1.0.0",
   "private": true,
   "description": "Copia locale del profilo Linktree di @gabrieleforghieri",
+  "main": "server.js",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
-    "start": "npx --yes serve . -l 3000",
-    "dev": "npx --yes serve . -l 3000"
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
   }
 }
