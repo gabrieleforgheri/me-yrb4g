@@ -3,15 +3,12 @@
   "version": "1.0.0",
   "private": true,
   "description": "Copia locale del profilo Linktree di @gabrieleforghieri",
-  "main": "server.js",
+  "main": "index.js",
   "engines": {
     "node": ">=18"
   },
   "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js"
-  },
-  "dependencies": {
-    "express": "^4.21.2"
+    "start": "node index.js",
+    "dev": "node index.js"
   }
 }
