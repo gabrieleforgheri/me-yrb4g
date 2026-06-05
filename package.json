@@ -8,6 +8,8 @@
     "node": ">=18"
   },
   "scripts": {
+    "postinstall": "node scripts/ensure-entry.js",
+    "prestart": "node scripts/ensure-entry.js",
     "start": "node index.js",
     "dev": "node index.js"
   }
