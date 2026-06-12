@@ -9,10 +9,13 @@ app.use(express.json());
 // Modifica SOLO queste variabili d'ambiente
 // nel file docker-compose.yml
 // ============================================
+const port = parseInt(process.env.SMTP_PORT || '587');
+const isSecure = port === 465 || process.env.SMTP_SECURE === 'true';
+
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || 'smtp.gmail.com',
-  port: parseInt(process.env.SMTP_PORT || '587'),
-  secure: process.env.SMTP_SECURE === 'true', // true per 465, false per 587
+  port: port,
+  secure: isSecure, // true se 465, altrimenti usa STARTTLS
   auth: {
     user: process.env.SMTP_USER || '',
     pass: process.env.SMTP_PASS || '',
