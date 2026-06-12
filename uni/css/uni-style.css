@@ -41,6 +41,31 @@ body {
   z-index: 100;
 }
 
+.back-home-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.85rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 8px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  margin-bottom: 1rem;
+  transition: all 0.2s ease;
+}
+
+.back-home-btn:hover {
+  color: var(--text-primary);
+  background: var(--card-hover-bg);
+}
+
+.back-home-btn:active {
+  transform: scale(0.97);
+}
+
 .header h1 {
   font-size: 2.5rem;
   font-weight: 700;
