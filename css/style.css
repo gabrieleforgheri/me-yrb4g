@@ -476,6 +476,12 @@ body {
   transform: translateX(2px);
 }
 
+.menu-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.06);
+  margin: 0.5rem 1rem;
+}
+
 /* =========================================
    MOBILE RESPONSIVE
    ========================================= */

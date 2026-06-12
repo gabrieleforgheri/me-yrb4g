@@ -8,3 +8,20 @@ services:
     volumes:
       - ./:/usr/share/nginx/html:ro
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - contact-api
+
+  contact-api:
+    build: ./contact-api
+    container_name: yrb4g-contact-api
+    restart: unless-stopped
+    environment:
+      # ============================================
+      # MODIFICA QUI LE TUE CREDENZIALI SMTP
+      # ============================================
+      - SMTP_HOST=smtp.gmail.com        # Host del tuo server SMTP
+      - SMTP_PORT=587                    # Porta (587 per TLS, 465 per SSL)
+      - SMTP_SECURE=false               # true se usi porta 465
+      - SMTP_USER=tua@email.com         # La tua email SMTP
+      - SMTP_PASS=la-tua-app-password   # La password o App Password
+      - RECIPIENT_EMAIL=tua@email.com   # Dove ricevere i messaggi
