@@ -1,0 +1,10 @@
+version: '3.8'
+services:
+  web:
+    image: nginx:alpine
+    container_name: yrb4g-landing
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - ./:/usr/share/nginx/html:ro
