@@ -17,6 +17,8 @@ const transporter = nodemailer.createTransport({
     user: process.env.SMTP_USER || '',
     pass: process.env.SMTP_PASS || '',
   },
+  logger: true, // Mostra i log SMTP completi nel terminale
+  debug: true,  // Mostra il traffico SMTP
 });
 
 const RECIPIENT_EMAIL = process.env.RECIPIENT_EMAIL || process.env.SMTP_USER || '';
