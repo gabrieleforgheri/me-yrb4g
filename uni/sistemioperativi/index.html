@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sistemi Operativi | Uni Hub</title>
-  <link rel="stylesheet" href="/uni/css/uni-style.css?v=3">
+  <link rel="stylesheet" href="/uni/css/uni-style.css?v=6">
 </head>
 <body>
 
   <header class="header">
-    <a href="../" class="back-home-btn animate-fade-in">
+    <a href="/uni/" class="back-home-btn animate-fade-in">
       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <line x1="19" y1="12" x2="5" y2="12"></line>
         <polyline points="12 19 5 12 12 5"></polyline>
@@ -17,26 +17,80 @@
       Uni Hub
     </a>
     <h1 class="animate-fade-in">Sistemi Operativi 💻</h1>
-    <p class="animate-fade-in" style="animation-delay: 0.1s;">Scegli la sezione che desideri consultare.</p>
+    <p class="animate-fade-in" style="animation-delay: 0.1s;">Seleziona un argomento da ripassare.</p>
   </header>
 
   <main class="container">
-    <div class="course-grid">
+    
+    <div class="search-container animate-fade-in" style="animation-delay: 0.15s;">
+      <div class="search-wrapper">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="search-icon">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" id="topic-search" placeholder="Cerca un argomento (es. fork, memoria, reti, processi)..." autocomplete="off">
+      </div>
+    </div>
+
+    <div id="search-results" style="display: none;"></div>
+
+    <div class="course-grid" id="topics-grid">
       
+      <!-- Argomento 1 -->
+      <a href="/uni/sistemioperativi/materiale/fork/" class="course-card animate-fade-in" style="animation-delay: 0.2s;" data-id="fork">
+        <div class="course-icon">🧬</div>
+        <h2 class="course-title">Processi e Fork</h2>
+        <p class="course-desc">Creazione processi, sincronizzazione (wait/waitpid), Copy-On-Write e condivisione FD.</p>
+      </a>
+
+      <!-- Argomento 2 -->
+      <a href="/uni/sistemioperativi/materiale/segnali/" class="course-card animate-fade-in" style="animation-delay: 0.3s;" data-id="segnali">
+        <div class="course-icon">🚨</div>
+        <h2 class="course-title">Segnali in C</h2>
+        <p class="course-desc">Comunicazione asincrona, handler, maschere di segnali, sigaction() e kill().</p>
+      </a>
+
+      <!-- Argomento 3 -->
+      <a href="/uni/sistemioperativi/materiale/shmem/" class="course-card animate-fade-in" style="animation-delay: 0.4s;" data-id="shmem">
+        <div class="course-icon">🧠</div>
+        <h2 class="course-title">Memoria Condivisa</h2>
+        <p class="course-desc">Shared Memory anonima (mmap) e POSIX con nome (shm_open, shm_unlink).</p>
+      </a>
+
+      <!-- Argomento 4 -->
+      <a href="/uni/sistemioperativi/materiale/pipe/" class="course-card animate-fade-in" style="animation-delay: 0.5s;" data-id="pipe">
+        <div class="course-icon">🔄</div>
+        <h2 class="course-title">Pipe e FIFO in C</h2>
+        <p class="course-desc">Comunicazione Inter-Processo (IPC), topologie multiprocesso, pipe(), mkfifo() e gestione di SIGPIPE.</p>
+      </a>
+
+      <!-- Argomento 5 -->
+      <a href="/uni/sistemioperativi/materiale/socket/" class="course-card animate-fade-in" style="animation-delay: 0.6s;" data-id="socket">
+        <div class="course-icon">🌐</div>
+        <h2 class="course-title">Socket Stream in C</h2>
+        <p class="course-desc">Il flusso client-server, socket(), bind(), listen(), accept() e gestione lettura/scrittura byte.</p>
+      </a>
+
+      <!-- Argomento 6 -->
+      <a href="/uni/sistemioperativi/materiale/io-file/" class="course-card animate-fade-in" style="animation-delay: 0.7s;" data-id="io-file">
+        <div class="course-icon">📁</div>
+        <h2 class="course-title">I/O e File Control</h2>
+        <p class="course-desc">Gestione FIFO, pipe, read/write bloccanti vs non bloccanti, multiplexing con poll().</p>
+      </a>
+
+      <!-- Argomento 7 -->
+      <a href="/uni/sistemioperativi/materiale/bash/" class="course-card animate-fade-in" style="animation-delay: 0.8s;" data-id="bash">
+        <div class="course-icon">💻</div>
+        <h2 class="course-title">Shell Scripting (Bash)</h2>
+        <p class="course-desc">Automazione, redirezione I/O, filtri di testo ed esempi completi per i laboratori.</p>
+      </a>
+
       <!-- Appunti Completi -->
-      <a href="appunti/" class="course-card animate-fade-in" style="animation-delay: 0.2s; align-items: center; text-align: center; padding: 2rem 1.5rem;">
+      <a href="/uni/sistemioperativi/appunti/" class="course-card animate-fade-in" style="animation-delay: 0.9s; align-items: center; text-align: center; padding: 2rem 1.5rem;" data-search="false">
         <div class="course-icon" style="font-size: 3.5rem; margin-bottom: 0.5rem; text-shadow: 0 4px 12px rgba(0,0,0,0.3);">📝</div>
         <h2 class="course-title" style="font-size: 1.4rem; margin-bottom: 0.5rem;">Appunti Completi</h2>
         <p class="course-desc" style="margin-bottom: 1rem;">Documento Google completo con tutti gli appunti del corso.</p>
         <span style="background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Sola Lettura</span>
-      </a>
-
-      <!-- Materiale Esame -->
-      <a href="materiale/" class="course-card animate-fade-in" style="animation-delay: 0.3s; align-items: center; text-align: center; padding: 2rem 1.5rem;">
-        <div class="course-icon" style="font-size: 3.5rem; margin-bottom: 0.5rem; text-shadow: 0 4px 12px rgba(0,0,0,0.3);">⚡</div>
-        <h2 class="course-title" style="font-size: 1.4rem; margin-bottom: 0.5rem;">Materiale Esame</h2>
-        <p class="course-desc" style="margin-bottom: 1rem;">Spiegazioni veloci, riassunti e codici pronti per il ripasso.</p>
-        <span style="background: rgba(34, 197, 94, 0.2); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3); padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Studio Veloce</span>
       </a>
 
     </div>
@@ -50,6 +104,266 @@
       } else {
         header.classList.remove('scrolled');
       }
+    });
+
+    // Advanced Full-Text Search System with Concepts
+    let searchIndexDocs = null;
+    let isIndexing = false;
+
+    // Dizionario dei Concetti Chiave (parole non necessariamente presenti nel testo)
+    const conceptIndex = {
+      "fork": ["zombie", "processo non termina", "orfano", "gerarchia", "multiprocesso", "sdoppiare", "clonare", "padre", "figlio"],
+      "segnali": ["interruzione", "asincrono", "evento", "ctrl-c", "allarme"],
+      "shmem": ["ram", "veloce", "prestazioni", "condivisione memoria"],
+      "pipe": ["canale", "unidirezionale", "anello", "tubo"],
+      "socket": ["rete", "internet", "indirizzo", "porta", "web"],
+      "io-file": ["input", "output", "offset", "descrittore"],
+      "bash": ["terminale", "linux", "unix", "console", "automazione"]
+    };
+
+    // Damerau-Levenshtein Distance per tollerare inversioni di lettere (es. fokr -> fork)
+    function levenshtein(a, b) {
+      if (a.length === 0) return b.length;
+      if (b.length === 0) return a.length;
+      let matrix = [];
+      for (let i = 0; i <= b.length; i++) matrix[i] = [i];
+      for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
+      for (let i = 1; i <= b.length; i++) {
+        for (let j = 1; j <= a.length; j++) {
+          let cost = (b.charAt(i - 1) === a.charAt(j - 1)) ? 0 : 1;
+          matrix[i][j] = Math.min(
+            matrix[i - 1][j] + 1,       // inserimento
+            matrix[i][j - 1] + 1,       // cancellazione
+            matrix[i - 1][j - 1] + cost // sostituzione
+          );
+          // Trasposizione (inversione di due lettere adiacenti)
+          if (i > 1 && j > 1 && b.charAt(i - 1) === a.charAt(j - 2) && b.charAt(i - 2) === a.charAt(j - 1)) {
+            matrix[i][j] = Math.min(matrix[i][j], matrix[i - 2][j - 2] + cost);
+          }
+        }
+      }
+      return matrix[b.length][a.length];
+    }
+
+    async function buildIndex() {
+      if (searchIndexDocs || isIndexing) return;
+      isIndexing = true;
+      
+      const blocks = [];
+      // Seleziona solo le card dei materiali (escludendo appunti completi)
+      const cards = Array.from(document.querySelectorAll('.course-card:not([data-search="false"])'));
+      const resultsContainer = document.getElementById('search-results');
+      
+      try {
+        await Promise.all(cards.map(async (card) => {
+          const url = card.href;
+          const title = card.querySelector('.course-title').textContent;
+          const icon = card.querySelector('.course-icon').textContent;
+          const id = card.getAttribute('data-id');
+          
+          const response = await fetch(url);
+          const html = await response.text();
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(html, 'text/html');
+          
+          // Estrae paragrafi, liste e titoli dall'articolo
+          const elements = doc.querySelectorAll('.article-content p, .article-content li, .article-content h2, .article-content h3');
+          
+          elements.forEach(el => {
+            const text = el.textContent.replace(/\s+/g, ' ').trim();
+            if (text.length > 20) {
+              const words = text.toLowerCase().split(/\W+/).filter(w => w.length > 2);
+              blocks.push({ url, title, icon, id, text, words });
+            }
+          });
+        }));
+        
+        searchIndexDocs = blocks;
+        isIndexing = false;
+        
+        // Esegue la ricerca se l'utente ha già digitato qualcosa
+        const currentQuery = document.getElementById('topic-search').value;
+        if (currentQuery) executeSearch(currentQuery);
+        
+      } catch (err) {
+        console.error("Errore durante la costruzione dell'indice di ricerca:", err);
+        isIndexing = false;
+        resultsContainer.innerHTML = '<div style="text-align:center; padding: 2rem; color: #ef4444;">Errore di caricamento indice.</div>';
+      }
+    }
+
+    function executeSearch(query) {
+      const resultsContainer = document.getElementById('search-results');
+      const grid = document.getElementById('topics-grid');
+      
+      if (!query || query.trim().length === 0) {
+        grid.style.display = 'grid';
+        resultsContainer.style.display = 'none';
+        resultsContainer.innerHTML = '';
+        return;
+      }
+      
+      grid.style.display = 'none';
+      resultsContainer.style.display = 'flex';
+
+      if (!searchIndexDocs) {
+        resultsContainer.innerHTML = '<div style="text-align:center; padding: 2rem; color: var(--text-secondary);">Costruzione indice in corso (scarico le pagine)... ⏳</div>';
+        return;
+      }
+
+      const searchTerms = query.toLowerCase().split(/\s+/).filter(t => t.length > 1);
+      
+      // Assegna uno score a ogni blocco di testo
+      const scoredBlocks = searchIndexDocs.map(block => {
+        let score = 0;
+        let matchedWords = new Set();
+        let matchedConcepts = new Set();
+        
+        searchTerms.forEach(term => {
+          let termScore = 0;
+          let matchedWord = null;
+          
+          // Boost se il termine è nel titolo della pagina
+          const lowerTitle = block.title.toLowerCase();
+          if (lowerTitle.includes(term)) {
+            if (50 > termScore) { termScore = 50; matchedWord = term; }
+          } else {
+            // Fuzzy match sulle parole del titolo
+            const titleWords = lowerTitle.split(/\W+/).filter(w => w.length > 2);
+            for (const tw of titleWords) {
+              const dist = levenshtein(term, tw);
+              if (dist <= (term.length > 5 ? 2 : 1)) {
+                if (30 > termScore) { termScore = 30; matchedWord = tw; }
+              }
+            }
+          }
+
+          // Boost concettuale
+          const concepts = conceptIndex[block.id] || [];
+          for (const c of concepts) {
+            if (c === term || c.includes(term)) {
+              if (40 > termScore) { termScore = 40; matchedConcepts.add(c); }
+            } else {
+              const dist = levenshtein(term, c);
+              if (dist <= (term.length > 5 ? 2 : 1) && term.length > 2) {
+                if (20 > termScore) { termScore = 20; matchedConcepts.add(c); }
+              }
+            }
+          }
+          
+          // Ricerca Fuzzy tra le parole del blocco
+          for (const word of block.words) {
+            if (word === term) {
+              if (15 > termScore) { termScore = 15; matchedWord = word; }
+            } else if (word.includes(term) || term.includes(word)) {
+              if (8 > termScore) { termScore = 8; matchedWord = word; }
+            } else {
+              const dist = levenshtein(term, word);
+              const maxDist = term.length > 5 ? 2 : 1;
+              if (dist <= maxDist && word.length > 2) {
+                if (4 > termScore) { termScore = 4; matchedWord = word; }
+              }
+            }
+          }
+          
+          if (termScore > 0) {
+            score += termScore;
+            if (matchedWord) matchedWords.add(matchedWord);
+          }
+        });
+        
+        return { ...block, score, matchedWords: Array.from(matchedWords), matchedConcepts: Array.from(matchedConcepts) };
+      }).filter(b => b.score > 0);
+      
+      // Ordina per pertinenza
+      scoredBlocks.sort((a, b) => b.score - a.score);
+      
+      // Raggruppa i risultati per URL (max 3 snippet per pagina)
+      const resultsByUrl = new Map();
+      scoredBlocks.forEach(b => {
+        if (!resultsByUrl.has(b.url)) {
+          resultsByUrl.set(b.url, { title: b.title, icon: b.icon, score: b.score, snippets: [] });
+        }
+        
+        const pageObj = resultsByUrl.get(b.url);
+        
+        // Aggiungi snippet dei concetti se trovati
+        if (b.matchedConcepts && b.matchedConcepts.length > 0) {
+          b.matchedConcepts.forEach(c => {
+            const conceptSnip = `📌 <i>Argomento correlato: <b>${c}</b></i>`;
+            if (!pageObj.snippets.includes(conceptSnip)) {
+              pageObj.snippets.unshift(conceptSnip); // Mettilo in cima
+            }
+          });
+        }
+
+        if (pageObj.snippets.length < 3 && b.matchedWords.length > 0) {
+           let snippet = b.text;
+           let regexStr = b.matchedWords.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+           
+           if (regexStr) {
+              const regex = new RegExp(`(${regexStr})`, 'gi');
+              const match = regex.exec(snippet);
+              if (match) {
+                 const start = Math.max(0, match.index - 50);
+                 const end = Math.min(snippet.length, match.index + match[0].length + 50);
+                 snippet = snippet.substring(start, end);
+                 if (start > 0) snippet = "..." + snippet;
+                 if (end < b.text.length) snippet = snippet + "...";
+                 
+                 // Evidenziazione
+                 snippet = snippet.replace(regex, '<mark class="highlight">$1</mark>');
+              } else if (snippet.length > 120) {
+                 snippet = snippet.substring(0, 120) + "...";
+              }
+           } else if (snippet.length > 120) {
+              snippet = snippet.substring(0, 120) + "...";
+           }
+           pageObj.snippets.push(snippet);
+        }
+      });
+      
+      // Generazione UI
+      resultsContainer.innerHTML = '';
+      
+      if (resultsByUrl.size === 0) {
+        resultsContainer.innerHTML = '<div style="text-align:center; padding: 2rem; color: var(--text-secondary);">Nessun risultato trovato. Prova con altre parole chiave.</div>';
+      } else {
+        // Ordina le pagine in base al punteggio del loro blocco migliore
+        const sortedPages = Array.from(resultsByUrl.entries()).sort((a, b) => b[1].score - a[1].score);
+        
+        sortedPages.forEach(([url, data]) => {
+          const a = document.createElement('a');
+          a.href = url;
+          a.className = 'search-result-item';
+          
+          const h3 = document.createElement('h3');
+          h3.className = 'search-result-title';
+          h3.innerHTML = `${data.icon} ${data.title}`;
+          a.appendChild(h3);
+          
+          data.snippets.forEach(snip => {
+            const p = document.createElement('p');
+            p.className = 'search-result-snippet';
+            // Non mettere le virgolette per lo snippet dei concetti
+            p.innerHTML = snip.startsWith('📌') ? snip : `"${snip}"`;
+            a.appendChild(p);
+          });
+          
+          resultsContainer.appendChild(a);
+        });
+      }
+    }
+
+    const searchInput = document.getElementById('topic-search');
+    
+    // Inizia a scaricare le pagine appena l'utente clicca sulla barra
+    searchInput.addEventListener('focus', buildIndex);
+    
+    // Esegue la ricerca
+    searchInput.addEventListener('input', (e) => {
+      buildIndex(); // Se non è ancora partito, lo avvia
+      executeSearch(e.target.value);
     });
   </script>
 </body>
