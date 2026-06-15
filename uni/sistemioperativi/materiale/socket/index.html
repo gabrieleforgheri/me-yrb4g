@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Socket in C - Materiale Esame | Uni Hub</title>
   <!-- Percorso assoluto per risolvere bug Nginx -->
-  <link rel="stylesheet" href="/uni/css/uni-style.css?v=2">
+  <link rel="stylesheet" href="/uni/css/uni-style.css?v=3">
 </head>
 <body>
 
@@ -68,6 +68,17 @@
       } else {
         header.classList.remove('scrolled');
       }
+    });
+
+    // Simple syntax highlighting
+    document.querySelectorAll('pre code').forEach(block => {
+      let html = block.innerHTML;
+      html = html.replace(/\b(int|struct|for|if|while|ssize_t|continue|exit|sizeof|return)\b/g, '<span style="color: #c678dd;">$1</span>');
+      html = html.replace(/\b(poll|read|close|perror|socket|bind|listen|accept|connect|unlink)\b(?=\()/g, '<span style="color: #61afef;">$1</span>');
+      html = html.replace(/\b(POLLIN|POLLHUP|O_RDONLY|O_NONBLOCK|AF_UNIX|SOCK_STREAM|NUM_FILE|NULL|EAGAIN)\b/g, '<span style="color: #e5c07b;">$1</span>');
+      html = html.replace(/("[^"]*")/g, '<span style="color: #98c379;">$1</span>');
+      html = html.replace(/(\/\/.*)/g, '<span style="color: #5c6370; font-style: italic;">$1</span>');
+      block.innerHTML = html;
     });
   </script>
 </body>

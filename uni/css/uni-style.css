@@ -30,20 +30,19 @@ body {
 
 /* Header Styles */
 .header {
-  padding: 2.5rem 1rem 2rem;
-  text-align: center;
+  padding: 2rem 1rem;
   border-bottom: 1px solid var(--card-border);
-  background: rgba(10, 10, 10, 0.85);
+  background: rgba(10, 10, 10, 0.98);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   position: sticky;
   top: 0;
   z-index: 100;
   transition: padding 0.3s ease;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 120px 1fr 120px;
+  grid-template-rows: auto auto;
   align-items: center;
-  justify-content: center;
 }
 
 .header.scrolled {
@@ -51,8 +50,12 @@ body {
 }
 
 .header p {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  justify-self: center;
   color: var(--text-secondary);
   font-size: 1.1rem;
+  margin-top: 0.5rem;
   transition: all 0.3s ease;
   max-height: 50px;
   opacity: 1;
@@ -62,10 +65,13 @@ body {
 .header.scrolled p {
   max-height: 0;
   opacity: 0;
-  margin: 0;
+  margin-top: 0;
 }
 
 .back-home-btn {
+  grid-column: 1;
+  grid-row: 1;
+  justify-self: start;
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
@@ -75,18 +81,12 @@ body {
   font-size: 0.85rem;
   padding: 0.4rem 0.75rem;
   border-radius: 8px;
-  background: var(--card-bg);
+  background: #11111a;
   border: 1px solid var(--card-border);
   transition: all 0.3s ease;
-  
-  position: absolute;
-  left: 1.5rem;
-  top: 1.5rem;
 }
 
 .header.scrolled .back-home-btn {
-  top: 50%;
-  transform: translateY(-50%);
   padding: 0.35rem 0.6rem;
 }
 
@@ -100,19 +100,22 @@ body {
 }
 
 .header h1 {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: center;
   font-size: 2.5rem;
   font-weight: 700;
   letter-spacing: -0.05em;
-  margin-bottom: 0.5rem;
+  margin: 0;
   background: linear-gradient(to right, #fff, #a1a1aa);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   transition: all 0.3s ease;
+  text-align: center;
 }
 
 .header.scrolled h1 {
   font-size: 1.4rem;
-  margin-bottom: 0;
 }
 
 
@@ -354,26 +357,29 @@ body {
    ========================================= */
 @media (max-width: 639px) {
   .header {
-    padding-top: 4.5rem; /* leave space for the absolute button */
-    padding-bottom: 1.5rem;
+    grid-template-columns: 80px 1fr 80px;
+    padding: 1rem 0.5rem;
   }
 
   .header.scrolled {
-    padding-top: 1rem;
-    padding-bottom: 1rem;
-  }
-
-  .back-home-btn {
-    left: 1rem;
-    top: 1rem;
+    padding: 0.8rem 0.5rem;
   }
 
   .header h1 {
-    font-size: 1.75rem;
+    font-size: 1.5rem;
+  }
+  
+  .header.scrolled h1 {
+    font-size: 1.1rem;
   }
 
   .header p {
     font-size: 0.95rem;
+  }
+
+  .back-home-btn {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.5rem;
   }
 
   .container {
