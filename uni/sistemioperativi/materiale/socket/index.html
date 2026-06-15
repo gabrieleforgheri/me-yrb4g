@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Socket in C - Materiale Esame | Uni Hub</title>
-  <!-- Percorso assoluto per risolvere bug Nginx -->
+  <title>Sockets (UNIX Domain) - Materiale Esame | Uni Hub</title>
   <link rel="stylesheet" href="/uni/css/uni-style.css?v=3">
 </head>
 <body>
@@ -18,43 +17,148 @@
       Materiale Esame
     </a>
     <h1 class="animate-fade-in">Socket Stream in C 🌐</h1>
-    <p class="animate-fade-in" style="animation-delay: 0.1s;">Flusso, connessioni e gestione byte.</p>
+    <p class="animate-fade-in" style="animation-delay: 0.1s;">Comunicazione Inter-Processo bidirezionale e affidabile.</p>
   </header>
 
   <main class="article-container animate-fade-in" style="animation-delay: 0.2s;">
     <div class="article-content">
-      
-      <h2>1. Il Flusso di una Socket Stream (Modello Server-Client)</h2>
-      <p>Per capire come i tuoi due programmi si connettono, immagina una telefonata: il server installa il telefono e aspetta la chiamata; il client compone il numero.</p>
 
-      <h3>Lato Server (Il Ricevente)</h3>
-      <p>Il server deve preparare l'endpoint e mettersi in ascolto. I passaggi chiave nel codice sono:</p>
-      
-      <p><code>socket()</code>: Crea l'endpoint di comunicazione.</p>
-      <pre><code>srv_fd = socket(AF_UNIX, SOCK_STREAM, 0);</code></pre>
+      <h2 style="font-size: 2rem; color: #60a5fa;">Sockets (UNIX Domain)</h2>
+      <p style="color: var(--text-secondary); font-style: italic;">[Context: Comunicazione Inter-Processo bidirezionale e affidabile sulla stessa macchina fisica usando il filesystem come punto di incontro. Modello architetturale Client-Server.]</p>
 
-      <p><code>bind()</code>: Associa la socket a un indirizzo specifico (in questo caso, il percorso sul file system). Prima di fare il bind, si usa <code>unlink()</code> per rimuovere eventuali file socket residui da esecuzioni precedenti.</p>
-      <pre><code>bind(srv_fd, (struct sockaddr *)&srv_addr, sizeof(srv_addr));</code></pre>
+      <p><strong style="color: var(--text-primary);">Librerie fondamentali da includere:</strong></p>
+<pre><code>#include &lt;sys/socket.h&gt;
+#include &lt;sys/un.h&gt;</code></pre>
 
-      <p><code>listen()</code>: Trasforma la socket in una socket passiva, pronta ad accettare le connessioni, definendo una coda massima di client in attesa.</p>
-      <pre><code>listen(srv_fd, 2);</code></pre>
+      <h3>1. FUNZIONI DI I/O SICURE (Full Read &amp; Full Write)</h3>
+      <p>I file descriptor delle socket possono leggere o scrivere meno byte di quelli richiesti (partial read/write) oppure essere interrotti da segnali (<code>EINTR</code>). All'esame devi usare dei loop protetti come questi:</p>
 
-      <p><code>accept()</code>: Questa chiamata è bloccante. Il server si ferma finché un client non avvia una connessione. Quando il client si connette, <code>accept()</code> estrae la connessione dalla coda e restituisce un nuovo file descriptor (es. <code>ci1.fd</code>). Questo nuovo FD verrà usato per comunicare esclusivamente con quel determinato client, lasciando <code>srv_fd</code> libero di ascoltare altre chiamate.</p>
-      <pre><code>ci1.fd = accept(srv_fd, NULL, NULL);</code></pre>
+      <p><strong style="color: var(--text-primary);">Scrittura Sicura (write_full)</strong></p>
+<pre><code>static ssize_t write_full(int fd, const void *buf, size_t count) {
+    size_t done = 0;
+    const char *p = buf; // Puntatore per l'aritmetica dei byte
 
-      <h3>Lato Client (Il Chiamante)</h3>
-      <p>Il client ha un flusso molto più snello:</p>
-      <p><code>socket()</code>: Crea la sua socket.</p>
-      <p><code>connect()</code>: Avvia la richiesta di connessione verso l'indirizzo (il file del socket) su cui il server è in ascolto. Anche questa operazione è bloccante finché il server non esegue la <code>accept()</code>.</p>
-      <pre><code>connect(sock_fd, (struct sockaddr *)&srv_addr, sizeof(srv_addr));</code></pre>
+    while (done &lt; count) {
+        ssize_t n = write(fd, p + done, count - done); // Scrive i byte rimanenti
+        if (n &lt; 0) {
+            if (errno == EINTR) continue; // Interrotto da segnale, riprova
+            return -1; // Vero errore
+        }
+        done += (size_t)n; // Aggiorna il contatore
+    }
+    return (ssize_t)done;
+}</code></pre>
 
-      <h2>2. Lettura e Scrittura: Gestire il Flusso di Byte</h2>
-      <p>Nelle socket di tipo <code>SOCK_STREAM</code>, i dati sono inviati come un flusso continuo di byte. Questo significa che se invii una struttura di 4 byte, la <code>read()</code> potrebbe riceverne 2 adesso e 2 al prossimo ciclo.</p>
-      <p>Per risolvere questo problema, nel tuo codice sono state implementate le funzioni helper <code>write_full</code> e <code>read_full</code>. Sono utilissime per l'esame perché gestiscono due problemi sistemistici reali:</p>
-      
+      <p><strong style="color: var(--text-primary);">Lettura Sicura (read_full)</strong></p>
+<pre><code>static ssize_t read_full(int fd, void *buf, size_t count) {
+    size_t done = 0;
+    char *p = buf; // Puntatore per l'aritmetica dei byte
+
+    while (done &lt; count) {
+        ssize_t n = read(fd, p + done, count - done); // Legge i byte mancanti
+        if (n == 0) return 0;  // Il peer ha chiuso la connessione (EOF)
+        if (n &lt; 0) {
+            if (errno == EINTR) continue; // Interrotto da segnale, riprova
+            return -1; // Vero errore
+        }
+        done += (size_t)n; // Aggiorna il contatore
+    }
+    return (ssize_t)done;
+}</code></pre>
+
+      <h3>2. LATO SERVER (Il processo in ascolto)</h3>
+      <p>Il Server crea la socket, la lega a un percorso sul file system, si mette in ascolto e genera un nuovo processo figlio per ogni client connesso (Server Concorrente).</p>
+
+<pre><code>#define SOCKET_PATH "/tmp/concurrent.sock"
+
+// 1. Creazione della socket
+int srv_fd = socket(AF_UNIX, SOCK_STREAM, 0);
+if (srv_fd == -1) { perror("socket"); exit(1); }
+
+// 2. Rimozione di eventuali socket file residui 
+unlink(SOCKET_PATH);
+
+// 3. Preparazione dell'indirizzo
+struct sockaddr_un srv_addr;
+memset(&amp;srv_addr, 0, sizeof(srv_addr));
+srv_addr.sun_family = AF_UNIX;
+strncpy(srv_addr.sun_path, SOCKET_PATH, sizeof(srv_addr.sun_path) - 1);
+
+// 4. Bind (Collegamento file-socket)
+if (bind(srv_fd, (struct sockaddr *)&amp;srv_addr, sizeof(srv_addr)) == -1) {
+    perror("bind"); exit(1);
+}
+
+// 5. Listen (Mette la socket in modalità passiva/ascolto, backlog 10)
+if (listen(srv_fd, 10) == -1) {
+    perror("listen"); exit(1);
+}
+
+// 6. Ciclo di accettazione e Server Concorrente
+while (1) {
+    struct sockaddr_un cli_addr;
+    int addr_size = sizeof(cli_addr);
+    
+    // Accept crea un NUOVO file descriptor (conn_fd) dedicato a QUESTO client
+    int conn_fd = accept(srv_fd, (struct sockaddr *)&amp;cli_addr, &amp;addr_size);
+    if (conn_fd == -1) {
+        if (errno == EINTR) continue; // Segnale durante l'attesa
+        break; // Errore critico
+    }
+
+    pid_t child_pid = fork();
+    if (child_pid == 0) { // FIGLIO (Helper)
+        close(srv_fd); // Il figlio non deve accettare nuove connessioni!
+        
+        // Esegue il lavoro per il client leggendo/scrivendo su conn_fd
+        // Esempio: read_full(conn_fd, &amp;request, sizeof(request));
+        
+        close(conn_fd); // Chiude la sua connessione
+        _exit(0); // Termina il processo helper
+    }
+    
+    // PADRE
+    close(conn_fd); // Il padre chiude il FD del client per non esaurire le risorse
+}
+
+// Pulizia Server
+close(srv_fd);
+unlink(SOCKET_PATH);</code></pre>
+
+      <h3>3. LATO CLIENT (Il processo che si connette)</h3>
+      <p>Il Client si connette semplicemente al <code>SOCKET_PATH</code> dove il server è in ascolto.</p>
+
+<pre><code>#define SOCKET_PATH "/tmp/concurrent.sock"
+
+// 1. Creazione della socket
+int sock_fd = socket(AF_UNIX, SOCK_STREAM, 0);
+if (sock_fd == -1) { perror("socket"); exit(1); }
+
+// 2. Preparazione dell'indirizzo del Server
+struct sockaddr_un srv_addr;
+memset(&amp;srv_addr, 0, sizeof(srv_addr));
+srv_addr.sun_family = AF_UNIX;
+strncpy(srv_addr.sun_path, SOCKET_PATH, sizeof(srv_addr.sun_path) - 1);
+
+// 3. Connessione
+if (connect(sock_fd, (struct sockaddr *)&amp;srv_addr, sizeof(srv_addr)) == -1) {
+    perror("connect");
+    close(sock_fd);
+    exit(1);
+}
+
+// 4. Comunicazione
+// Esempio di scrittura con write_full:
+// write_full(sock_fd, &amp;dati, sizeof(dati));
+
+// 5. Chiusura
+close(sock_fd);</code></pre>
+
+      <h3>Note Fondamentali per l'esame:</h3>
       <ul>
-        <li style="color: var(--text-secondary); margin-bottom: 0.5rem;"><strong style="color: var(--text-primary);">Letture/Scritture parziali:</strong> Il ciclo <code>while</code> continua finché non sono stati trasferiti esattamente tutti i byte richiesti (<code>count</code>).</li>
-        <li style="color: var(--text-secondary); margin-bottom: 0.5rem;"><strong style="color: var(--text-primary);">Interruzioni da segnali (EINTR):</strong> Se una chiamata di sistema viene interrotta da un segnale (come il <code>SIGUSR1</code> usato nel gioco), <code>errno</code> viene impostato a <code>EINTR</code>. Il codice usa <code>continue</code> per riprendere l'operazione interrotta senza far fallire il programma.</li>
+        <li><strong style="color: var(--text-primary);">Differenza tra Descrittori:</strong> Sul server ricorda sempre che <code>srv_fd</code> serve esclusivamente per rimanere in ascolto (tramite <code>accept</code>), mentre la comunicazione reale coi client avviene su <code>conn_fd</code> (che è generato proprio dall'<code>accept</code>).</li>
+        <li><strong style="color: var(--text-primary);">Unlink Preventivo:</strong> Non dimenticare l'<code>unlink(SOCKET_PATH)</code> prima di fare la <code>bind</code> sul server. Se il server precedente si era chiuso male, il file sul file system bloccherà le nuove aperture.</li>
+        <li><strong style="color: var(--text-primary);">Tipi di Dati:</strong> Sulle socket si inviano spesso strutture <code>struct</code> complete (usando i puntatori e <code>sizeof</code>), proprio come si faceva con le pipe.</li>
       </ul>
 
     </div>
@@ -76,20 +180,20 @@
       let tokens = [];
       
       // 1. Protect strings and comments
-      html = html.replace(/("[^"]*")|(\/\/.*)/g, (match) => {
+      html = html.replace(/("[^"]*")|(\/\/.*|\/\*[\s\S]*?\*\/)/g, (match) => {
         tokens.push(match);
         return `__TOKEN_${tokens.length - 1}__`;
       });
 
       // 2. Keywords, functions, constants
-      html = html.replace(/\b(int|struct|for|if|else|while|ssize_t|pid_t|continue|exit|sizeof|return|typedef|char|void|volatile|sig_atomic_t)\b/g, '<span style="color: #c678dd;">$1</span>');
-      html = html.replace(/\b(poll|read|write|close|perror|socket|bind|listen|accept|connect|unlink|pipe|fork|wait|sigaction|mkfifo|open)\b(?=\()/g, '<span style="color: #61afef;">$1</span>');
-      html = html.replace(/\b(POLLIN|POLLHUP|O_RDONLY|O_NONBLOCK|O_RDWR|AF_UNIX|SOCK_STREAM|NUM_FILE|NULL|EAGAIN|SIGPIPE|EEXIST)\b/g, '<span style="color: #e5c07b;">$1</span>');
+      html = html.replace(/\b(int|struct|for|if|else|while|ssize_t|size_t|pid_t|continue|break|exit|_exit|sizeof|return|typedef|char|void|volatile|sig_atomic_t|sigset_t|const|static)\b/g, '<span style="color: #c678dd;">$1</span>');
+      html = html.replace(/\b(poll|read|write|close|perror|socket|bind|listen|accept|connect|unlink|pipe|fork|wait|waitpid|sigaction|mkfifo|open|kill|alarm|pause|sigprocmask|sigemptyset|sigaddset|lseek|printf|sprintf|malloc|free|getpid|getppid|mmap|munmap|shm_open|shm_unlink|ftruncate|memset|strncpy|write_full|read_full)\b(?=\()/g, '<span style="color: #61afef;">$1</span>');
+      html = html.replace(/\b(POLLIN|POLLHUP|O_RDONLY|O_NONBLOCK|O_RDWR|O_CREAT|AF_UNIX|SOCK_STREAM|NUM_FILE|NULL|EAGAIN|EINTR|SIGPIPE|EEXIST|SIGINT|SIGKILL|SIGSTOP|SIGALRM|SIGUSR1|SIGUSR2|SIG_BLOCK|SIG_UNBLOCK|SA_RESTART|WIFEXITED|WEXITSTATUS|SEEK_SET|SEEK_CUR|SEEK_END|PROT_READ|PROT_WRITE|MAP_SHARED|MAP_ANONYMOUS|MAP_FAILED|errno|sockaddr|sockaddr_un|SOCKET_PATH)\b/g, '<span style="color: #e5c07b;">$1</span>');
 
       // 3. Restore strings and comments with style
       html = html.replace(/__TOKEN_(\d+)__/g, (match, index) => {
         let val = tokens[index];
-        if (val.startsWith('//')) {
+        if (val.startsWith('//') || val.startsWith('/*')) {
           return `<span style="color: #5c6370; font-style: italic;">${val}</span>`;
         } else {
           return `<span style="color: #98c379;">${val}</span>`;
