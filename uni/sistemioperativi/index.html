@@ -183,14 +183,7 @@
           
           const elements = doc.querySelectorAll('.article-content p, .article-content li, .article-content h2, .article-content h3');
           
-          let currentSubtitle = "Generale";
-
           elements.forEach((el, index) => {
-            const tagName = el.tagName.toLowerCase();
-            if (tagName === 'h2' || tagName === 'h3') {
-               currentSubtitle = el.textContent.replace(/^[0-9.]+\s*/, '').trim();
-            }
-            
             const text = el.textContent.replace(/\s+/g, ' ').trim();
             if (text.length > 20) {
               const words = tokenize(text);
@@ -202,7 +195,7 @@
                 globalTermFreq[s] = (globalTermFreq[s] || 0) + 1;
               });
               
-              blocks.push({ url, title, icon, id, text, words, stems, blockIndex: index, subtitle: currentSubtitle });
+              blocks.push({ url, title, icon, id, text, words, stems, blockIndex: index });
               totalBlocks++;
             }
           });
@@ -344,27 +337,22 @@
       const resultsByUrl = new Map();
       scoredBlocks.forEach(b => {
         if (!resultsByUrl.has(b.url)) {
-          resultsByUrl.set(b.url, { title: b.title, icon: b.icon, score: b.score, occurrences: [] });
+          resultsByUrl.set(b.url, { title: b.title, icon: b.icon, score: b.score, snippets: [] });
         }
         
         const pageObj = resultsByUrl.get(b.url);
         
         if (b.matchedConcepts && b.matchedConcepts.length > 0) {
           b.matchedConcepts.forEach(c => {
-            if (!pageObj.occurrences.some(o => o.isConcept && o.concept === c)) {
-               pageObj.occurrences.unshift({
-                  isConcept: true,
-                  concept: c,
-                  subtitle: "Concetto Chiave",
-                  textHtml: `📌 <i>Argomento correlato: <b>${c}</b></i>`,
-                  url: b.url
-               });
+            const conceptSnip = `📌 <i>Argomento correlato: <b>${c}</b></i>`;
+            if (!pageObj.snippets.includes(conceptSnip)) {
+              pageObj.snippets.unshift(conceptSnip); 
             }
           });
         }
 
         // 6. Snippet intelligente centrato sui match
-        if (pageObj.occurrences.length < 5 && b.matchedWords.length > 0) {
+        if (pageObj.snippets.length < 3 && b.matchedWords.length > 0) {
            let snippet = b.text;
            let regexStr = b.matchedWords.map(w => stemItalian(w).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
            
@@ -387,21 +375,8 @@
            }
            
            // Evita snippet duplicati
-           if (!pageObj.occurrences.some(o => !o.isConcept && o.rawText === snippet.replace(/<[^>]*>?/gm, ''))) {
-               let targetUrl = b.url;
-               const cleanText = snippet.replace(/<[^>]*>?/gm, '').replace(/[".]/g, '').trim();
-               const fragment = cleanText.split(/\s+/).slice(0, 6).join(' ');
-               if (fragment) {
-                  targetUrl = `${b.url}#:~:text=${encodeURIComponent(fragment)}`;
-               }
-               
-               pageObj.occurrences.push({
-                   isConcept: false,
-                   rawText: snippet.replace(/<[^>]*>?/gm, ''),
-                   subtitle: b.subtitle || "Generale",
-                   textHtml: `"${snippet}"`,
-                   url: targetUrl
-               });
+           if (!pageObj.snippets.some(s => s.replace(/<[^>]*>?/gm, '') === snippet.replace(/<[^>]*>?/gm, ''))) {
+               pageObj.snippets.push(snippet);
            }
         }
       });
@@ -414,35 +389,33 @@
         const sortedPages = Array.from(resultsByUrl.entries()).sort((a, b) => b[1].score - a[1].score);
         
         sortedPages.forEach(([url, data]) => {
-          const div = document.createElement('div');
-          div.className = 'search-result-group';
+          const a = document.createElement('a');
+          a.className = 'search-result-item';
+          
+          let targetUrl = url;
+          const bestSnip = data.snippets.find(s => !s.startsWith('📌'));
+          if (bestSnip) {
+             const cleanText = bestSnip.replace(/<[^>]*>?/gm, '').replace(/[".]/g, '').trim();
+             const fragment = cleanText.split(/\s+/).slice(0, 6).join(' ');
+             if (fragment) {
+                targetUrl = `${url}#:~:text=${encodeURIComponent(fragment)}`;
+             }
+          }
+          a.href = targetUrl;
           
           const h3 = document.createElement('h3');
           h3.className = 'search-result-title';
           h3.innerHTML = `${data.icon} ${data.title}`;
-          div.appendChild(h3);
+          a.appendChild(h3);
           
-          data.occurrences.forEach(occ => {
-            const a = document.createElement('a');
-            a.className = 'search-occurrence';
-            a.href = occ.url;
-            
-            if (occ.subtitle) {
-               const badge = document.createElement('span');
-               badge.className = 'search-subtitle-badge';
-               badge.textContent = occ.subtitle;
-               a.appendChild(badge);
-            }
-            
+          data.snippets.forEach(snip => {
             const p = document.createElement('p');
             p.className = 'search-result-snippet';
-            p.innerHTML = occ.textHtml;
+            p.innerHTML = snip.startsWith('📌') ? snip : `"${snip}"`;
             a.appendChild(p);
-            
-            div.appendChild(a);
           });
           
-          resultsContainer.appendChild(div);
+          resultsContainer.appendChild(a);
         });
       }
     }

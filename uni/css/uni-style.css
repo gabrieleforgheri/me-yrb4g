@@ -235,6 +235,26 @@ body {
   margin: 0 auto;
 }
 
+.search-result-item {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-decoration: none;
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.search-result-item:hover {
+  background: var(--card-hover-bg);
+  border-color: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
 .search-result-title {
   font-size: 1.2rem;
   font-weight: 600;
@@ -437,73 +457,6 @@ mark.highlight {
 /* =========================================
    MOBILE RESPONSIVE - UNI PAGES
    ========================================= */
-
-@media (max-width: 480px) {
-  .course-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Gruppo dei risultati per pagina */
-.search-result-group {
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  border-radius: 12px;
-  padding: 1rem;
-  margin-bottom: 1rem;
-  width: 100%;
-}
-
-.search-result-group .search-result-title {
-  margin-top: 0;
-  margin-bottom: 0.75rem;
-  font-size: 1.1rem;
-  color: var(--text-primary);
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-/* Singola occorrenza cliccabile all'interno del gruppo */
-.search-occurrence {
-  display: block;
-  text-decoration: none;
-  color: var(--text-secondary);
-  background: rgba(0, 0, 0, 0.02);
-  border: 1px solid var(--card-border);
-  border-radius: 8px;
-  padding: 0.75rem;
-  margin-bottom: 0.5rem;
-  transition: all 0.2s ease;
-}
-
-.search-occurrence:last-child {
-  margin-bottom: 0;
-}
-
-.search-occurrence:hover {
-  transform: translateX(4px);
-  border-color: #60a5fa;
-  background: rgba(96, 165, 250, 0.1);
-}
-
-.search-occurrence:hover .search-result-snippet {
-  color: #60a5fa;
-}
-
-.search-subtitle-badge {
-  display: inline-block;
-  background: #e2e8f0;
-  color: #475569;
-  font-size: 0.75rem;
-  font-weight: 600;
-  padding: 0.2rem 0.5rem;
-  border-radius: 12px;
-  margin-bottom: 0.5rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
 @media (max-width: 639px) {
   .header {
     grid-template-columns: 80px 1fr 80px;
