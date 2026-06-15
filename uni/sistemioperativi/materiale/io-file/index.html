@@ -22,10 +22,97 @@
   </header>
 
   <main class="article-container animate-fade-in" style="animation-delay: 0.2s;">
-    <div class="article-content">      <h2 style="font-size: 2rem; color: #60a5fa;">File Control e I/O Avanzato in C</h2>
-      <p style="color: var(--text-secondary); font-style: italic;">[Contesto: Manipolazione avanzata dei File Descriptor tramite fcntl(), redirezione dei canali standard con dup2(), creazione di file sparsi, locking cooperativo (Advisory File Locking) e I/O asincrono guidato dai segnali]</p>
+    <div class="article-content">
+      <h2 style="font-size: 2rem; color: #60a5fa;">File Control e I/O Avanzato in C</h2>
+      <p style="color: var(--text-secondary); font-style: italic;">[Contesto: Gestione FIFO, pipe, read/write, poll(), fcntl(), dup2(), file sparsi, locking cooperativo e I/O asincrono]</p>
 
-      <h3>1. MANIPOLAZIONE DEI FLAG E I/O NON BLOCCANTE (fcntl)</h3>
+      <h3>1. APERTURA FILE (open)</h3>
+      <p>Restituisce un File Descriptor (FD) intero. Se fallisce, ritorna -1.</p>
+      <ul>
+        <li><strong style="color: var(--text-primary);">Bloccante (Default):</strong><br>
+        <code>int fd = open("/tmp/fifo", O_RDONLY);</code></li>
+        <li><strong style="color: var(--text-primary);">Non Bloccante:</strong><br>
+        <code>int fd = open("/tmp/fifo", O_RDONLY | O_NONBLOCK);</code></li>
+      </ul>
+
+      <h3>2. READ &amp; WRITE SU FIFO</h3>
+      <p>Sintassi base: <code>ssize_t n = read(fd, &amp;buf, sizeof(buf));</code></p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Scenario</th>
+            <th>Bloccante</th>
+            <th>Non Bloccante (O_NONBLOCK)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Read: Dati presenti</td>
+            <td>Ritorna byte letti</td>
+            <td>Ritorna byte letti</td>
+          </tr>
+          <tr>
+            <td>Read: Niente dati</td>
+            <td>Si blocca in attesa</td>
+            <td>Ritorna -1, errno=EAGAIN</td>
+          </tr>
+          <tr>
+            <td>Read: Nessun writer</td>
+            <td>Ritorna 0 (EOF)</td>
+            <td>Ritorna -1, poll genera POLLHUP</td>
+          </tr>
+          <tr>
+            <td>Write: Buffer pieno</td>
+            <td>Si blocca in attesa</td>
+            <td>Ritorna -1, errno=EAGAIN</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>3. MULTIPLEXING CON POLL()</h3>
+      <p>Evita il busy waiting su file non bloccanti.</p>
+      
+      <p><strong style="color: var(--text-primary);">Struttura e Inizializzazione:</strong></p>
+<pre><code>#include &lt;poll.h&gt;
+struct pollfd poll_set[NUM_FILE];
+
+for (int i = 0; i &lt; NUM_FILE; i++) {
+    poll_set[i].fd = fds[i];     // FD da monitorare
+    poll_set[i].events = POLLIN; // Eventi da ascoltare
+    poll_set[i].revents = 0;     // Output del kernel
+}</code></pre>
+
+      <p><strong style="color: var(--text-primary);">Esecuzione e Gestione Eventi:</strong></p>
+      <p>Usare SEMPRE l'AND bit a bit (<code>&amp;</code>) per controllare revents, MAI l'uguaglianza (<code>==</code>).<br>
+      La <code>poll()</code> va inserita in un loop principale.</p>
+
+<pre><code>int ready = poll(poll_set, NUM_FILE, -1); // -1 = attesa infinita
+
+for (int i = 0; i &lt; NUM_FILE; i++) {
+    if (poll_set[i].fd == -1) continue;
+
+    // 1. Disconnessione
+    if (poll_set[i].revents &amp; POLLHUP) {
+        close(poll_set[i].fd);
+        poll_set[i].fd = -1;
+        continue;
+    }
+
+    // 2. Dati Pronti (Loop per svuotare il buffer non bloccante)
+    if (poll_set[i].revents &amp; POLLIN) {
+        ssize_t nread;
+        int value;
+        while ((nread = read(poll_set[i].fd, &amp;value, sizeof(value))) &gt; 0) {
+            // Usa i dati
+        }
+        if (nread == -1 &amp;&amp; errno != EAGAIN) {
+            // Gestione vero errore
+        }
+    }
+}</code></pre>
+
+      <h3>4. MANIPOLAZIONE DEI FLAG E I/O NON BLOCCANTE (fcntl)</h3>
       <p>Se un file descriptor è già stato aperto (o ereditato, come nei casi standard o nelle pipe), non è possibile cambiare la modalità di blocco direttamente tramite <code>open()</code>. Si usa la system call <code>fcntl()</code> con i comandi <code>F_GETFL</code> (prendi i flag correnti) e <code>F_SETFL</code> (imposta i nuovi flag).</p>
 
       <p><strong style="color: var(--text-primary);">Pattern per rendere un File Descriptor NON Bloccante</strong></p>
@@ -59,7 +146,7 @@ if (n &lt; 0) {
     }
 }</code></pre>
 
-      <h3>2. REDIREZIONE DEI FILE DESCRIPTOR (dup2)</h3>
+      <h3>5. REDIREZIONE DEI FILE DESCRIPTOR (dup2)</h3>
       <p>La system call <code>dup2(int oldfd, int newfd)</code> clona il file descriptor <code>oldfd</code> sul file descriptor <code>newfd</code>. Se <code>newfd</code> era già aperto, il kernel lo chiude automaticamente prima di effettuare la copia.</p>
 
       <p><strong style="color: var(--text-primary);">Pattern di Redirezione dello Standard Output (stdout) su File</strong></p>
@@ -82,7 +169,7 @@ close(logfd); /* Il descrittore originale non serve più, usiamo l'1 clonato */
 // Da questo momento in poi, qualsiasi printf scriverà nel file!
 printf("Questo testo non andrà a schermo, ma dentro output.log\n");</code></pre>
 
-      <h3>3. FILE SPARSI (Sparse Files)</h3>
+      <h3>6. FILE SPARSI (Sparse Files)</h3>
       <p>Un file sparso è un file che contiene dei "buchi" logici di dati (zeri completi) che non occupano spazio fisico reale sul disco fisso finché non vengono effettivamente sovrascritti. Si creano spostando il cursore molto in avanti con <code>lseek()</code> oltre la fine effettiva dei byte scritti.</p>
 
 <pre><code>#include &lt;unistd.h&gt;
@@ -104,7 +191,7 @@ close(fd);</code></pre>
         <li><code>du -sh file_sparso.bin</code> &rarr; Mostra lo spazio reale effettivamente allocato sul disco (poche frazioni di KB).</li>
       </ul>
 
-      <h3>4. ADVISORY FILE LOCKING (struct flock &amp; fcntl)</h3>
+      <h3>7. ADVISORY FILE LOCKING (struct flock &amp; fcntl)</h3>
       <p>Il locking tramite <code>fcntl()</code> è di tipo advisory (cooperativo). Significa che il Kernel non impedisce fisicamente a un processo malintenzionato di scrivere sul file; spetta ai programmi concorrenti cooperare richiedendo esplicitamente il lock prima di accedere alla risorsa.</p>
 
       <p><strong style="color: var(--text-primary);">La Struttura struct flock</strong></p>
@@ -153,7 +240,7 @@ lock.l_type = F_UNLCK; // Imposta il tipo a sblocco
 fcntl(fd, F_SETLK, &amp;lock);
 close(fd);</code></pre>
 
-      <h3>5. I/O ASINCRONO GUIDATO DAI SEGNALI (O_ASYNC)</h3>
+      <h3>8. I/O ASINCRONO GUIDATO DAI SEGNALI (O_ASYNC)</h3>
       <p>L'I/O asincrono permette a un processo di continuare a svolgere i propri calcoli in user-space. Il Kernel invierà un segnale <code>SIGIO</code> al processo non appena sul file descriptor diventano disponibili nuovi dati da leggere.</p>
 
       <p><strong style="color: var(--text-primary);">Configurazione per l'I/O Asincrono guidato da segnali</strong></p>
