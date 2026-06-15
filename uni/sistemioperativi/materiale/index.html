@@ -114,7 +114,7 @@
       "bash": ["terminale", "linux", "unix", "console", "automazione"]
     };
 
-    // Levenshtein Distance for typo tolerance
+    // Damerau-Levenshtein Distance per tollerare inversioni di lettere (es. fokr -> fork)
     function levenshtein(a, b) {
       if (a.length === 0) return b.length;
       if (b.length === 0) return a.length;
@@ -123,14 +123,15 @@
       for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
       for (let i = 1; i <= b.length; i++) {
         for (let j = 1; j <= a.length; j++) {
-          if (b.charAt(i - 1) === a.charAt(j - 1)) {
-            matrix[i][j] = matrix[i - 1][j - 1];
-          } else {
-            matrix[i][j] = Math.min(
-              matrix[i - 1][j - 1] + 1,
-              matrix[i][j - 1] + 1,    
-              matrix[i - 1][j] + 1     
-            );
+          let cost = (b.charAt(i - 1) === a.charAt(j - 1)) ? 0 : 1;
+          matrix[i][j] = Math.min(
+            matrix[i - 1][j] + 1,       // inserimento
+            matrix[i][j - 1] + 1,       // cancellazione
+            matrix[i - 1][j - 1] + cost // sostituzione
+          );
+          // Trasposizione (inversione di due lettere adiacenti)
+          if (i > 1 && j > 1 && b.charAt(i - 1) === a.charAt(j - 2) && b.charAt(i - 2) === a.charAt(j - 1)) {
+            matrix[i][j] = Math.min(matrix[i][j], matrix[i - 2][j - 2] + cost);
           }
         }
       }
@@ -215,9 +216,18 @@
           let matchedWord = null;
           
           // Boost se il termine è nel titolo della pagina
-          if (block.title.toLowerCase().includes(term)) {
-            termScore = 50;
-            matchedWord = term;
+          const lowerTitle = block.title.toLowerCase();
+          if (lowerTitle.includes(term)) {
+            if (50 > termScore) { termScore = 50; matchedWord = term; }
+          } else {
+            // Fuzzy match sulle parole del titolo
+            const titleWords = lowerTitle.split(/\W+/).filter(w => w.length > 2);
+            for (const tw of titleWords) {
+              const dist = levenshtein(term, tw);
+              if (dist <= (term.length > 5 ? 2 : 1)) {
+                if (30 > termScore) { termScore = 30; matchedWord = tw; }
+              }
+            }
           }
 
           // Boost concettuale
