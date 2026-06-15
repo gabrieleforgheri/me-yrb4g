@@ -22,52 +22,63 @@
   </header>
 
   <main class="container">
-    <div class="course-grid">
+    
+    <div class="search-container animate-fade-in" style="animation-delay: 0.15s;">
+      <div class="search-wrapper">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="search-icon">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" id="topic-search" placeholder="Cerca un argomento (es. fork, memoria, reti, processi)..." autocomplete="off">
+      </div>
+    </div>
+
+    <div class="course-grid" id="topics-grid">
       
       <!-- Argomento 1 -->
-      <a href="/uni/sistemioperativi/materiale/fork/" class="course-card animate-fade-in" style="animation-delay: 0.2s;">
+      <a href="/uni/sistemioperativi/materiale/fork/" class="course-card animate-fade-in" style="animation-delay: 0.2s;" data-id="fork">
         <div class="course-icon">🧬</div>
         <h2 class="course-title">Processi e Fork</h2>
         <p class="course-desc">Creazione processi, sincronizzazione (wait/waitpid), Copy-On-Write e condivisione FD.</p>
       </a>
 
       <!-- Argomento 2 -->
-      <a href="/uni/sistemioperativi/materiale/segnali/" class="course-card animate-fade-in" style="animation-delay: 0.3s;">
+      <a href="/uni/sistemioperativi/materiale/segnali/" class="course-card animate-fade-in" style="animation-delay: 0.3s;" data-id="segnali">
         <div class="course-icon">🚨</div>
         <h2 class="course-title">Segnali in C</h2>
         <p class="course-desc">Comunicazione asincrona, handler, maschere di segnali, sigaction() e kill().</p>
       </a>
 
       <!-- Argomento 3 -->
-      <a href="/uni/sistemioperativi/materiale/shmem/" class="course-card animate-fade-in" style="animation-delay: 0.4s;">
+      <a href="/uni/sistemioperativi/materiale/shmem/" class="course-card animate-fade-in" style="animation-delay: 0.4s;" data-id="shmem">
         <div class="course-icon">🧠</div>
         <h2 class="course-title">Memoria Condivisa</h2>
         <p class="course-desc">Shared Memory anonima (mmap) e POSIX con nome (shm_open, shm_unlink).</p>
       </a>
 
       <!-- Argomento 4 -->
-      <a href="/uni/sistemioperativi/materiale/pipe/" class="course-card animate-fade-in" style="animation-delay: 0.5s;">
+      <a href="/uni/sistemioperativi/materiale/pipe/" class="course-card animate-fade-in" style="animation-delay: 0.5s;" data-id="pipe">
         <div class="course-icon">🔄</div>
         <h2 class="course-title">Pipe e FIFO in C</h2>
         <p class="course-desc">Comunicazione Inter-Processo (IPC), topologie multiprocesso, pipe(), mkfifo() e gestione di SIGPIPE.</p>
       </a>
 
       <!-- Argomento 5 -->
-      <a href="/uni/sistemioperativi/materiale/socket/" class="course-card animate-fade-in" style="animation-delay: 0.6s;">
+      <a href="/uni/sistemioperativi/materiale/socket/" class="course-card animate-fade-in" style="animation-delay: 0.6s;" data-id="socket">
         <div class="course-icon">🌐</div>
         <h2 class="course-title">Socket Stream in C</h2>
         <p class="course-desc">Il flusso client-server, socket(), bind(), listen(), accept() e gestione lettura/scrittura byte.</p>
       </a>
 
       <!-- Argomento 6 -->
-      <a href="/uni/sistemioperativi/materiale/io-file/" class="course-card animate-fade-in" style="animation-delay: 0.7s;">
+      <a href="/uni/sistemioperativi/materiale/io-file/" class="course-card animate-fade-in" style="animation-delay: 0.7s;" data-id="io-file">
         <div class="course-icon">📁</div>
         <h2 class="course-title">I/O e File Control</h2>
         <p class="course-desc">Gestione FIFO, pipe, read/write bloccanti vs non bloccanti, multiplexing con poll().</p>
       </a>
 
       <!-- Argomento 7 -->
-      <a href="/uni/sistemioperativi/materiale/bash/" class="course-card animate-fade-in" style="animation-delay: 0.8s;">
+      <a href="/uni/sistemioperativi/materiale/bash/" class="course-card animate-fade-in" style="animation-delay: 0.8s;" data-id="bash">
         <div class="course-icon">💻</div>
         <h2 class="course-title">Shell Scripting (Bash)</h2>
         <p class="course-desc">Automazione, redirezione I/O, filtri di testo ed esempi completi per i laboratori.</p>
@@ -84,6 +95,103 @@
       } else {
         header.classList.remove('scrolled');
       }
+    });
+
+    // Advanced Search System
+    const searchIndex = {
+      "fork": ["fork", "processi", "processo", "padre", "figlio", "sdoppiare", "wait", "waitpid", "cow", "copy", "write", "zombie", "orfano", "pid", "getpid", "multiprocesso", "gerarchia"],
+      "segnali": ["segnali", "segnale", "signal", "sigaction", "kill", "allarme", "alarm", "interruzione", "handler", "maschere", "sigprocmask", "asincrono", "sigint", "ctrl", "c"],
+      "shmem": ["memoria", "condivisa", "shared", "memory", "mmap", "shm_open", "shm_unlink", "ftruncate", "ram", "race", "condition", "shm", "veloce", "prestazioni"],
+      "pipe": ["pipe", "fifo", "mkfifo", "comunicazione", "ipc", "canale", "unidirezionale", "anello", "ring", "sigpipe", "anonime", "named", "scrittura", "lettura"],
+      "socket": ["socket", "rete", "internet", "connessione", "client", "server", "bind", "listen", "accept", "stream", "tcp", "unix", "domain", "indirizzo", "porta", "chiamata"],
+      "io-file": ["io", "file", "control", "open", "read", "write", "close", "bloccante", "multiplexing", "poll", "file descriptor", "fd", "nonblock", "non bloccante", "input", "output", "pollin", "lseek", "offset"],
+      "bash": ["shell", "scripting", "bash", "automazione", "terminale", "script", "comandi", "linux", "unix", "if", "for", "while", "grep", "awk", "sed", "variabili", "array"]
+    };
+
+    // Levenshtein Distance for typo tolerance (fuzzy matching)
+    function levenshtein(a, b) {
+      if (a.length === 0) return b.length;
+      if (b.length === 0) return a.length;
+      let matrix = [];
+      for (let i = 0; i <= b.length; i++) matrix[i] = [i];
+      for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
+      for (let i = 1; i <= b.length; i++) {
+        for (let j = 1; j <= a.length; j++) {
+          if (b.charAt(i - 1) === a.charAt(j - 1)) {
+            matrix[i][j] = matrix[i - 1][j - 1];
+          } else {
+            matrix[i][j] = Math.min(
+              matrix[i - 1][j - 1] + 1, // substitution
+              matrix[i][j - 1] + 1,     // insertion
+              matrix[i - 1][j] + 1      // deletion
+            );
+          }
+        }
+      }
+      return matrix[b.length][a.length];
+    }
+
+    const searchInput = document.getElementById('topic-search');
+    const cards = Array.from(document.querySelectorAll('.course-card'));
+    const grid = document.getElementById('topics-grid');
+
+    searchInput.addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase().trim();
+      const searchTerms = query.split(/\s+/).filter(t => t.length > 0);
+
+      if (searchTerms.length === 0) {
+        // Show all if empty and reset order
+        cards.forEach((card, idx) => {
+          card.style.display = 'flex';
+          card.style.order = idx;
+        });
+        return;
+      }
+
+      cards.forEach(card => {
+        const id = card.getAttribute('data-id');
+        const keywords = searchIndex[id] || [];
+        const title = card.querySelector('.course-title').textContent.toLowerCase();
+        const desc = card.querySelector('.course-desc').textContent.toLowerCase();
+        
+        let totalScore = 0;
+
+        searchTerms.forEach(term => {
+          let termBestScore = 0;
+
+          // 1. Exact match in title or description (Highest score)
+          if (title.includes(term)) termBestScore = Math.max(termBestScore, 20);
+          if (desc.includes(term)) termBestScore = Math.max(termBestScore, 10);
+
+          // 2. Exact match in ID (Very High)
+          if (id === term || id.includes(term)) termBestScore = Math.max(termBestScore, 15);
+
+          // 3. Fuzzy match in index keywords
+          keywords.forEach(kw => {
+            if (kw === term) {
+              termBestScore = Math.max(termBestScore, 12);
+            } else if (kw.includes(term) || term.includes(kw)) {
+              termBestScore = Math.max(termBestScore, 8);
+            } else {
+              const dist = levenshtein(term, kw);
+              // Max 1 error for short words, 2 errors for words > 5 chars
+              const maxDist = term.length > 5 ? 2 : 1;
+              if (dist <= maxDist && term.length > 2) {
+                termBestScore = Math.max(termBestScore, 5);
+              }
+            }
+          });
+
+          totalScore += termBestScore;
+        });
+
+        if (totalScore > 0) {
+          card.style.display = 'flex';
+          card.style.order = -totalScore; // Higher score comes first
+        } else {
+          card.style.display = 'none';
+        }
+      });
     });
   </script>
 </body>
