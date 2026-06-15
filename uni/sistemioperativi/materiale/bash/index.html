@@ -241,27 +241,32 @@ echo "La funzione ha restituito: $RET_VAL"</code></pre>
 
       <h3>Esempio 1: Input interattivo e creazione di percorsi</h3>
 <pre><code>#!/bin/bash
+# Prompt interattivo: '-p' permette di mostrare un messaggio prima di leggere l'input
 read -p "Enter the base directory (BASE): " BASE
 read -p "Enter the project name (PROJECT): " PROJECT
 read -p "Enter the version (VERSION): " VERSION
 
+# Costruzione del percorso concatenando le variabili
 APP_DIR="$BASE/$PROJECT/$VERSION"
 
-# mkdir -p crea le cartelle genitrici se non esistono
+# mkdir -p crea le cartelle genitrici se non esistono (evita errori se $BASE o $PROJECT mancano)
 mkdir -p "$APP_DIR/src"
 mkdir -p "$APP_DIR/build"
 mkdir -p "$APP_DIR/docs"</code></pre>
 
       <h3>Esempio 2: Gestione degli Array</h3>
 <pre><code>#!/bin/bash
+# Dichiarazione di un array standard (spazio per separare gli elementi)
 GROCERIES=("bread" "milk" "eggs" "coffee")
 
-# ${#ARRAY[@]} restituisce la lunghezza dell'array
+# ${#ARRAY[@]} restituisce la lunghezza totale dell'array
 echo "Total number of items in the grocery list: ${#GROCERIES[@]}"
 
+# Stampa ogni elemento su una nuova riga con printf e conta le righe con 'wc -l'
 TOTAL_WC=$(printf '%s\n' "${GROCERIES[@]}" | wc -l)
 echo "Total number of items (using wc): $TOTAL_WC"
 
+# Accesso al primo elemento dell'array (l'indice parte da 0)
 echo "Reminder: The first item you need to get is ${GROCERIES[0]}."</code></pre>
 
       <h3>Esempio 3: Comandi di Sistema e Calcoli in Virgola Mobile (bc)</h3>
@@ -269,92 +274,119 @@ echo "Reminder: The first item you need to get is ${GROCERIES[0]}."</code></pre>
 BIRTH_YEAR=1995
 MONTHLY_BUDGET=450
 
+# Esegue il comando 'date' per ottenere l'anno corrente (formato %Y)
 CURRENT_YEAR=$(date +%Y)
+# Espansione aritmetica $(( ... )) per operazioni matematiche intere
 AGE=$((CURRENT_YEAR - BIRTH_YEAR))
 
-# Calcolo in virgola mobile: scale=2 indica 2 cifre decimali
+# Calcolo in virgola mobile: scale=2 indica 2 cifre decimali. Bash non supporta i decimali nativamente, usiamo 'bc'
 DAILY_BUDGET=$(echo "scale=2; $MONTHLY_BUDGET / 30" | bc)
 
 echo "Current Year:    $CURRENT_YEAR"
 echo "Approximate Age: $AGE years old"
-echo "Daily Budget:    \$$DAILY_BUDGET"</code></pre>
+echo "Daily Budget:    \$$DAILY_BUDGET" # Escape del dollaro per non interpretarlo come variabile</code></pre>
 
       <h3>Esempio 4: Array Associativi e Xargs</h3>
 <pre><code>#!/bin/bash
-# Dichiara un array associativo (chiave-valore)
+# Dichiara esplicitamente un array associativo (dizionario chiave-valore)
 declare -A EXT_COUNTS
 
+# Cicla su tutti gli elementi nella directory corrente
 for file in *; do
+    # Se non è un file regolare (-f), salta al prossimo giro (continue)
     [[ -f "$file" ]] || continue
+    
+    # Estrae l'estensione: taglia (cut) usando il punto (-d.) e prende dal secondo campo in poi (-f2-)
     ext=$(echo $file | cut -d. -f2-)
+    # Se la variabile è vuota (-z), assegna un nome di default
     if [[ -z $ext ]]; then ext="no_extension"; fi
     
+    # Incrementa il contatore per la specifica chiave (estensione)
     ((EXT_COUNTS[$ext]++))
 done
 
-# Iterazione sulle chiavi
+# Iterazione sulle CHIAVI dell'array associativo (nota il punto esclamativo '!')
 for ext in "${!EXT_COUNTS[@]}"; do
     mkdir -p "$ext"
-    # L'uso di xargs -0 con printf '\0' permette di gestire file con spazi
+    # printf con '\0' separa i file con un carattere nullo, supportando file con spazi nel nome
     for file in *.$ext; do
         printf '%s\0' "$file"
-    done | xargs -0 -I{} mv {} $ext
+    done | xargs -0 -I{} mv {} $ext  # xargs prende i nomi null-terminated e li passa a mv
 done</code></pre>
 
       <h3>Esempio 5: Analisi Permessi ed Esportazione Funzioni</h3>
 <pre><code>#!/bin/bash
+# Funzione per analizzare i permessi di un file
 audit_file() {
-    file="$1"
+    file="$1" # Il primo argomento passato alla funzione
+    # Usa 'stat -c "%a"' per estrarre i permessi in formato ottale (es. 644)
     perms=$(stat -c "%a" "$file")
+    # Estrae l'ultimo carattere della stringa (i permessi 'others' / world)
     world_perms="${perms: -1}"
 
+    # Se il permesso per gli altri è >= 4 (lettura), è considerato vulnerabile
     if [ "$world_perms" -ge 4 ]; then
         echo "[WARNING] $file is world-readable!"
+        # Rimuove il permesso di lettura (-r) agli altri (o)
         chmod o-r "$file" 
     fi
 }
+# Esporta la funzione in modo che sia visibile alle sub-shell (usate da xargs)
 export -f audit_file
 
+# Array di file sensibili da controllare
 sensitive_files=("/etc/passwd" "/etc/shadow")
+# Stampa i nomi dei file separati da \0, poi xargs esegue una subshell per chiamare audit_file su ciascuno
 printf "%s\0" "${sensitive_files[@]}" | xargs -0 -I {} bash -c 'audit_file "{}"'</code></pre>
 
       <h3>Esempio 6: Gestione Log Temporale (touch -d)</h3>
 <pre><code>#!/bin/bash
-AGE_THRESHOLD="7 days ago"
-SIZE_THRESHOLD=$((10 * 1024 * 1024)) # 10 MB
+AGE_THRESHOLD="7 days ago" # Data limite
+SIZE_THRESHOLD=$((10 * 1024 * 1024)) # 10 MB calcolati in byte
 
 REF_FILE=".age_threshold_marker"
+# 'touch -d' crea un file temporaneo con la data di modifica impostata a 7 giorni fa
 touch -d "$AGE_THRESHOLD" "$REF_FILE" 2&gt;/dev/null
 
 for log_file in *.log; do
     [ -f "$log_file" ] || continue
-    # -ot confronta la data di modifica
+    # -ot (older than) confronta se log_file è più vecchio del nostro file di riferimento
     if [ "$log_file" -ot "$REF_FILE" ]; then
+        # 'stat -c "%s"' ottiene la dimensione del file in byte
         file_size=$(stat -c "%s" "$log_file")
         if [ "$file_size" -gt "$SIZE_THRESHOLD" ]; then
-            rm "$log_file"
+            rm "$log_file" # Elimina se maggiore di 10MB
         else
-            gzip "$log_file"
+            gzip "$log_file" # Comprime se minore o uguale a 10MB
         fi
     fi
 done
+# Pulizia del file temporaneo di riferimento
 rm -f "$REF_FILE"</code></pre>
 
       <h3>Esempio 7: Controllo Processi (pgrep, renice)</h3>
 <pre><code>#!/bin/bash
-PROCESS_NAME="$1"
+# Prende il nome del processo come parametro dallo script
+PROCESS_NAME="$1" 
+# Esegue pgrep -i per cercare i PID dei processi, ignorando il case
 pids=$(pgrep -i "$PROCESS_NAME")
 
+# Itera attraverso la lista di PID trovati
 for pid in $pids; do
+    # Verifica silenziosamente se il processo esiste ancora
     if ! ps -p "$pid" &gt; /dev/null 2&gt;&amp;1; then continue; fi
     
+    # Richiede all'utente di scegliere la priorità
     read -p "Select priority for PID $pid [1) High, 2) Low]: " choice
+    
+    # Analizza la scelta dell'utente per impostare il valore 'nice'
     case "$choice" in
-        1|"[Hh]igh") new_nice="-10" ;; 
-        2|"[Ll]ow")  new_nice="10"  ;; 
-        *) continue ;;
+        1|"[Hh]igh") new_nice="-10" ;; # Priorità alta (valore negativo)
+        2|"[Ll]ow")  new_nice="10"  ;; # Priorità bassa (valore positivo)
+        *) continue ;;                 # Salta se la scelta non è valida
     esac
     
+    # Applica la modifica della priorità al processo specificato
     renice -n "$new_nice" -p "$pid" &gt; /dev/null 2&gt;&amp;1
 done</code></pre>
 

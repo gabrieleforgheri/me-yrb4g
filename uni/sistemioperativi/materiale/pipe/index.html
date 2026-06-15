@@ -32,23 +32,26 @@
       <p><strong style="color: var(--text-primary);">Creazione e Pattern Base (Fork)</strong></p>
       <p>La system call <code>pipe()</code> prende un array di due interi e lo popola con i File Descriptor. L'indice <code>0</code> è per la lettura, l'indice <code>1</code> è per la scrittura.</p>
 
-<pre><code>int fd[2];
+<pre><code>int fd[2]; // Array di due interi: fd[0] sarà per LEGGERE, fd[1] per SCRIVERE
+// La pipe deve essere creata PRIMA della fork, così il figlio la eredita
 if (pipe(fd) == -1) { perror("pipe"); exit(1); }
 
 pid_t pid = fork();
 
 if (pid == 0) { // CHILD (Es. Lettore)
-    close(fd[1]); // Chiudo l'estremo di scrittura inutilizzato
+    close(fd[1]); // Chiudo l'estremo di scrittura inutilizzato dal lettore (cruciale!)
     char buf[128];
+    // Legge dalla pipe: se è vuota, si blocca finché il padre non scrive o non chiude
     read(fd[0], buf, sizeof(buf));
-    close(fd[0]);
+    close(fd[0]); // Chiude la lettura quando ha finito
     exit(0);
 } else {        // PARENT (Es. Scrittore)
-    close(fd[0]); // Chiudo l'estremo di lettura inutilizzato
+    close(fd[0]); // Chiudo l'estremo di lettura inutilizzato dallo scrittore
     char *msg = "Hello";
+    // Scrive il messaggio nella pipe. Il +1 serve a includere il terminatore '\0' della stringa
     write(fd[1], msg, strlen(msg) + 1);
-    close(fd[1]);
-    wait(NULL);
+    close(fd[1]); // Chiude la scrittura, inviando così un EOF al lettore
+    wait(NULL);   // Aspetta che il figlio lettore termini
 }</code></pre>
 
       <p style="padding-left: 1rem; border-left: 3px solid #f59e0b; color: #fbbf24;"><strong style="color: #f59e0b;">Regola d'oro:</strong> Chiudere SEMPRE gli estremi non utilizzati! Se un processo lettore non chiude il suo estremo di scrittura, non riceverà mai l'EOF (End of File) quando lo scrittore finisce.</p>
@@ -93,13 +96,16 @@ if (pid == 0) { // CHILD (Es. Lettore)
 
 <pre><code>#include &lt;signal.h&gt;
 
+// Variabile flag modificabile asincronamente dall'handler (sig_atomic_t garantisce scritture atomiche)
 volatile sig_atomic_t sigpipe_received = 0;
+
+// Handler che verrà eseguito automaticamente quando riceviamo il segnale
 void handle_sigpipe(int sig) { sigpipe_received = 1; }
 
-// Nel main, prima di scrivere:
-struct sigaction sa = {0};
-sa.sa_handler = handle_sigpipe;
-sigaction(SIGPIPE, &amp;sa, NULL);</code></pre>
+// Nel main, prima di eseguire operazioni di scrittura (write) a rischio:
+struct sigaction sa = {0}; // Azzera la struttura per evitare memoria sporca
+sa.sa_handler = handle_sigpipe; // Associa la nostra funzione
+sigaction(SIGPIPE, &amp;sa, NULL); // Sostituisce il comportamento letale di default con il nostro handler</code></pre>
 
       <h3>3. PIPE CON NOME / FIFO (mkfifo)</h3>
       <p>Le FIFO appaiono nel filesystem. Permettono la comunicazione tra processi non legati da parentela. Sono anch'esse unidirezionali.</p>
@@ -110,13 +116,16 @@ sigaction(SIGPIPE, &amp;sa, NULL);</code></pre>
 <pre><code>#include &lt;sys/stat.h&gt;
 #include &lt;fcntl.h&gt;
 
-// 1. Creazione
+// 1. Creazione della FIFO nel FileSystem
+// I permessi 0666 permettono lettura e scrittura a tutti (soggetti a umask). 
+// EEXIST viene ignorato se un altro processo ha già creato la FIFO
 if (mkfifo("/tmp/mia_fifo", 0666) == -1 &amp;&amp; errno != EEXIST) {
     perror("mkfifo"); exit(1);
 }
 
 // 2. Apertura Bloccante (Client/Processi normali)
-// L'apertura in sola lettura si blocca finché qualcuno non apre in scrittura!
+// L'apertura in sola lettura (O_RDONLY) si ferma qui (si blocca) finché 
+// un altro processo indipendente non aprirà lo stesso file in O_WRONLY
 int fd = open("/tmp/mia_fifo", O_RDONLY); </code></pre>
 
       <p><strong style="color: var(--text-primary);">Trucco del Server (O_RDWR)</strong></p>

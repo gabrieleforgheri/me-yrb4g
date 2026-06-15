@@ -87,36 +87,41 @@ for (int i = 0; i &lt; NUM_FILE; i++) {
       <p><strong style="color: var(--text-primary);">B. Ciclo Principale e Gestione Eventi</strong></p>
       <p>La system call poll si blocca finché non accade qualcosa. Controllare gli eventi richiede l'uso dell'operatore Bitwise AND (<code>&amp;</code>), mai dell'uguaglianza (<code>==</code>).</p>
 
-<pre><code>// timeout -1 significa attesa infinita
+<pre><code>// timeout -1 significa attesa infinita (il processo si sospende)
 int pronti = poll(poll_set, NUM_FILE, -1); 
 if (pronti &lt; 0) {
     perror("Errore poll");
     exit(1);
 }
 
+// Scorre tutto l'array per vedere QUALI file descriptor si sono risvegliati
 for (int i = 0; i &lt; NUM_FILE; i++) {
-    if (poll_set[i].fd == -1) continue; // Salta FD chiusi
+    if (poll_set[i].fd == -1) continue; // Salta FD che abbiamo già chiuso in precedenza
 
     // 1. Controllo Disconnessione (Hang Up)
-    // Usa &amp; per verificare se il bit POLLHUP è acceso tra i vari eventi
+    // Usa l'AND bit a bit (&amp;) per verificare se il bit POLLHUP è acceso
+    // Non usare MAI l'uguaglianza (==) perché potrebbero esserci più bit accesi contemporaneamente!
     if (poll_set[i].revents &amp; POLLHUP) {
         close(poll_set[i].fd);
-        poll_set[i].fd = -1;
+        poll_set[i].fd = -1; // Lo disabilita per le prossime iterazioni della poll
         // Aggiorna contatore chiusure, es: nclosed++;
         continue;
     }
 
-    // 2. Controllo Dati Pronti
+    // 2. Controllo Dati Pronti (C'è qualcosa da leggere)
     if (poll_set[i].revents &amp; POLLIN) {
         ssize_t nread;
         int value;
         
-        // Loop per svuotare completamente il buffer non bloccante
+        // Dato che il file è aperto in modalità O_NONBLOCK (non bloccante),
+        // dobbiamo fare un loop (while) per svuotare completamente il buffer del kernel
+        // finché read() non ci dice che non c'è più nulla da leggere.
         while ((nread = read(poll_set[i].fd, &amp;value, sizeof(value))) &gt; 0) {
             // Elabora 'value' (es. accumulator += value;)
         }
         
-        // Verifica se l'uscita dal while è un VERO errore o solo fine dati
+        // Verifica se l'uscita dal while è un VERO errore o solo fine temporanea dei dati
+        // EAGAIN significa "riprova più tardi" (il buffer è vuoto ma il canale è ancora aperto)
         if (nread == -1 &amp;&amp; errno != EAGAIN) {
             perror("Errore in read");
             exit(1);

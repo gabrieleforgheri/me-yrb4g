@@ -45,17 +45,19 @@
         </li>
       </ul>
 
-<pre><code>pid_t pid = fork();
+<pre><code>// Creazione del nuovo processo: da questo punto il codice si biforca
+pid_t pid = fork();
 
 if (pid &lt; 0) {
+    // La fork ha fallito (es. troppi processi nel sistema)
     perror("fork failed");
     exit(1);
 } else if (pid == 0) {
-    // CODICE DEL FIGLIO
+    // CODICE DEL FIGLIO: la fork() restituisce 0 al processo appena clonato
     printf("Sono il figlio, il mio PID è %d\n", getpid());
-    exit(0);
+    exit(0); // Il figlio termina qui
 } else {
-    // CODICE DEL PADRE
+    // CODICE DEL PADRE: la fork() restituisce il PID del nuovo figlio generato
     printf("Sono il padre, il PID di mio figlio è %d\n", pid);
 }</code></pre>
 
@@ -72,15 +74,17 @@ if (pid &lt; 0) {
       <p><strong style="color: var(--text-primary);">Lettura dello Status</strong></p>
       <p>Quando il figlio termina tramite <code>exit(valore)</code>, il padre può leggere quel valore decodificando la variabile status con delle macro specifiche:</p>
 
-<pre><code>int status;
+<pre><code>int status; // Variabile usata per memorizzare l'esito della terminazione
+// Il padre si blocca e attende la fine dello specifico figlio
 waitpid(pid_figlio, &amp;status, 0);
 
+// Macro per verificare se il figlio ha usato exit() o return normalmente
 if (WIFEXITED(status)) {
-    // Il figlio è terminato normalmente
+    // Estrae il codice di uscita effettivo (es. lo 0 di exit(0))
     int valore_ritorno = WEXITSTATUS(status);
     printf("Il figlio ha restituito: %d\n", valore_ritorno);
 } else {
-    // Il figlio è terminato in modo anomalo (es. ucciso da un segnale)
+    // Entra qui se il figlio è stato ucciso da un segnale (es. SIGKILL, segfault)
 }</code></pre>
 
       <h3>3. MEMORIA E VARIABILI: COPY-ON-WRITE</h3>
@@ -99,23 +103,26 @@ if (WIFEXITED(status)) {
         <li><strong>Offset Condiviso (Cruciale):</strong> Padre e figlio condividono il "cursore" (offset) all'interno del file. Se il File Descriptor viene clonato e il Figlio 1 legge 1 byte dal file, il cursore avanza. Quando il Figlio 2 andrà a leggere dal file, leggerà il byte successivo, non il primo.</li>
       </ul>
 
-<pre><code>int fd = open("data.txt", O_RDWR); // Offset a 0
-write(fd, "ABCDEF", 6);
-lseek(fd, 0, SEEK_SET); // Riporta l'offset a 0
+<pre><code>// Apre un file prima della fork: il File Descriptor verrà condiviso!
+int fd = open("data.txt", O_RDWR); 
+write(fd, "ABCDEF", 6); // Scrive 6 byte, l'offset ora è a 6
+lseek(fd, 0, SEEK_SET); // Riporta l'offset (cursore) all'inizio (0)
 
 pid_t c1 = fork();
 if (c1 == 0) {
     char ch;
-    read(fd, &amp;ch, 1); // Legge 'A', l'offset condiviso diventa 1
+    // Figlio 1 legge 1 byte ('A'). L'offset condiviso avanza a 1 per TUTTI
+    read(fd, &amp;ch, 1); 
     exit(0);
 }
 
-wait(NULL); // Aspetta che finisca c1
+wait(NULL); // Il padre aspetta che il Figlio 1 termini
 
 pid_t c2 = fork();
 if (c2 == 0) {
     char ch;
-    read(fd, &amp;ch, 1); // Legge 'B', perché l'offset era stato spostato da c1!
+    // Figlio 2 legge 1 byte ('B'). L'offset non parte da 0, era stato spostato da Figlio 1!
+    read(fd, &amp;ch, 1); 
     exit(0);
 }</code></pre>
 
