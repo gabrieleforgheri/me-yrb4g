@@ -106,23 +106,38 @@
       }
     });
 
-    // Advanced Full-Text Search System with Concepts
+    // Advanced Information Retrieval System
     let searchIndexDocs = null;
     let isIndexing = false;
 
-    // Dizionario dei Concetti Chiave (parole non necessariamente presenti nel testo)
+    // 1. Stop-Words italiane (da filtrare)
+    const stopWords = new Set(["il", "lo", "la", "i", "gli", "le", "un", "uno", "una", "di", "a", "da", "in", "con", "su", "per", "tra", "fra", "che", "del", "dello", "della", "dei", "degli", "delle", "al", "allo", "alla", "ai", "agli", "alle", "dal", "dallo", "dalla", "dai", "dagli", "dalle", "nel", "nello", "nella", "nei", "negli", "nelle", "sul", "sullo", "sulla", "sui", "sugli", "sulle", "e", "ed", "o", "oppure", "ma", "se", "non", "si", "mi", "ti", "ci", "vi", "ne", "è", "sono", "ha", "hanno", "come", "più", "molto", "tutto", "tutti"]);
+
+    // Dizionario dei Concetti Chiave (espanso)
     const conceptIndex = {
-      "fork": ["zombie", "processo non termina", "orfano", "gerarchia", "multiprocesso", "sdoppiare", "clonare", "padre", "figlio"],
-      "segnali": ["interruzione", "asincrono", "evento", "ctrl-c", "allarme"],
-      "shmem": ["ram", "veloce", "prestazioni", "condivisione memoria"],
-      "pipe": ["canale", "unidirezionale", "anello", "tubo"],
-      "socket": ["rete", "internet", "indirizzo", "porta", "web"],
-      "io-file": ["input", "output", "offset", "descrittore"],
-      "bash": ["terminale", "linux", "unix", "console", "automazione"]
+      "fork": ["zombie", "processo non termina", "orfano", "gerarchia", "multiprocesso", "sdoppiare", "clonare", "padre", "figlio", "exec", "wait", "duplicare"],
+      "segnali": ["interruzione", "asincrono", "evento", "ctrl-c", "allarme", "handler", "maschera", "bloccare", "ignorare"],
+      "shmem": ["ram", "veloce", "prestazioni", "condivisione memoria", "mmap", "shm_open", "semaforo"],
+      "pipe": ["canale", "unidirezionale", "anello", "tubo", "fifo", "mkfifo", "comunicazione", "ipc"],
+      "socket": ["rete", "internet", "indirizzo", "porta", "web", "connessione", "client", "server", "bind", "listen", "accept"],
+      "io-file": ["input", "output", "offset", "descrittore", "file aperto", "lettura", "scrittura", "bloccante", "non bloccante", "multiplexing", "poll"],
+      "bash": ["terminale", "linux", "unix", "console", "automazione", "script", "comandi", "shell"]
     };
 
-    // Damerau-Levenshtein Distance per tollerare inversioni di lettere (es. fokr -> fork)
-    function levenshtein(a, b) {
+    // 4. Stemming Semplificato (Troncamento desinenze finali)
+    function stemItalian(word) {
+      if (word.length <= 4) return word;
+      // Rimuove vocali finali tipiche dell'italiano per uniformare maschile/femminile, singolare/plurale
+      return word.replace(/[oiae]$/i, '');
+    }
+
+    // Estrae i termini validi da una stringa
+    function tokenize(text) {
+      return text.toLowerCase().split(/\W+/)
+        .filter(w => w.length > 2 && !stopWords.has(w));
+    }
+
+    function damerauLevenshtein(a, b) {
       if (a.length === 0) return b.length;
       if (b.length === 0) return a.length;
       let matrix = [];
@@ -132,11 +147,10 @@
         for (let j = 1; j <= a.length; j++) {
           let cost = (b.charAt(i - 1) === a.charAt(j - 1)) ? 0 : 1;
           matrix[i][j] = Math.min(
-            matrix[i - 1][j] + 1,       // inserimento
-            matrix[i][j - 1] + 1,       // cancellazione
-            matrix[i - 1][j - 1] + cost // sostituzione
+            matrix[i - 1][j] + 1,       
+            matrix[i][j - 1] + 1,       
+            matrix[i - 1][j - 1] + cost 
           );
-          // Trasposizione (inversione di due lettere adiacenti)
           if (i > 1 && j > 1 && b.charAt(i - 1) === a.charAt(j - 2) && b.charAt(i - 2) === a.charAt(j - 1)) {
             matrix[i][j] = Math.min(matrix[i][j], matrix[i - 2][j - 2] + cost);
           }
@@ -150,9 +164,12 @@
       isIndexing = true;
       
       const blocks = [];
-      // Seleziona solo le card dei materiali (escludendo appunti completi)
       const cards = Array.from(document.querySelectorAll('.course-card:not([data-search="false"])'));
       const resultsContainer = document.getElementById('search-results');
+      
+      // Mappa delle frequenze assolute (per TF-IDF semplificato)
+      const globalTermFreq = {};
+      let totalBlocks = 0;
       
       try {
         await Promise.all(cards.map(async (card) => {
@@ -166,22 +183,35 @@
           const parser = new DOMParser();
           const doc = parser.parseFromString(html, 'text/html');
           
-          // Estrae paragrafi, liste e titoli dall'articolo
           const elements = doc.querySelectorAll('.article-content p, .article-content li, .article-content h2, .article-content h3');
           
-          elements.forEach(el => {
+          elements.forEach((el, index) => {
             const text = el.textContent.replace(/\s+/g, ' ').trim();
             if (text.length > 20) {
-              const words = text.toLowerCase().split(/\W+/).filter(w => w.length > 2);
-              blocks.push({ url, title, icon, id, text, words });
+              const words = tokenize(text);
+              const stems = words.map(w => stemItalian(w));
+              
+              // Calcola frequenza globale per IDF
+              const uniqueStems = new Set(stems);
+              uniqueStems.forEach(s => {
+                globalTermFreq[s] = (globalTermFreq[s] || 0) + 1;
+              });
+              
+              blocks.push({ url, title, icon, id, text, words, stems, blockIndex: index });
+              totalBlocks++;
             }
           });
         }));
         
-        searchIndexDocs = blocks;
+        // Calcolo IDF (Inverse Document Frequency)
+        const idf = {};
+        for (const term in globalTermFreq) {
+          idf[term] = Math.log10(totalBlocks / (globalTermFreq[term] + 1)) + 1; 
+        }
+        
+        searchIndexDocs = { blocks, idf };
         isIndexing = false;
         
-        // Esegue la ricerca se l'utente ha già digitato qualcosa
         const currentQuery = document.getElementById('topic-search').value;
         if (currentQuery) executeSearch(currentQuery);
         
@@ -211,66 +241,94 @@
         return;
       }
 
-      const searchTerms = query.toLowerCase().split(/\s+/).filter(t => t.length > 1);
+      // Query raw per il Phrase Matching
+      const rawQueryStr = query.toLowerCase().trim().replace(/\s+/g, ' ');
       
-      // Assegna uno score a ogni blocco di testo
-      const scoredBlocks = searchIndexDocs.map(block => {
+      const searchTerms = tokenize(query);
+      if (searchTerms.length === 0) {
+         resultsContainer.innerHTML = '<div style="text-align:center; padding: 2rem; color: var(--text-secondary);">Query troppo generica. Cerca concetti più specifici.</div>';
+         return;
+      }
+      
+      const searchStems = searchTerms.map(t => stemItalian(t));
+      
+      const scoredBlocks = searchIndexDocs.blocks.map(block => {
         let score = 0;
         let matchedWords = new Set();
         let matchedConcepts = new Set();
         
-        searchTerms.forEach(term => {
-          let termScore = 0;
-          let matchedWord = null;
-          
-          // Boost se il termine è nel titolo della pagina
-          const lowerTitle = block.title.toLowerCase();
-          if (lowerTitle.includes(term)) {
-            if (50 > termScore) { termScore = 50; matchedWord = term; }
-          } else {
-            // Fuzzy match sulle parole del titolo
-            const titleWords = lowerTitle.split(/\W+/).filter(w => w.length > 2);
-            for (const tw of titleWords) {
-              const dist = levenshtein(term, tw);
-              if (dist <= (term.length > 5 ? 2 : 1)) {
-                if (30 > termScore) { termScore = 30; matchedWord = tw; }
-              }
-            }
-          }
+        // 2. Phrase Matching (Massivo Boost)
+        const rawBlockText = block.text.toLowerCase();
+        if (searchTerms.length > 1 && rawBlockText.includes(rawQueryStr)) {
+           score += 200; // Boost enorme se trova l'intera frase
+           searchTerms.forEach(t => matchedWords.add(t));
+        }
 
-          // Boost concettuale
-          const concepts = conceptIndex[block.id] || [];
-          for (const c of concepts) {
-            if (c === term || c.includes(term)) {
-              if (40 > termScore) { termScore = 40; matchedConcepts.add(c); }
-            } else {
-              const dist = levenshtein(term, c);
-              if (dist <= (term.length > 5 ? 2 : 1) && term.length > 2) {
-                if (20 > termScore) { termScore = 20; matchedConcepts.add(c); }
-              }
-            }
+        // Boost per Concetti (multi-word support)
+        const concepts = conceptIndex[block.id] || [];
+        for (const c of concepts) {
+           const conceptStems = tokenize(c).map(t => stemItalian(t));
+           
+           // Intersezione tra query stems e concept stems
+           let matches = 0;
+           for (const qStem of searchStems) {
+             for (const cStem of conceptStems) {
+                if (qStem === cStem) { matches++; break; }
+                else if (damerauLevenshtein(qStem, cStem) <= (qStem.length > 5 ? 2 : 1) && qStem.length > 2) { matches++; break; }
+             }
+           }
+           if (matches > 0) {
+             // Boost proporzionale a quanti termini del concetto abbiamo indovinato
+             const conceptRatio = matches / conceptStems.length;
+             score += 50 * conceptRatio;
+             matchedConcepts.add(c);
+           }
+        }
+        
+        // Punteggio per ogni termine della query (TF-IDF)
+        for (let i = 0; i < searchStems.length; i++) {
+          const qTerm = searchTerms[i];
+          const qStem = searchStems[i];
+          let termScore = 0;
+          let bestMatchedWord = null;
+          
+          // Boost Titolo
+          const titleWords = tokenize(block.title);
+          const titleStems = titleWords.map(w => stemItalian(w));
+          for (let j = 0; j < titleStems.length; j++) {
+            if (qStem === titleStems[j]) { termScore = Math.max(termScore, 50); bestMatchedWord = qTerm; }
+            else if (damerauLevenshtein(qStem, titleStems[j]) <= (qStem.length > 5 ? 2 : 1)) { termScore = Math.max(termScore, 30); bestMatchedWord = titleWords[j]; }
           }
           
-          // Ricerca Fuzzy tra le parole del blocco
-          for (const word of block.words) {
-            if (word === term) {
-              if (15 > termScore) { termScore = 15; matchedWord = word; }
-            } else if (word.includes(term) || term.includes(word)) {
-              if (8 > termScore) { termScore = 8; matchedWord = word; }
-            } else {
-              const dist = levenshtein(term, word);
-              const maxDist = term.length > 5 ? 2 : 1;
-              if (dist <= maxDist && word.length > 2) {
-                if (4 > termScore) { termScore = 4; matchedWord = word; }
-              }
-            }
+          // 3. TF-IDF Semplificato sui blocchi di testo
+          let termFreq = 0;
+          for (let j = 0; j < block.stems.length; j++) {
+             const bStem = block.stems[j];
+             const bWord = block.words[j];
+             
+             if (qStem === bStem) {
+                termFreq += 1;
+                bestMatchedWord = bWord;
+             } else {
+                const dist = damerauLevenshtein(qStem, bStem);
+                if (dist <= (qStem.length > 5 ? 2 : 1)) {
+                   termFreq += 0.5; // match fuzzy vale meno
+                   bestMatchedWord = bWord;
+                }
+             }
+          }
+          
+          if (termFreq > 0) {
+             // Il peso IDF (rarità) moltiplica la frequenza (TF)
+             const rarityWeight = searchIndexDocs.idf[qStem] || 1;
+             termScore += termFreq * rarityWeight * 10;
           }
           
           if (termScore > 0) {
             score += termScore;
-            if (matchedWord) matchedWords.add(matchedWord);
+            if (bestMatchedWord) matchedWords.add(bestMatchedWord);
           }
-        });
+        }
         
         return { ...block, score, matchedWords: Array.from(matchedWords), matchedConcepts: Array.from(matchedConcepts) };
       }).filter(b => b.score > 0);
@@ -278,7 +336,6 @@
       // Ordina per pertinenza
       scoredBlocks.sort((a, b) => b.score - a.score);
       
-      // Raggruppa i risultati per URL (max 3 snippet per pagina)
       const resultsByUrl = new Map();
       scoredBlocks.forEach(b => {
         if (!resultsByUrl.has(b.url)) {
@@ -287,22 +344,22 @@
         
         const pageObj = resultsByUrl.get(b.url);
         
-        // Aggiungi snippet dei concetti se trovati
         if (b.matchedConcepts && b.matchedConcepts.length > 0) {
           b.matchedConcepts.forEach(c => {
             const conceptSnip = `📌 <i>Argomento correlato: <b>${c}</b></i>`;
             if (!pageObj.snippets.includes(conceptSnip)) {
-              pageObj.snippets.unshift(conceptSnip); // Mettilo in cima
+              pageObj.snippets.unshift(conceptSnip); 
             }
           });
         }
 
+        // 6. Snippet intelligente centrato sui match
         if (pageObj.snippets.length < 3 && b.matchedWords.length > 0) {
            let snippet = b.text;
-           let regexStr = b.matchedWords.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+           let regexStr = b.matchedWords.map(w => stemItalian(w).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
            
            if (regexStr) {
-              const regex = new RegExp(`(${regexStr})`, 'gi');
+              const regex = new RegExp(`\\b(${regexStr})\\w*\\b`, 'gi');
               const match = regex.exec(snippet);
               if (match) {
                  const start = Math.max(0, match.index - 50);
@@ -311,25 +368,26 @@
                  if (start > 0) snippet = "..." + snippet;
                  if (end < b.text.length) snippet = snippet + "...";
                  
-                 // Evidenziazione
-                 snippet = snippet.replace(regex, '<mark class="highlight">$1</mark>');
+                 snippet = snippet.replace(regex, '<mark class="highlight">$&</mark>');
               } else if (snippet.length > 120) {
                  snippet = snippet.substring(0, 120) + "...";
               }
            } else if (snippet.length > 120) {
               snippet = snippet.substring(0, 120) + "...";
            }
-           pageObj.snippets.push(snippet);
+           
+           // Evita snippet duplicati
+           if (!pageObj.snippets.some(s => s.replace(/<[^>]*>?/gm, '') === snippet.replace(/<[^>]*>?/gm, ''))) {
+               pageObj.snippets.push(snippet);
+           }
         }
       });
       
-      // Generazione UI
       resultsContainer.innerHTML = '';
       
       if (resultsByUrl.size === 0) {
         resultsContainer.innerHTML = '<div style="text-align:center; padding: 2rem; color: var(--text-secondary);">Nessun risultato trovato. Prova con altre parole chiave.</div>';
       } else {
-        // Ordina le pagine in base al punteggio del loro blocco migliore
         const sortedPages = Array.from(resultsByUrl.entries()).sort((a, b) => b[1].score - a[1].score);
         
         sortedPages.forEach(([url, data]) => {
@@ -345,7 +403,6 @@
           data.snippets.forEach(snip => {
             const p = document.createElement('p');
             p.className = 'search-result-snippet';
-            // Non mettere le virgolette per lo snippet dei concetti
             p.innerHTML = snip.startsWith('📌') ? snip : `"${snip}"`;
             a.appendChild(p);
           });
@@ -357,12 +414,10 @@
 
     const searchInput = document.getElementById('topic-search');
     
-    // Inizia a scaricare le pagine appena l'utente clicca sulla barra
     searchInput.addEventListener('focus', buildIndex);
     
-    // Esegue la ricerca
     searchInput.addEventListener('input', (e) => {
-      buildIndex(); // Se non è ancora partito, lo avvia
+      buildIndex();
       executeSearch(e.target.value);
     });
   </script>
