@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Segnali in C - Materiale Esame | Uni Hub</title>
+  <link rel="stylesheet" href="/uni/css/uni-style.css?v=3">
+</head>
+<body>
+
+  <header class="header">
+    <a href="/uni/sistemioperativi/materiale/" class="back-home-btn animate-fade-in">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+      </svg>
+      Materiale Esame
+    </a>
+    <h1 class="animate-fade-in">Segnali in C 🚨</h1>
+    <p class="animate-fade-in" style="animation-delay: 0.1s;">Comunicazione asincrona, handler e maschere di segnali.</p>
+  </header>
+
+  <main class="article-container animate-fade-in" style="animation-delay: 0.2s;">
+    <div class="article-content">
+
+      <h2 style="font-size: 2rem; color: #60a5fa;">CHEATSHEET SISTEMI OPERATIVI: Segnali in C</h2>
+      <p style="color: var(--text-secondary); font-style: italic;">[Context: Comunicazione asincrona tra processi tramite interruzioni software generate dal Kernel o da altri processi.]</p>
+
+      <h3>1. INVIARE SEGNALI</h3>
+      <p>I segnali sono notifiche asincrone. Un processo può inviare un segnale a un altro processo usando la system call <code>kill()</code>.</p>
+<pre><code>#include &lt;signal.h&gt;
+
+// Invia SIGUSR1 al processo con PID specificato
+if (kill(target_pid, SIGUSR1) == -1) {
+    perror("kill fallita");
+}
+
+// alarm(N) invia un SIGALRM a se stesso dopo N secondi
+alarm(5); </code></pre>
+
+      <h3>2. GESTIRE SEGNALI (Handlers)</h3>
+      <p>Per definire come un processo reagisce a un segnale, si usa <code>sigaction</code> (preferibile alla vecchia <code>signal()</code>).</p>
+<pre><code>#include &lt;signal.h&gt;
+
+// Variabile globale safe per i signal handler
+volatile sig_atomic_t flag = 0;
+
+void handler(int sig) {
+    if (sig == SIGUSR1) {
+        flag = 1;
+    }
+}
+
+int main() {
+    struct sigaction sa;
+    sa.sa_handler = handler; // Assegna la funzione handler
+    sa.sa_flags = 0;         // Flag addizionali (es. SA_RESTART)
+    sigemptyset(&amp;sa.sa_mask); // Maschera vuota durante l'esecuzione dell'handler
+
+    if (sigaction(SIGUSR1, &amp;sa, NULL) == -1) {
+        perror("sigaction");
+    }
+    
+    while(!flag) {
+        pause(); // Mette in sleep il processo fino all'arrivo di un segnale
+    }
+}</code></pre>
+
+      <h3>3. MASCHERE E SIGNAL SETS</h3>
+      <p>Spesso è necessario bloccare momentaneamente alcuni segnali in sezioni critiche del codice. I segnali bloccati restano "pendenti" e vengono consegnati appena sbloccati.</p>
+<pre><code>sigset_t set;
+sigemptyset(&amp;set);          // Inizializza il set vuoto
+sigaddset(&amp;set, SIGINT);    // Aggiunge SIGINT al set
+
+// Blocca i segnali presenti nel set
+sigprocmask(SIG_BLOCK, &amp;set, NULL);
+
+/* --- SEZIONE CRITICA --- */
+
+// Sblocca i segnali
+sigprocmask(SIG_UNBLOCK, &amp;set, NULL);</code></pre>
+
+      <h3>4. TABELLA SEGNALI COMUNI</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Segnale</th>
+            <th>Azione Default</th>
+            <th>Descrizione</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>SIGINT</code> (2)</td>
+            <td>Termina</td>
+            <td>Generato da <code>CTRL+C</code> da tastiera. Intercettabile.</td>
+          </tr>
+          <tr>
+            <td><code>SIGKILL</code> (9)</td>
+            <td>Termina (Forzato)</td>
+            <td>Uccisione immediata. <strong style="color: #ef4444;">Non può</strong> essere intercettato, bloccato o ignorato.</td>
+          </tr>
+          <tr>
+            <td><code>SIGSTOP</code> (19)</td>
+            <td>Sospende</td>
+            <td>Mette in pausa il processo. <strong style="color: #ef4444;">Non può</strong> essere intercettato.</td>
+          </tr>
+          <tr>
+            <td><code>SIGALRM</code> (14)</td>
+            <td>Termina</td>
+            <td>Generato alla scadenza di un timer impostato con <code>alarm()</code>.</td>
+          </tr>
+          <tr>
+            <td><code>SIGUSR1</code> / <code>SIGUSR2</code></td>
+            <td>Termina</td>
+            <td>Segnali custom a disposizione del programmatore per la logica dell'app.</td>
+          </tr>
+        </tbody>
+      </table>
+
+    </div>
+  </main>
+
+  <script>
+    const header = document.querySelector('.header');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 30) {
+        header.classList.add('scrolled');
+      } else {
+        header.classList.remove('scrolled');
+      }
+    });
+
+    // Simple syntax highlighting
+    document.querySelectorAll('pre code').forEach(block => {
+      let html = block.innerHTML;
+      let tokens = [];
+      
+      // 1. Protect strings and comments
+      html = html.replace(/("[^"]*")|(\/\/.*|\/\*[\s\S]*?\*\/)/g, (match) => {
+        tokens.push(match);
+        return `__TOKEN_${tokens.length - 1}__`;
+      });
+
+      // 2. Keywords, functions, constants
+      html = html.replace(/\b(int|struct|for|if|else|while|ssize_t|pid_t|continue|exit|sizeof|return|typedef|char|void|volatile|sig_atomic_t|sigset_t)\b/g, '<span style="color: #c678dd;">$1</span>');
+      html = html.replace(/\b(poll|read|write|close|perror|socket|bind|listen|accept|connect|unlink|pipe|fork|wait|sigaction|mkfifo|open|kill|alarm|pause|sigprocmask|sigemptyset|sigaddset)\b(?=\()/g, '<span style="color: #61afef;">$1</span>');
+      html = html.replace(/\b(POLLIN|POLLHUP|O_RDONLY|O_NONBLOCK|O_RDWR|AF_UNIX|SOCK_STREAM|NUM_FILE|NULL|EAGAIN|SIGPIPE|EEXIST|SIGINT|SIGKILL|SIGSTOP|SIGALRM|SIGUSR1|SIGUSR2|SIG_BLOCK|SIG_UNBLOCK|SA_RESTART)\b/g, '<span style="color: #e5c07b;">$1</span>');
+
+      // 3. Restore strings and comments with style
+      html = html.replace(/__TOKEN_(\d+)__/g, (match, index) => {
+        let val = tokens[index];
+        if (val.startsWith('//') || val.startsWith('/*')) {
+          return `<span style="color: #5c6370; font-style: italic;">${val}</span>`;
+        } else {
+          return `<span style="color: #98c379;">${val}</span>`;
+        }
+      });
+      
+      block.innerHTML = html;
+    });
+  </script>
+</body>
+</html>
