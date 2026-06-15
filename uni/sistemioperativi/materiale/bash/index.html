@@ -241,6 +241,106 @@ awk -F ":" '{ print $1 }' /etc/passwd</code></pre>
 <pre><code># Somma i valori presenti nella prima colonna di un file e stampa il totale complessivo
 awk '{ sum += $1 } END { print "Totale Accumulato:", sum }' dati.txt</code></pre>
 
+<div style="background: rgba(99, 102, 241, 0.05); border-left: 4px solid #6366f1; padding: 1.5rem; border-radius: 8px; margin: 2rem 0;">
+        <h3 style="margin-top: 0; color: #6366f1;">APPROFONDIMENTO: Espressioni Regolari Estese (<code>-E</code>)</h3>
+        <p>L'opzione <code>-E</code> (usata con <code>grep -E</code> o <code>sed -E</code>) abilita le <em>Extended Regular Expressions</em>. Questo permette di usare operatori logici, quantificatori e gruppi senza doverli precedere dal carattere di escape <code>\</code>.</p>
+
+        <h4 style="color: #a855f7; margin-top: 1.5rem;">1. Ancore e Caratteri Speciali Base</h4>
+        <p>Definiscono <em>dove</em> cercare o <em>che tipo</em> di carattere cercare.</p>
+        <div class="table-responsive">
+            <table class="theory-table">
+                <thead>
+                    <tr>
+                        <th>Carattere</th>
+                        <th>Significato</th>
+                        <th>Esempio</th>
+                        <th>Match</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td><code>^</code></td><td>Inizio della riga</td><td><code>^Errore</code></td><td>Righe che iniziano per "Errore"</td></tr>
+                    <tr><td><code>$</code></td><td>Fine della riga</td><td><code>fine$</code></td><td>Righe che terminano con "fine"</td></tr>
+                    <tr><td><code>.</code></td><td>Qualsiasi singolo carattere</td><td><code>c.o</code></td><td>"ciao", "clown" (c + 2 caratteri)</td></tr>
+                    <tr><td><code>[abc]</code></td><td>Classe: uno dei caratteri</td><td><code>[gG]atto</code></td><td>"gatto", "Gatto"</td></tr>
+                    <tr><td><code>[a-z]</code></td><td>Range: da 'a' a 'z'</td><td><code>[0-9]</code></td><td>Qualsiasi singolo numero</td></tr>
+                    <tr><td><code>[^abc]</code></td><td>Negazione: tutto tranne...</td><td><code>[^0-9]</code></td><td>Qualsiasi carattere che NON è un numero</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h4 style="color: #a855f7; margin-top: 1.5rem;">2. Quantificatori (Il vero potere di <code>-E</code>)</h4>
+        <p>Definiscono <em>quante volte</em> il carattere o il gruppo precedente deve ripetersi.</p>
+        <div class="table-responsive">
+            <table class="theory-table">
+                <thead>
+                    <tr>
+                        <th>Operatore</th>
+                        <th>Ripetizioni</th>
+                        <th>Esempio</th>
+                        <th>Spiegazione</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td><code>*</code></td><td>0 o più volte</td><td><code>ab*c</code></td><td>"ac", "abc", "abbbc"</td></tr>
+                    <tr><td><code>+</code></td><td>1 o più volte</td><td><code>ab+c</code></td><td>"abc", "abbc" (MA NON "ac")</td></tr>
+                    <tr><td><code>?</code></td><td>0 o 1 volta (Opzionale)</td><td><code>https?</code></td><td>"http", "https"</td></tr>
+                    <tr><td><code>{n}</code></td><td>Esattamente <em>n</em> volte</td><td><code>[0-9]{3}</code></td><td>Esattamente 3 numeri (es. "123")</td></tr>
+                    <tr><td><code>{n,m}</code></td><td>Da <em>n</em> a <em>m</em> volte</td><td><code>a{2,4}</code></td><td>"aa", "aaa", "aaaa"</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h4 style="color: #a855f7; margin-top: 1.5rem;">3. Operatori Logici e Gruppi di Cattura</h4>
+        <div class="table-responsive">
+            <table class="theory-table">
+                <thead>
+                    <tr>
+                        <th>Operatore</th>
+                        <th>Significato</th>
+                        <th>Esempio</th>
+                        <th>Spiegazione</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td><code>|</code></td><td>Operatore logico OR</td><td><code>cat|dog</code></td><td>Trova "cat" oppure "dog"</td></tr>
+                    <tr><td><code>()</code></td><td>Raggruppamento e Cattura</td><td><code>(ab)+</code></td><td>Trova "ab", "abab", "ababab"</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h4 style="color: #a855f7; margin-top: 1.5rem;">Esempi Pratici e Pattern Ricorrenti da Esame</h4>
+
+        <p><strong>1. Trovare specifiche estensioni di file (OR testuale):</strong></p>
+<pre><code># Trova tutte le righe che terminano con .png, .jpg o .gif
+grep -E '\.(png|jpg|gif)$' lista_file.txt</code></pre>
+        <p style="font-size: 0.9em; color: var(--text-secondary);">(Nota: il punto <code>.</code> ha il backslash davanti <code>\.</code> perché altrimenti indicherebbe "qualsiasi carattere", mentre noi vogliamo cercare proprio il carattere punto testuale).</p>
+
+        <p><strong>2. Ricerca di un Indirizzo IP (Quantificatori combinati):</strong><br>
+        Un IP è formato da 1 a 3 numeri, seguiti da un punto, il tutto ripetuto.</p>
+<pre><code># Trova sequenze di numeri tipo 192.168.1.1
+grep -E '^[0-9]{1,3}(\.[0-9]{1,3}){3}$' log.txt</code></pre>
+
+        <p><strong>3. Cattura e Inversione di un formato Data con sed -E:</strong><br>
+        Se hai un file con date in formato YYYY-MM-DD e le vuoi convertire in DD/MM/YYYY.<br>
+        I gruppi racchiusi tra parentesi tonde <code>()</code> vengono memorizzati automaticamente da sed in variabili numerate <code>\1</code>, <code>\2</code> e <code>\3</code>.</p>
+<pre><code># Input: 2026-05-24
+# Output desiderato: 24/05/2026
+
+sed -E 's/^([0-9]{4})-([0-9]{2})-([0-9]{2})$/\3\/\2\/\1/' date.txt</code></pre>
+        <p style="font-size: 0.9em; color: var(--text-secondary);">
+        Spiegazione del comando sed:<br>
+        <code>([0-9]{4})</code> -&gt; Cattura 4 numeri (L'anno). Diventa <code>\1</code><br>
+        <code>-</code> -&gt; Match letterale del trattino<br>
+        <code>([0-9]{2})</code> -&gt; Cattura 2 numeri (Il mese). Diventa <code>\2</code><br>
+        <code>\3\/\2\/\1</code> -&gt; Scrive il terzo gruppo, poi una barra (escapata \/), il secondo, barra, il primo.
+        </p>
+
+        <p><strong>4. Validare un indirizzo MAC:</strong><br>
+        I MAC Address sono formati da coppie di caratteri esadecimali separati da due punti (es. 00:1A:2B:3C:4D:5E).</p>
+<pre><code>grep -E '^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$' network.log</code></pre>
+        <p style="font-size: 0.9em; color: var(--text-secondary);">Spiegazione: "Trova esattamente due caratteri esadecimali seguiti dai due punti, ripeti questo schema 5 volte, e concludi con altri due caratteri esadecimali".</p>
+      </div>
+
       <h3>9. CONTROLLO DEI PROCESSI, SEGNALI E INTERFACCIA GRAFICA (TUI)</h3>
       <p><strong style="color: var(--text-primary);">Gestione Asincrona (&amp;) e Sincronizzazione (wait)</strong></p>
       <p>Lanciando un comando seguito dal carattere <code>&amp;</code>, la shell esegue una fork() ed inserisce il processo figlio in background asincrono, restituendo immediatamente il controllo al terminale.</p>
