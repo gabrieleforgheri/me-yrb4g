@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Memoria Condivisa - Materiale Esame | Uni Hub</title>
+  <link rel="stylesheet" href="/uni/css/uni-style.css?v=3">
+</head>
+<body>
+
+  <header class="header">
+    <a href="/uni/sistemioperativi/materiale/" class="back-home-btn animate-fade-in">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+      </svg>
+      Materiale Esame
+    </a>
+    <h1 class="animate-fade-in">Memoria Condivisa 🧠</h1>
+    <p class="animate-fade-in" style="animation-delay: 0.1s;">Shared Memory, mmap() e shm_open().</p>
+  </header>
+
+  <main class="article-container animate-fade-in" style="animation-delay: 0.2s;">
+    <div class="article-content">
+
+      <h2 style="font-size: 2rem; color: #60a5fa;">Memoria Condivisa (Shared Memory)</h2>
+      <p style="color: var(--text-secondary); font-style: italic;">[Context: Condivisione di un'area di memoria (RAM) ad altissime prestazioni tra processi. Richiede sincronizzazione manuale (tramite flag, semafori o segnali) per evitare race conditions.]</p>
+
+      <h3>0. ⚠️ ATTENZIONE: COMPILAZIONE SUI PC DEL LABORATORIO</h3>
+      <p>Sulle macchine del laboratorio virtuale (e su molte distribuzioni Linux), per usare la memoria condivisa POSIX con nome (es. <code>shm_open</code>, <code>shm_unlink</code>) <strong style="color: #ef4444;">DEVI</strong> compilare linkando la libreria runtime del C (<code>librt</code>).</p>
+      
+      <p><strong style="color: var(--text-primary);">Comando obbligatorio all'esame:</strong></p>
+<pre><code>gcc -o eseguibile sorgente.c -lrt</code></pre>
+      <p style="padding-left: 1rem; border-left: 3px solid #ef4444; color: #fca5a5;">Se dimentichi <code>-lrt</code>, il linker ti darà un errore del tipo "undefined reference to 'shm_open'" e la compilazione fallirà.</p>
+
+      <h3>1. SHARED MEMORY ANONIMA (mmap senza file)</h3>
+      <p>Si usa ESCLUSIVAMENTE tra processi legati da parentela (es. padre e figlio tramite <code>fork()</code>). La memoria viene mappata direttamente senza appoggiarsi a un file nel filesystem.</p>
+
+      <p><strong style="color: var(--text-primary);">A. Creazione (Prima della fork())</strong></p>
+<pre><code>#include &lt;sys/mman.h&gt;
+
+// Alloca lo spazio per un singolo intero (o per una struct)
+int *shared = mmap(NULL,            // L'indirizzo lo decide il kernel
+                   sizeof(int),     // Dimensione dell'area in byte
+                   PROT_READ | PROT_WRITE, // Permessi di Lettura e Scrittura
+                   MAP_SHARED | MAP_ANONYMOUS, // Condivisa e senza file (Anonima)
+                   -1,              // File Descriptor ignorato (-1) in anonima
+                   0);              // Offset ignorato (0) in anonima
+
+if (shared == MAP_FAILED) { perror("mmap"); exit(1); } // Controllo errori
+
+*shared = 0; // Inizializzazione prima della fork</code></pre>
+
+      <p><strong style="color: var(--text-primary);">B. Rimozione (munmap)</strong></p>
+      <p>Dopo aver usato la memoria, va liberata usando <code>munmap()</code>. Viene comunque liberata automaticamente alla terminazione del processo.</p>
+<pre><code>munmap(shared, sizeof(int));</code></pre>
+
+      <h3>2. SHARED MEMORY CON NOME (POSIX Shared Memory)</h3>
+      <p>Si usa per far comunicare processi scorrelati (es. due terminali diversi lanciati separatamente). Crea un "file speciale" temporaneo visibile in <code>/dev/shm</code>.</p>
+
+      <p><strong style="color: var(--text-primary);">A. Processo PRODUTTORE (Chi la crea)</strong></p>
+<pre><code>#include &lt;sys/mman.h&gt;
+#include &lt;sys/stat.h&gt;
+#include &lt;fcntl.h&gt;
+#include &lt;sys/shm.h&gt; // Richiede -lrt in compilazione
+
+const int SIZE = 4096;
+const char *name = "/MIA_SHM"; // Il nome convenzionale inizia spesso con '/'
+
+// 1. Apre/Crea l'oggetto di memoria condivisa
+int fd = shm_open(name, O_CREAT | O_RDWR, 0666);
+if (fd == -1) { perror("shm_open"); exit(1); }
+
+// 2. Imposta la dimensione (Obbligatorio alla creazione!)
+ftruncate(fd, SIZE);
+
+// 3. Mappa l'oggetto in memoria
+char *ptr = (char *)mmap(0, SIZE, PROT_WRITE, MAP_SHARED, fd, 0);
+
+// 4. Ci scrive dentro usando normali funzioni del C
+sprintf(ptr, "Hello World!");</code></pre>
+
+      <p><strong style="color: var(--text-primary);">B. Processo CONSUMATORE (Chi la legge)</strong></p>
+<pre><code>// 1. Apre l'oggetto ESISTENTE in sola lettura
+int fd = shm_open(name, O_RDONLY, 0666);
+
+// 2. Mappa l'oggetto in memoria (Non serve ftruncate qui!)
+char *ptr = (char *)mmap(NULL, SIZE, PROT_READ, MAP_SHARED, fd, 0);
+
+// 3. Legge e usa i dati
+printf("Letto: %s\n", ptr);
+
+// 4. Distruzione finale (Solo un processo deve farlo!)
+shm_unlink(name); // Rimuove l'oggetto da /dev/shm</code></pre>
+      <p style="padding-left: 1rem; border-left: 3px solid #f59e0b; color: #fbbf24;"><strong style="color: #f59e0b;">Nota sulla persistenza:</strong> Se non chiami <code>shm_unlink</code>, l'oggetto sopravvive alla terminazione dei processi e occupa RAM finché non riavvii il PC.</p>
+
+      <h3>3. SINCRONIZZAZIONE: L'USO DELLE struct</h3>
+      <p>La memoria condivisa è "troppo veloce". Se due processi ci scrivono assieme, si corrompe (Race Condition). Per ovviare, si mappa un'intera struct contenente campi di stato.</p>
+<pre><code>// Esempio di struttura condivisa
+typedef struct {
+    int status; // Flag (es. 0 = VUOTO, 1 = DATI_PRONTI, 2 = RISULTATO_PRONTO) 
+    char input[1024];
+    char output[1024];
+} shared_data;
+
+// Mappatura
+shared_data *shm = mmap(NULL, sizeof(shared_data), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);</code></pre>
+      <p>Per attendere che i dati siano pronti, un processo può:</p>
+      <ul>
+        <li>Fare "Busy Waiting" ciclando passivamente con una <code>sleep(1)</code> finché lo stato non cambia.</li>
+        <li>Usare una <code>pause()</code> accoppiata a segnali (<code>SIGUSR1</code>, <code>SIGUSR2</code>) per risvegliarsi solo quando l'altro processo lo avvisa.</li>
+      </ul>
+
+    </div>
+  </main>
+
+  <script>
+    const header = document.querySelector('.header');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 30) {
+        header.classList.add('scrolled');
+      } else {
+        header.classList.remove('scrolled');
+      }
+    });
+
+    // Simple syntax highlighting
+    document.querySelectorAll('pre code').forEach(block => {
+      let html = block.innerHTML;
+      let tokens = [];
+      
+      // 1. Protect strings and comments
+      html = html.replace(/("[^"]*")|(\/\/.*|\/\*[\s\S]*?\*\/)/g, (match) => {
+        tokens.push(match);
+        return `__TOKEN_${tokens.length - 1}__`;
+      });
+
+      // 2. Keywords, functions, constants
+      html = html.replace(/\b(int|struct|for|if|else|while|ssize_t|pid_t|continue|exit|sizeof|return|typedef|char|void|volatile|sig_atomic_t|sigset_t|const)\b/g, '<span style="color: #c678dd;">$1</span>');
+      html = html.replace(/\b(poll|read|write|close|perror|socket|bind|listen|accept|connect|unlink|pipe|fork|wait|waitpid|sigaction|mkfifo|open|kill|alarm|pause|sigprocmask|sigemptyset|sigaddset|lseek|printf|sprintf|malloc|free|getpid|getppid|mmap|munmap|shm_open|shm_unlink|ftruncate)\b(?=\()/g, '<span style="color: #61afef;">$1</span>');
+      html = html.replace(/\b(POLLIN|POLLHUP|O_RDONLY|O_NONBLOCK|O_RDWR|O_CREAT|AF_UNIX|SOCK_STREAM|NUM_FILE|NULL|EAGAIN|SIGPIPE|EEXIST|SIGINT|SIGKILL|SIGSTOP|SIGALRM|SIGUSR1|SIGUSR2|SIG_BLOCK|SIG_UNBLOCK|SA_RESTART|WIFEXITED|WEXITSTATUS|SEEK_SET|SEEK_CUR|SEEK_END|PROT_READ|PROT_WRITE|MAP_SHARED|MAP_ANONYMOUS|MAP_FAILED)\b/g, '<span style="color: #e5c07b;">$1</span>');
+
+      // 3. Restore strings and comments with style
+      html = html.replace(/__TOKEN_(\d+)__/g, (match, index) => {
+        let val = tokens[index];
+        if (val.startsWith('//') || val.startsWith('/*')) {
+          return `<span style="color: #5c6370; font-style: italic;">${val}</span>`;
+        } else {
+          return `<span style="color: #98c379;">${val}</span>`;
+        }
+      });
+      
+      block.innerHTML = html;
+    });
+  </script>
+</body>
+</html>
