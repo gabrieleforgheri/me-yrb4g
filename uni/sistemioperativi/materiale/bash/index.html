@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shell Scripting (Bash) - Materiale Esame | Uni Hub</title>
+  <link rel="stylesheet" href="/uni/css/uni-style.css?v=3">
+</head>
+<body>
+
+  <header class="header">
+    <a href="/uni/sistemioperativi/materiale/" class="back-home-btn animate-fade-in">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+      </svg>
+      Materiale Esame
+    </a>
+    <h1 class="animate-fade-in">Shell Scripting (Bash) 💻</h1>
+    <p class="animate-fade-in" style="animation-delay: 0.1s;">Automazione di sistema, gestione file, processi e I/O redirection.</p>
+  </header>
+
+  <main class="article-container animate-fade-in" style="animation-delay: 0.2s;">
+    <div class="article-content">
+
+      <h2 style="font-size: 2rem; color: #60a5fa;">Shell Scripting (Bash)</h2>
+      <p style="color: var(--text-secondary); font-style: italic;">[Context: Automazione di sistema, gestione di file e processi, redirezione dell'I/O e filtri di testo in ambiente Unix/Linux.]</p>
+
+      <h3>1. BASI E SINTASSI FONDAMENTALE</h3>
+      
+      <p><strong style="color: var(--text-primary);">A. L'Intestazione (Shebang)</strong></p>
+      <p>Ogni script Bash deve iniziare con lo "shebang" per indicare al sistema quale interprete usare.</p>
+<pre><code>#!/bin/bash</code></pre>
+      <p>Ricorda di dare i permessi di esecuzione allo script: <code>chmod +x script.sh</code></p>
+
+      <p><strong style="color: var(--text-primary);">B. Variabili e Assegnazione</strong></p>
+      <p>In Bash, non ci devono essere spazi attorno al segno di uguale (<code>=</code>).</p>
+<pre><code>NOME="Mario"      # CORRETTO
+NOME = "Mario"    # ERRORE! Bash pensa che NOME sia un comando
+let NUM=5+3       # Operazioni matematiche base (vecchio stile)
+NUM=$((5 + 3))    # Operazioni matematiche (stile moderno raccomandato)</code></pre>
+
+      <p><strong style="color: var(--text-primary);">C. Quoting (Apici vs Virgolette)</strong></p>
+      <ul>
+        <li><code>' '</code> (Singoli): Testo letterale. Nessuna espansione viene fatta.</li>
+        <li><code>" "</code> (Doppi): Testo espanso. Risolve variabili e command substitution.</li>
+        <li><code>` `</code> (Backtick) o <code>$()</code>: Command Substitution. Esegue il comando e ne restituisce l'output.</li>
+      </ul>
+<pre><code>echo "Ciao $NOME"      # Stampa: Ciao Mario
+echo 'Ciao $NOME'      # Stampa: Ciao $NOME
+OGGI=$(date +%F)       # Salva l'output del comando 'date' nella variabile</code></pre>
+
+      <h3>2. PARAMETRI SPECIALI E VARIABILI DI STATO</h3>
+      <p>Fondamentali per gestire gli argomenti passati allo script da riga di comando.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Variabile</th>
+            <th>Significato</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><code>$0</code></td><td>Nome dello script stesso.</td></tr>
+          <tr><td><code>$1, $2...</code></td><td>Primo, secondo, ecc... argomento passato allo script.</td></tr>
+          <tr><td><code>$#</code></td><td>Numero totale di argomenti passati.</td></tr>
+          <tr><td><code>$@</code></td><td>Tutti gli argomenti passati come array (lista separata da spazi).</td></tr>
+          <tr><td><code>$?</code></td><td>Exit Status (codice di ritorno) dell'ultimo comando eseguito (0 = Successo, diverso da 0 = Errore).</td></tr>
+          <tr><td><code>$$</code></td><td>PID (Process ID) dello script in esecuzione.</td></tr>
+          <tr><td><code>$!</code></td><td>PID dell'ultimo comando lanciato in background.</td></tr>
+        </tbody>
+      </table>
+
+      <h3>3. REDIREZIONE E PIPE (I/O)</h3>
+      <p>Unix gestisce l'I/O tramite tre stream: stdin (0), stdout (1), stderr (2).</p>
+      <table>
+        <thead>
+          <tr><th>Operatore</th><th>Azione</th><th>Esempio</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>&gt;</code></td><td>Redirige lo stdout su file (sovrascrive)</td><td><code>ls &gt; lista.txt</code></td></tr>
+          <tr><td><code>&gt;&gt;</code></td><td>Redirige lo stdout su file (appende in coda)</td><td><code>echo "ciao" &gt;&gt; log.txt</code></td></tr>
+          <tr><td><code>&lt;</code></td><td>Legge da un file verso lo stdin</td><td><code>sort &lt; lista.txt</code></td></tr>
+          <tr><td><code>2&gt;</code></td><td>Redirige solo gli errori (stderr)</td><td><code>find / -name "test" 2&gt; errori.log</code></td></tr>
+          <tr><td><code>&amp;&gt;</code></td><td>Redirige sia stdout che stderr</td><td><code>comando &amp;&gt; out_completo.log</code></td></tr>
+          <tr><td><code>2&gt;&amp;1</code></td><td>Unisce lo stderr allo stream dello stdout</td><td><code>comando &gt; log.txt 2&gt;&amp;1</code></td></tr>
+          <tr><td><code>|</code> (Pipe)</td><td>Passa lo stdout di un comando allo stdin del successivo</td><td><code>ls -l | grep ".txt" | wc -l</code></td></tr>
+        </tbody>
+      </table>
+
+      <h3>4. STRUTTURE CONDIZIONALI (if, test, [ ])</h3>
+      <p>In Bash, lo spazio tra le parentesi quadre <code>[ ]</code> e la condizione è OBBLIGATORIO.</p>
+<pre><code>if [ condizione ]; then
+    # comandi
+elif [ condizione2 ]; then
+    # comandi
+else
+    # comandi
+fi</code></pre>
+      
+      <p><strong style="color: var(--text-primary);">Operatori di Test Più Comuni</strong></p>
+      <ul>
+        <li><strong>Sui Numeri</strong> (Attenzione: si usano le lettere, non > / <)
+          <ul>
+            <li><code>-eq / -ne</code>: Uguale a / Diverso da</li>
+            <li><code>-gt / -ge</code>: Maggiore di / Maggiore o uguale</li>
+            <li><code>-lt / -le</code>: Minore di / Minore o uguale</li>
+          </ul>
+        </li>
+        <li><strong>Sulle Stringhe</strong>
+          <ul>
+            <li><code>=</code> o <code>==</code>: Stringhe identiche</li>
+            <li><code>!=</code>: Stringhe diverse</li>
+            <li><code>-z "$STR"</code>: Vero se la stringa è vuota (lunghezza zero)</li>
+            <li><code>-n "$STR"</code>: Vero se la stringa NON è vuota</li>
+          </ul>
+        </li>
+        <li><strong>Sui File e Directory</strong>
+          <ul>
+            <li><code>-f file</code>: Vero se è un file regolare.</li>
+            <li><code>-d dir</code>: Vero se è una directory.</li>
+            <li><code>-e path</code>: Vero se il percorso esiste.</li>
+            <li><code>-r file</code>: Vero se il file è leggibile.</li>
+            <li><code>-x file</code>: Vero se il file è eseguibile.</li>
+          </ul>
+        </li>
+      </ul>
+      <p>Esempio combinato:</p>
+<pre><code>if [ -f "$1" ] &amp;&amp; [ -r "$1" ]; then
+    echo "Il file passato come primo argomento esiste ed è leggibile."
+fi</code></pre>
+
+      <h3>5. CICLI (for, while, until)</h3>
+      <p><strong style="color: var(--text-primary);">Ciclo for</strong></p>
+<pre><code># Iterare su una lista di stringhe
+for FRUTTO in Mela Pera Banana; do
+    echo "Mi piace la $FRUTTO"
+done
+
+# Iterare su file di una directory
+for FILE in *.txt; do
+    echo "Elaboro il file: $FILE"
+done
+
+# Ciclo for stile C
+for (( i=0; i&lt;10; i++ )); do
+    echo "Contatore: $i"
+done</code></pre>
+
+      <p><strong style="color: var(--text-primary);">Ciclo while e until</strong></p>
+<pre><code># WHILE: cicla finché la condizione è VERA
+CONTATORE=0
+while [ $CONTATORE -lt 5 ]; do
+    echo "Contatore: $CONTATORE"
+    CONTATORE=$((CONTATORE + 1))
+done
+
+# UNTIL: cicla finché la condizione è FALSA
+until [ -f "flag.txt" ]; do
+    echo "Aspetto che qualcuno crei flag.txt..."
+    sleep 2
+done</code></pre>
+
+      <p><strong style="color: var(--text-primary);">Leggere un file riga per riga</strong></p>
+<pre><code>while IFS= read -r RIGA; do
+    echo "Riga letta: $RIGA"
+done &lt; "miofile.txt"</code></pre>
+
+      <h3>6. FILTRI E MANIPOLAZIONE TESTO (The Core Unix Tools)</h3>
+      <p>Questi strumenti, combinati con le <code>|</code> (pipe), sono il cuore di Bash.</p>
+      
+      <ul>
+        <li><strong style="color: #61afef;">grep</strong> (Ricerca di pattern)
+          <ul>
+            <li><code>grep "errore" file.log</code>: Trova "errore".</li>
+            <li><code>grep -i "errore"</code>: Case-insensitive.</li>
+            <li><code>grep -v "info"</code>: Inverte il match (mostra le righe che NON contengono "info").</li>
+            <li><code>grep -c "errore"</code>: Conta il numero di righe.</li>
+          </ul>
+        </li>
+        <li><strong style="color: #61afef;">awk</strong> (Elaborazione basata su colonne/campi)
+          <ul>
+            <li><code>awk '{print $1, $3}' file.txt</code>: Stampa prima e terza colonna.</li>
+            <li><code>awk -F ":" '{print $1}' /etc/passwd</code>: Usa i due punti come separatore.</li>
+            <li><code>awk '{sum += $1} END {print sum}'</code>: Somma tutti i valori.</li>
+          </ul>
+        </li>
+        <li><strong style="color: #61afef;">sed</strong> (Stream Editor - Sostituzione)
+          <ul>
+            <li><code>sed 's/vecchio/nuovo/' file.txt</code>: Sostituisce la prima occorrenza.</li>
+            <li><code>sed 's/vecchio/nuovo/g' file.txt</code>: Sostituzione globale.</li>
+            <li><code>sed '/PATTERN/d' file.txt</code>: Elimina le righe che contengono il pattern.</li>
+          </ul>
+        </li>
+        <li><strong>Altri filtri utili</strong>
+          <ul>
+            <li><code>cut -d',' -f2 file.csv</code>: Estrae la colonna 2 da un CSV usando la virgola.</li>
+            <li><code>sort -n</code>: Ordina in modo numerico.</li>
+            <li><code>uniq / uniq -c</code>: Rimuove righe duplicate / le conta.</li>
+          </ul>
+        </li>
+      </ul>
+
+      <h3>7. PROCESSI IN BACKGROUND E SEGNALI (trap)</h3>
+<pre><code>./script_lungo.sh &amp;
+PID_LUNGO=$!      # Salva il PID dell'ultimo processo in background
+wait $PID_LUNGO   # Il padre si sospende finché questo figlio non termina</code></pre>
+
+      <p><strong style="color: var(--text-primary);">La gestione dei Segnali (trap)</strong></p>
+<pre><code># Definiamo la funzione di cleanup
+cleanup() {
+    echo "Rilevato SIGINT (Ctrl+C). Pulizia dei file temporanei..."
+    rm -f /tmp/temp_*.log
+    exit 1
+}
+
+# Installiamo il trap per intercettare SIGINT (2) e SIGTERM (15)
+trap cleanup SIGINT SIGTERM
+
+echo "Script in esecuzione. Premi Ctrl+C per testare..."
+while true; do
+    sleep 1
+done</code></pre>
+
+      <h3>8. FUNZIONI</h3>
+      <p>Usa la keyword <code>local</code> dentro le funzioni per isolare le variabili!</p>
+<pre><code>mia_funzione() {
+    local PARAM_1=$1  
+    local PARAM_2=$2  
+    
+    echo "Ho ricevuto: $PARAM_1 e $PARAM_2"
+    
+    # In Bash si usa 'echo' per restituire valori catturabili dal chiamante
+    echo "RISULTATO"
+}
+
+# Chiamata di funzione e cattura del risultato
+RET_VAL=$(mia_funzione "Ciao" "Mondo")
+echo "La funzione ha restituito: $RET_VAL"</code></pre>
+
+      <h2>9. ESEMPI PRATICI AVANZATI E SCRIPT COMPLETI</h2>
+
+      <h3>Esempio 1: Input interattivo e creazione di percorsi</h3>
+<pre><code>#!/bin/bash
+read -p "Enter the base directory (BASE): " BASE
+read -p "Enter the project name (PROJECT): " PROJECT
+read -p "Enter the version (VERSION): " VERSION
+
+APP_DIR="$BASE/$PROJECT/$VERSION"
+
+# mkdir -p crea le cartelle genitrici se non esistono
+mkdir -p "$APP_DIR/src"
+mkdir -p "$APP_DIR/build"
+mkdir -p "$APP_DIR/docs"</code></pre>
+
+      <h3>Esempio 2: Gestione degli Array</h3>
+<pre><code>#!/bin/bash
+GROCERIES=("bread" "milk" "eggs" "coffee")
+
+# ${#ARRAY[@]} restituisce la lunghezza dell'array
+echo "Total number of items in the grocery list: ${#GROCERIES[@]}"
+
+TOTAL_WC=$(printf '%s\n' "${GROCERIES[@]}" | wc -l)
+echo "Total number of items (using wc): $TOTAL_WC"
+
+echo "Reminder: The first item you need to get is ${GROCERIES[0]}."</code></pre>
+
+      <h3>Esempio 3: Comandi di Sistema e Calcoli in Virgola Mobile (bc)</h3>
+<pre><code>#!/bin/bash
+BIRTH_YEAR=1995
+MONTHLY_BUDGET=450
+
+CURRENT_YEAR=$(date +%Y)
+AGE=$((CURRENT_YEAR - BIRTH_YEAR))
+
+# Calcolo in virgola mobile: scale=2 indica 2 cifre decimali
+DAILY_BUDGET=$(echo "scale=2; $MONTHLY_BUDGET / 30" | bc)
+
+echo "Current Year:    $CURRENT_YEAR"
+echo "Approximate Age: $AGE years old"
+echo "Daily Budget:    \$$DAILY_BUDGET"</code></pre>
+
+      <h3>Esempio 4: Array Associativi e Xargs</h3>
+<pre><code>#!/bin/bash
+# Dichiara un array associativo (chiave-valore)
+declare -A EXT_COUNTS
+
+for file in *; do
+    [[ -f "$file" ]] || continue
+    ext=$(echo $file | cut -d. -f2-)
+    if [[ -z $ext ]]; then ext="no_extension"; fi
+    
+    ((EXT_COUNTS[$ext]++))
+done
+
+# Iterazione sulle chiavi
+for ext in "${!EXT_COUNTS[@]}"; do
+    mkdir -p "$ext"
+    # L'uso di xargs -0 con printf '\0' permette di gestire file con spazi
+    for file in *.$ext; do
+        printf '%s\0' "$file"
+    done | xargs -0 -I{} mv {} $ext
+done</code></pre>
+
+      <h3>Esempio 5: Analisi Permessi ed Esportazione Funzioni</h3>
+<pre><code>#!/bin/bash
+audit_file() {
+    file="$1"
+    perms=$(stat -c "%a" "$file")
+    world_perms="${perms: -1}"
+
+    if [ "$world_perms" -ge 4 ]; then
+        echo "[WARNING] $file is world-readable!"
+        chmod o-r "$file" 
+    fi
+}
+export -f audit_file
+
+sensitive_files=("/etc/passwd" "/etc/shadow")
+printf "%s\0" "${sensitive_files[@]}" | xargs -0 -I {} bash -c 'audit_file "{}"'</code></pre>
+
+      <h3>Esempio 6: Gestione Log Temporale (touch -d)</h3>
+<pre><code>#!/bin/bash
+AGE_THRESHOLD="7 days ago"
+SIZE_THRESHOLD=$((10 * 1024 * 1024)) # 10 MB
+
+REF_FILE=".age_threshold_marker"
+touch -d "$AGE_THRESHOLD" "$REF_FILE" 2&gt;/dev/null
+
+for log_file in *.log; do
+    [ -f "$log_file" ] || continue
+    # -ot confronta la data di modifica
+    if [ "$log_file" -ot "$REF_FILE" ]; then
+        file_size=$(stat -c "%s" "$log_file")
+        if [ "$file_size" -gt "$SIZE_THRESHOLD" ]; then
+            rm "$log_file"
+        else
+            gzip "$log_file"
+        fi
+    fi
+done
+rm -f "$REF_FILE"</code></pre>
+
+      <h3>Esempio 7: Controllo Processi (pgrep, renice)</h3>
+<pre><code>#!/bin/bash
+PROCESS_NAME="$1"
+pids=$(pgrep -i "$PROCESS_NAME")
+
+for pid in $pids; do
+    if ! ps -p "$pid" &gt; /dev/null 2&gt;&amp;1; then continue; fi
+    
+    read -p "Select priority for PID $pid [1) High, 2) Low]: " choice
+    case "$choice" in
+        1|"[Hh]igh") new_nice="-10" ;; 
+        2|"[Ll]ow")  new_nice="10"  ;; 
+        *) continue ;;
+    esac
+    
+    renice -n "$new_nice" -p "$pid" &gt; /dev/null 2&gt;&amp;1
+done</code></pre>
+
+      <h3>Esempio 8: Interfaccia Terminale (tput)</h3>
+<pre><code>#!/bin/bash
+draw_rect() {
+    tput cup $y1 $x1
+    tput civis  # Nasconde il cursore
+}
+
+cleanup() {
+    tput cnorm  # Ripristina la visibilità del cursore
+    clear
+    exit 0
+}
+
+# SIGWINCH viene lanciato ridimensionando la finestra!
+trap rect SIGWINCH
+trap cleanup SIGINT SIGTERM
+
+rect
+while true; do sleep 1; done</code></pre>
+
+      <h3>Esempio 9: Monitoraggio SysFS</h3>
+<pre><code>#!/bin/bash
+CUR_FREQ_FILE="/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq"
+OLD_FREQ=$(cat "$CUR_FREQ_FILE")
+
+while true; do
+    CUR_FREQ=$(cat "$CUR_FREQ_FILE")
+    STABLE_THRESHOLD=$(( OLD_FREQ / 10 ))
+    
+    if (( CUR_FREQ &lt;= OLD_FREQ + STABLE_THRESHOLD &amp;&amp; CUR_FREQ &gt;= OLD_FREQ - STABLE_THRESHOLD )) ; then
+        TREND="Stable"
+    elif (( CUR_FREQ &gt; OLD_FREQ )); then
+        TREND="Increasing"
+    else
+        TREND="Decreasing"
+    fi
+
+    printf "Frequenza: %s kHz | Trend: %s\n" "$CUR_FREQ" "$TREND"
+    OLD_FREQ=$CUR_FREQ
+    sleep 1
+done</code></pre>
+
+      <h3>Esempio 10: La Pipe suprema</h3>
+<pre><code>#!/bin/bash
+LC_ALL=C ls -Rp 2&gt;/dev/null | grep -v '/$' | grep -v '^$' | grep -v ':' | \
+    xargs -d '\n' -I {} file --mime-type "{}" 2&gt;/dev/null | \
+    cut -d' ' -f2- | \
+    sort | \
+    uniq -c | \
+    sort -rn | \
+    while read -r count mime; do
+        printf "%-7d %s\n" "$count" "$mime"
+    done</code></pre>
+
+      <h3>Esempio 11: Parsing Configurazione (sed)</h3>
+<pre><code>#!/bin/bash
+process_file() {
+    local file_path="$1"
+    
+    sed -e 's/#.*//' -e 's/^[[:space:]]*$//' -e '/^$/d' "$file_path" | while read -r line; do
+        include_target=$(echo "$line" | sed -n "s/^include[[:space:]]\+\(.\+\)/\1/p")
+        
+        if [[ -n $include_target ]]; then
+            process_file "$include_target" 
+        else
+            echo "$line"
+        fi
+    done
+}
+process_file "$1"</code></pre>
+
+      <h3>Esempio 12: Capture Groups con sed -E</h3>
+<pre><code>#!/bin/bash
+LOG_FILE="$1"
+grep -E ' (404|500) ' "$LOG_FILE" | \
+sed -E 's/^([^ ]+) .* \[(.*)\] ".*" (404|500) .*/Error \3 from IP \1 at time \2/'</code></pre>
+
+      <h3>Esempio 13: Bulk Text Replacement</h3>
+<pre><code>#!/bin/bash
+sed -E '
+    s/&lt;b&gt;(.*?)&lt;\/b&gt;/**\1**/g
+    s/&lt;strong&gt;(.*?)&lt;\/strong&gt;/**\1**/g
+    s/&lt;i&gt;(.*?)&lt;\/i&gt;/*\1*/g
+    s/&lt;h1&gt;(.*?)&lt;\/h1&gt;/# \1/g
+    s/&lt;h2&gt;(.*?)&lt;\/h2&gt;/## \1/g
+' "$1"</code></pre>
+
+    </div>
+  </main>
+
+  <script>
+    const header = document.querySelector('.header');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 30) {
+        header.classList.add('scrolled');
+      } else {
+        header.classList.remove('scrolled');
+      }
+    });
+
+    // Bash syntax highlighting
+    document.querySelectorAll('pre code').forEach(block => {
+      let html = block.innerHTML;
+      let tokens = [];
+      
+      // 1. Protect strings and comments. Bash comments start with #
+      html = html.replace(/("[^"]*")|('[^']*')|(#.*)/g, (match) => {
+        tokens.push(match);
+        return `__TOKEN_${tokens.length - 1}__`;
+      });
+
+      // 2. Variables $VAR, ${VAR}, $(CMD)
+      html = html.replace(/(\$[a-zA-Z0-9_]+|\$\{|\$\(|\||&amp;&amp;|\|\||&gt;|&lt;|&amp;|\$\!|\$\?|\$\$|\$@|\$#|\$1|\$2|\$0)/g, '<span style="color: #d19a66;">$1</span>');
+
+      // 3. Keywords
+      html = html.replace(/\b(if|then|elif|else|fi|for|in|while|until|do|done|case|esac|function|local|declare|export|continue|break|return|exit|let|read)\b/g, '<span style="color: #c678dd;">$1</span>');
+      
+      // 4. Commands/Built-ins
+      html = html.replace(/\b(echo|sleep|wait|trap|grep|awk|sed|cut|sort|uniq|mkdir|rm|touch|chmod|stat|printf|xargs|pgrep|ps|renice|tput|cat|clear|bc|date|ls|file|kill|gzip)\b/g, '<span style="color: #61afef;">$1</span>');
+      
+      // 5. Restore strings and comments with style
+      html = html.replace(/__TOKEN_(\d+)__/g, (match, index) => {
+        let val = tokens[index];
+        if (val.startsWith('#')) {
+          return `<span style="color: #5c6370; font-style: italic;">${val}</span>`;
+        } else {
+          return `<span style="color: #98c379;">${val}</span>`;
+        }
+      });
+      
+      block.innerHTML = html;
+    });
+  </script>
+</body>
+</html>
