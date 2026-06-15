@@ -161,5 +161,15 @@ for (int i = 0; i &lt; NUM_FILE; i++) {
     </div>
   </main>
 
+  <script>
+    const header = document.querySelector('.header');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 30) {
+        header.classList.add('scrolled');
+      } else {
+        header.classList.remove('scrolled');
+      }
+    });
+  </script>
 </body>
 </html>

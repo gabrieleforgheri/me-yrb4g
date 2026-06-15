@@ -30,15 +30,39 @@ body {
 
 /* Header Styles */
 .header {
-  padding: 2rem 1rem;
+  padding: 2.5rem 1rem 2rem;
   text-align: center;
   border-bottom: 1px solid var(--card-border);
-  background: rgba(10, 10, 10, 0.8);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: rgba(10, 10, 10, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   position: sticky;
   top: 0;
   z-index: 100;
+  transition: padding 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.header.scrolled {
+  padding: 0.8rem 1rem;
+}
+
+.header p {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
+  max-height: 50px;
+  opacity: 1;
+  overflow: hidden;
+}
+
+.header.scrolled p {
+  max-height: 0;
+  opacity: 0;
+  margin: 0;
 }
 
 .back-home-btn {
@@ -53,8 +77,17 @@ body {
   border-radius: 8px;
   background: var(--card-bg);
   border: 1px solid var(--card-border);
-  margin-bottom: 1rem;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+  
+  position: absolute;
+  left: 1.5rem;
+  top: 1.5rem;
+}
+
+.header.scrolled .back-home-btn {
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 0.35rem 0.6rem;
 }
 
 .back-home-btn:hover {
@@ -74,12 +107,15 @@ body {
   background: linear-gradient(to right, #fff, #a1a1aa);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  transition: all 0.3s ease;
 }
 
-.header p {
-  color: var(--text-secondary);
-  font-size: 1.1rem;
+.header.scrolled h1 {
+  font-size: 1.4rem;
+  margin-bottom: 0;
 }
+
+
 
 /* Container */
 .container {
@@ -191,19 +227,20 @@ body {
 }
 
 .article-content code {
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(59, 130, 246, 0.12);
   padding: 0.2rem 0.4rem;
   border-radius: 4px;
   font-family: monospace;
   font-size: 0.9em;
-  color: #a78bfa;
+  color: #93c5fd;
 }
 
 .article-content pre {
-  background: rgba(0, 0, 0, 0.6);
+  background: #11111a;
   padding: 1.2rem;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-left: 4px solid var(--accent-color);
   overflow-x: auto;
   margin-bottom: 1.5rem;
   margin-top: 0.5rem;
@@ -317,7 +354,18 @@ body {
    ========================================= */
 @media (max-width: 639px) {
   .header {
-    padding: 1.25rem 1rem;
+    padding-top: 4.5rem; /* leave space for the absolute button */
+    padding-bottom: 1.5rem;
+  }
+
+  .header.scrolled {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+
+  .back-home-btn {
+    left: 1rem;
+    top: 1rem;
   }
 
   .header h1 {
