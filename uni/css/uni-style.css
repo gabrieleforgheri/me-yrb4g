@@ -16,6 +16,11 @@
   box-sizing: border-box;
 }
 
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 180px; /* Previene che l'header sticky copra il Text Fragment */
+}
+
 body {
   background-color: var(--bg-color);
   color: var(--text-primary);

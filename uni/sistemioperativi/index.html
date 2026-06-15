@@ -392,7 +392,16 @@
           const a = document.createElement('a');
           a.className = 'search-result-item';
           
-          a.href = url;
+          let targetUrl = url;
+          const bestSnip = data.snippets.find(s => !s.startsWith('📌'));
+          if (bestSnip) {
+             const cleanText = bestSnip.replace(/<[^>]*>?/gm, '').replace(/[^\w\sàèìòùáéíóú]/gi, ' ').replace(/\s+/g, ' ').trim();
+             const fragment = cleanText.split(/\s+/).slice(0, 4).join(' ');
+             if (fragment.length > 3) {
+                targetUrl = `${url}#:~:text=${encodeURIComponent(fragment)}`;
+             }
+          }
+          a.href = targetUrl;
           
           const h3 = document.createElement('h3');
           h3.className = 'search-result-title';
