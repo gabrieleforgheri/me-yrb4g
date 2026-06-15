@@ -33,6 +33,8 @@
       </div>
     </div>
 
+    <div id="search-results" style="display: none;"></div>
+
     <div class="course-grid" id="topics-grid">
       
       <!-- Argomento 1 -->
@@ -97,18 +99,11 @@
       }
     });
 
-    // Advanced Search System
-    const searchIndex = {
-      "fork": ["fork", "processi", "processo", "padre", "figlio", "sdoppiare", "wait", "waitpid", "cow", "copy", "write", "zombie", "orfano", "pid", "getpid", "multiprocesso", "gerarchia"],
-      "segnali": ["segnali", "segnale", "signal", "sigaction", "kill", "allarme", "alarm", "interruzione", "handler", "maschere", "sigprocmask", "asincrono", "sigint", "ctrl", "c"],
-      "shmem": ["memoria", "condivisa", "shared", "memory", "mmap", "shm_open", "shm_unlink", "ftruncate", "ram", "race", "condition", "shm", "veloce", "prestazioni"],
-      "pipe": ["pipe", "fifo", "mkfifo", "comunicazione", "ipc", "canale", "unidirezionale", "anello", "ring", "sigpipe", "anonime", "named", "scrittura", "lettura"],
-      "socket": ["socket", "rete", "internet", "connessione", "client", "server", "bind", "listen", "accept", "stream", "tcp", "unix", "domain", "indirizzo", "porta", "chiamata"],
-      "io-file": ["io", "file", "control", "open", "read", "write", "close", "bloccante", "multiplexing", "poll", "file descriptor", "fd", "nonblock", "non bloccante", "input", "output", "pollin", "lseek", "offset"],
-      "bash": ["shell", "scripting", "bash", "automazione", "terminale", "script", "comandi", "linux", "unix", "if", "for", "while", "grep", "awk", "sed", "variabili", "array"]
-    };
+    // Advanced Full-Text Search System
+    let searchIndexDocs = null;
+    let isIndexing = false;
 
-    // Levenshtein Distance for typo tolerance (fuzzy matching)
+    // Levenshtein Distance for typo tolerance
     function levenshtein(a, b) {
       if (a.length === 0) return b.length;
       if (b.length === 0) return a.length;
@@ -121,9 +116,9 @@
             matrix[i][j] = matrix[i - 1][j - 1];
           } else {
             matrix[i][j] = Math.min(
-              matrix[i - 1][j - 1] + 1, // substitution
-              matrix[i][j - 1] + 1,     // insertion
-              matrix[i - 1][j] + 1      // deletion
+              matrix[i - 1][j - 1] + 1,
+              matrix[i][j - 1] + 1,    
+              matrix[i - 1][j] + 1     
             );
           }
         }
@@ -131,67 +126,188 @@
       return matrix[b.length][a.length];
     }
 
-    const searchInput = document.getElementById('topic-search');
-    const cards = Array.from(document.querySelectorAll('.course-card'));
-    const grid = document.getElementById('topics-grid');
+    async function buildIndex() {
+      if (searchIndexDocs || isIndexing) return;
+      isIndexing = true;
+      
+      const blocks = [];
+      const cards = Array.from(document.querySelectorAll('.course-card'));
+      const resultsContainer = document.getElementById('search-results');
+      
+      try {
+        await Promise.all(cards.map(async (card) => {
+          const url = card.href;
+          const title = card.querySelector('.course-title').textContent;
+          const icon = card.querySelector('.course-icon').textContent;
+          
+          const response = await fetch(url);
+          const html = await response.text();
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(html, 'text/html');
+          
+          // Estrae paragrafi, liste e titoli dall'articolo
+          const elements = doc.querySelectorAll('.article-content p, .article-content li, .article-content h2, .article-content h3');
+          
+          elements.forEach(el => {
+            const text = el.textContent.replace(/\s+/g, ' ').trim();
+            if (text.length > 20) {
+              const words = text.toLowerCase().split(/\W+/).filter(w => w.length > 2);
+              blocks.push({ url, title, icon, text, words });
+            }
+          });
+        }));
+        
+        searchIndexDocs = blocks;
+        isIndexing = false;
+        
+        // Esegue la ricerca se l'utente ha già digitato qualcosa
+        const currentQuery = document.getElementById('topic-search').value;
+        if (currentQuery) executeSearch(currentQuery);
+        
+      } catch (err) {
+        console.error("Errore durante la costruzione dell'indice di ricerca:", err);
+        isIndexing = false;
+        resultsContainer.innerHTML = '<div style="text-align:center; padding: 2rem; color: #ef4444;">Errore di caricamento indice.</div>';
+      }
+    }
 
-    searchInput.addEventListener('input', (e) => {
-      const query = e.target.value.toLowerCase().trim();
-      const searchTerms = query.split(/\s+/).filter(t => t.length > 0);
+    function executeSearch(query) {
+      const resultsContainer = document.getElementById('search-results');
+      const grid = document.getElementById('topics-grid');
+      
+      if (!query || query.trim().length === 0) {
+        grid.style.display = 'grid';
+        resultsContainer.style.display = 'none';
+        resultsContainer.innerHTML = '';
+        return;
+      }
+      
+      grid.style.display = 'none';
+      resultsContainer.style.display = 'flex';
 
-      if (searchTerms.length === 0) {
-        // Show all if empty and reset order
-        cards.forEach((card, idx) => {
-          card.style.display = 'flex';
-          card.style.order = idx;
-        });
+      if (!searchIndexDocs) {
+        resultsContainer.innerHTML = '<div style="text-align:center; padding: 2rem; color: var(--text-secondary);">Costruzione indice in corso (scarico le pagine)... ⏳</div>';
         return;
       }
 
-      cards.forEach(card => {
-        const id = card.getAttribute('data-id');
-        const keywords = searchIndex[id] || [];
-        const title = card.querySelector('.course-title').textContent.toLowerCase();
-        const desc = card.querySelector('.course-desc').textContent.toLowerCase();
+      const searchTerms = query.toLowerCase().split(/\s+/).filter(t => t.length > 1);
+      
+      // Assegna uno score a ogni blocco di testo
+      const scoredBlocks = searchIndexDocs.map(block => {
+        let score = 0;
+        let matchedWords = new Set();
         
-        let totalScore = 0;
-
         searchTerms.forEach(term => {
-          let termBestScore = 0;
-
-          // 1. Exact match in title or description (Highest score)
-          if (title.includes(term)) termBestScore = Math.max(termBestScore, 20);
-          if (desc.includes(term)) termBestScore = Math.max(termBestScore, 10);
-
-          // 2. Exact match in ID (Very High)
-          if (id === term || id.includes(term)) termBestScore = Math.max(termBestScore, 15);
-
-          // 3. Fuzzy match in index keywords
-          keywords.forEach(kw => {
-            if (kw === term) {
-              termBestScore = Math.max(termBestScore, 12);
-            } else if (kw.includes(term) || term.includes(kw)) {
-              termBestScore = Math.max(termBestScore, 8);
+          let termScore = 0;
+          let matchedWord = null;
+          
+          // Boost se il termine è nel titolo della pagina
+          if (block.title.toLowerCase().includes(term)) {
+            termScore = 50;
+            matchedWord = term;
+          }
+          
+          // Ricerca Fuzzy tra le parole del blocco
+          for (const word of block.words) {
+            if (word === term) {
+              if (15 > termScore) { termScore = 15; matchedWord = word; }
+            } else if (word.includes(term) || term.includes(word)) {
+              if (8 > termScore) { termScore = 8; matchedWord = word; }
             } else {
-              const dist = levenshtein(term, kw);
-              // Max 1 error for short words, 2 errors for words > 5 chars
+              const dist = levenshtein(term, word);
               const maxDist = term.length > 5 ? 2 : 1;
-              if (dist <= maxDist && term.length > 2) {
-                termBestScore = Math.max(termBestScore, 5);
+              if (dist <= maxDist && word.length > 2) {
+                if (4 > termScore) { termScore = 4; matchedWord = word; }
               }
             }
-          });
-
-          totalScore += termBestScore;
+          }
+          
+          if (termScore > 0) {
+            score += termScore;
+            if (matchedWord) matchedWords.add(matchedWord);
+          }
         });
-
-        if (totalScore > 0) {
-          card.style.display = 'flex';
-          card.style.order = -totalScore; // Higher score comes first
-        } else {
-          card.style.display = 'none';
+        
+        return { ...block, score, matchedWords: Array.from(matchedWords) };
+      }).filter(b => b.score > 0);
+      
+      // Ordina per pertinenza
+      scoredBlocks.sort((a, b) => b.score - a.score);
+      
+      // Raggruppa i risultati per URL (max 3 snippet per pagina)
+      const resultsByUrl = new Map();
+      scoredBlocks.forEach(b => {
+        if (!resultsByUrl.has(b.url)) {
+          resultsByUrl.set(b.url, { title: b.title, icon: b.icon, score: b.score, snippets: [] });
+        }
+        
+        const pageObj = resultsByUrl.get(b.url);
+        if (pageObj.snippets.length < 3) {
+           let snippet = b.text;
+           let regexStr = b.matchedWords.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+           
+           if (regexStr) {
+              const regex = new RegExp(`(${regexStr})`, 'gi');
+              const match = regex.exec(snippet);
+              if (match) {
+                 const start = Math.max(0, match.index - 50);
+                 const end = Math.min(snippet.length, match.index + match[0].length + 50);
+                 snippet = snippet.substring(start, end);
+                 if (start > 0) snippet = "..." + snippet;
+                 if (end < b.text.length) snippet = snippet + "...";
+                 
+                 // Evidenziazione
+                 snippet = snippet.replace(regex, '<mark class="highlight">$1</mark>');
+              } else if (snippet.length > 120) {
+                 snippet = snippet.substring(0, 120) + "...";
+              }
+           } else if (snippet.length > 120) {
+              snippet = snippet.substring(0, 120) + "...";
+           }
+           pageObj.snippets.push(snippet);
         }
       });
+      
+      // Generazione UI
+      resultsContainer.innerHTML = '';
+      
+      if (resultsByUrl.size === 0) {
+        resultsContainer.innerHTML = '<div style="text-align:center; padding: 2rem; color: var(--text-secondary);">Nessun risultato trovato. Prova con altre parole chiave.</div>';
+      } else {
+        // Ordina le pagine in base al punteggio del loro blocco migliore
+        const sortedPages = Array.from(resultsByUrl.entries()).sort((a, b) => b[1].score - a[1].score);
+        
+        sortedPages.forEach(([url, data]) => {
+          const a = document.createElement('a');
+          a.href = url;
+          a.className = 'search-result-item';
+          
+          const h3 = document.createElement('h3');
+          h3.className = 'search-result-title';
+          h3.innerHTML = `${data.icon} ${data.title}`;
+          a.appendChild(h3);
+          
+          data.snippets.forEach(snip => {
+            const p = document.createElement('p');
+            p.className = 'search-result-snippet';
+            p.innerHTML = `"${snip}"`;
+            a.appendChild(p);
+          });
+          
+          resultsContainer.appendChild(a);
+        });
+      }
+    }
+
+    const searchInput = document.getElementById('topic-search');
+    
+    // Inizia a scaricare le pagine appena l'utente clicca sulla barra
+    searchInput.addEventListener('focus', buildIndex);
+    
+    // Esegue la ricerca
+    searchInput.addEventListener('input', (e) => {
+      buildIndex(); // Se non è ancora partito, lo avvia
+      executeSearch(e.target.value);
     });
   </script>
 </body>
