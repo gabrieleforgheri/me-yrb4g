@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pipe e FIFO - Materiale Esame | Uni Hub</title>
+  <link rel="stylesheet" href="/uni/css/uni-style.css?v=3">
+</head>
+<body>
+
+  <header class="header">
+    <a href="/uni/sistemioperativi/materiale/" class="back-home-btn animate-fade-in">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+      </svg>
+      Materiale Esame
+    </a>
+    <h1 class="animate-fade-in">Pipe e FIFO in C 🔄</h1>
+    <p class="animate-fade-in" style="animation-delay: 0.1s;">Comunicazione Inter-Processo (IPC) bidirezionale e unidirezionale.</p>
+  </header>
+
+  <main class="article-container animate-fade-in" style="animation-delay: 0.2s;">
+    <div class="article-content">
+
+      <h2 style="font-size: 2rem; color: #60a5fa;">CHEATSHEET SISTEMI OPERATIVI: Pipe e FIFO (Named Pipes)</h2>
+      <p style="color: var(--text-secondary); font-style: italic;">[Context: Comunicazione Inter-Processo (IPC) bidirezionale o unidirezionale tra processi parent/child o processi scorrelati.]</p>
+
+      <h3>1. PIPE ANONIME (<code>pipe()</code>)</h3>
+      <p>Le pipe anonime vivono solo in memoria e si usano tra processi legati da parentela (es. creati con <code>fork()</code>). Sono <strong style="color: var(--text-primary);">unidirezionali</strong>.</p>
+
+      <p><strong style="color: var(--text-primary);">Creazione e Pattern Base (Fork)</strong></p>
+      <p>La system call <code>pipe()</code> prende un array di due interi e lo popola con i File Descriptor. L'indice <code>0</code> è per la lettura, l'indice <code>1</code> è per la scrittura.</p>
+
+<pre><code>int fd[2];
+if (pipe(fd) == -1) { perror("pipe"); exit(1); }
+
+pid_t pid = fork();
+
+if (pid == 0) { // CHILD (Es. Lettore)
+    close(fd[1]); // Chiudo l'estremo di scrittura inutilizzato
+    char buf[128];
+    read(fd[0], buf, sizeof(buf));
+    close(fd[0]);
+    exit(0);
+} else {        // PARENT (Es. Scrittore)
+    close(fd[0]); // Chiudo l'estremo di lettura inutilizzato
+    char *msg = "Hello";
+    write(fd[1], msg, strlen(msg) + 1);
+    close(fd[1]);
+    wait(NULL);
+}</code></pre>
+
+      <p style="padding-left: 1rem; border-left: 3px solid #f59e0b; color: #fbbf24;"><strong style="color: #f59e0b;">Regola d'oro:</strong> Chiudere SEMPRE gli estremi non utilizzati! Se un processo lettore non chiude il suo estremo di scrittura, non riceverà mai l'EOF (End of File) quando lo scrittore finisce.</p>
+
+      <h3>2. COMPORTAMENTO BLOCCANTE E SEGNALI</h3>
+      <p>Le pipe hanno una capacità limitata (tipicamente 65KB).</p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Scenario</th>
+            <th>Azione</th>
+            <th>Risultato (Comportamento di Default)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Pipe vuota</td>
+            <td><code>read()</code></td>
+            <td>Il processo si blocca in attesa di dati.</td>
+          </tr>
+          <tr>
+            <td>Pipe piena</td>
+            <td><code>write()</code></td>
+            <td>Il processo si blocca in attesa che il lettore liberi spazio.</td>
+          </tr>
+          <tr>
+            <td>Nessun Scrittore (Tutti gli <code>fd[1]</code> chiusi)</td>
+            <td><code>read()</code></td>
+            <td>Ritorna 0 (EOF).</td>
+          </tr>
+          <tr>
+            <td>Nessun Lettore (Tutti gli <code>fd[0]</code> chiusi)</td>
+            <td><code>write()</code></td>
+            <td>Genera il segnale <code>SIGPIPE</code> e termina il processo.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p><strong style="color: var(--text-primary);">Gestire il SIGPIPE</strong></p>
+      <p>Se uno scrittore tenta di inviare dati a una pipe in cui tutti i lettori hanno chiuso il canale di lettura, il Kernel invia un segnale <code>SIGPIPE</code>. Di default, questo uccide il processo. Puoi catturarlo con un handler:</p>
+
+<pre><code>#include &lt;signal.h&gt;
+
+volatile sig_atomic_t sigpipe_received = 0;
+void handle_sigpipe(int sig) { sigpipe_received = 1; }
+
+// Nel main, prima di scrivere:
+struct sigaction sa = {0};
+sa.sa_handler = handle_sigpipe;
+sigaction(SIGPIPE, &amp;sa, NULL);</code></pre>
+
+      <h3>3. PIPE CON NOME / FIFO (mkfifo)</h3>
+      <p>Le FIFO appaiono nel filesystem. Permettono la comunicazione tra processi non legati da parentela. Sono anch'esse unidirezionali.</p>
+
+      <p><strong style="color: var(--text-primary);">Creazione e Apertura</strong></p>
+      <p>Se la FIFO esiste già, <code>mkfifo</code> fallisce con <code>EEXIST</code>, che di solito è un errore ignorabile.</p>
+
+<pre><code>#include &lt;sys/stat.h&gt;
+#include &lt;fcntl.h&gt;
+
+// 1. Creazione
+if (mkfifo("/tmp/mia_fifo", 0666) == -1 &amp;&amp; errno != EEXIST) {
+    perror("mkfifo"); exit(1);
+}
+
+// 2. Apertura Bloccante (Client/Processi normali)
+// L'apertura in sola lettura si blocca finché qualcuno non apre in scrittura!
+int fd = open("/tmp/mia_fifo", O_RDONLY); </code></pre>
+
+      <p><strong style="color: var(--text-primary);">Trucco del Server (O_RDWR)</strong></p>
+      <p>Spesso i processi Server aprono la FIFO in lettura e scrittura (<code>O_RDWR</code>) anche se intendono solo leggere. Questo trucco impedisce alla <code>open()</code> del server di bloccarsi in attesa del primo client, ed evita che la <code>read()</code> ritorni EOF ogni volta che un singolo client si disconnette.</p>
+
+      <h3>4. INVIARE STRUTTURE DATI (struct)</h3>
+      <p>Sia le pipe che le FIFO sono flussi di byte. Puoi inviare intere <code>struct</code> C direttamente passandone l'indirizzo e la dimensione.</p>
+
+<pre><code>typedef struct {
+    int id;
+    char text[128];
+} Message;
+
+Message msg_out = {42, "Hello"};
+write(fd_write, &amp;msg_out, sizeof(msg_out)); // Scrittura
+
+Message msg_in;
+read(fd_read, &amp;msg_in, sizeof(msg_in));     // Lettura</code></pre>
+
+      <h3>5. TOPOLOGIE MULTIPROCESSO CON PIPE ANONIME</h3>
+      <p>Quando si usano <code>fork()</code> multipli, servono array di pipe.</p>
+
+      <p><strong style="color: var(--text-primary);">A. Topologia a Stella (Star)</strong></p>
+      <p>Il Parent (Centro) comunica singolarmente con N figli (Punte). Servono 2 * N pipe.</p>
+
+<pre><code>int to_parent[N][2]; // Figlio -&gt; Padre
+int to_child[N][2];  // Padre -&gt; Figlio
+
+// Il figlio 'i' userà:
+// to_child[i][0] per leggere dal padre
+// to_parent[i][1] per scrivere al padre
+// DEVE chiudere tutto il resto!</code></pre>
+
+      <p><strong style="color: var(--text-primary);">B. Topologia ad Anello (Ring)</strong></p>
+      <p>Il Parent passa un "token" al Figlio 1, che lo passa al Figlio 2, ..., fino all'ultimo che lo restituisce al Parent. Servono N + 1 pipe.</p>
+
+<pre><code>int pipes[N + 1][2];
+
+// Il figlio 'i' legge da pipes[i][0]
+// Il figlio 'i' scrive su pipes[i+1][1]
+// Il Parent scrive in pipes[0][1] e legge da pipes[N][0]</code></pre>
+
+    </div>
+  </main>
+
+  <script>
+    const header = document.querySelector('.header');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 30) {
+        header.classList.add('scrolled');
+      } else {
+        header.classList.remove('scrolled');
+      }
+    });
+
+    // Simple syntax highlighting
+    document.querySelectorAll('pre code').forEach(block => {
+      let html = block.innerHTML;
+      html = html.replace(/\b(int|struct|for|if|else|while|ssize_t|pid_t|continue|exit|sizeof|return|typedef|char|void|volatile|sig_atomic_t)\b/g, '<span style="color: #c678dd;">$1</span>');
+      html = html.replace(/\b(poll|read|write|close|perror|socket|bind|listen|accept|connect|unlink|pipe|fork|wait|sigaction|mkfifo|open)\b(?=\()/g, '<span style="color: #61afef;">$1</span>');
+      html = html.replace(/\b(POLLIN|POLLHUP|O_RDONLY|O_NONBLOCK|O_RDWR|AF_UNIX|SOCK_STREAM|NUM_FILE|NULL|EAGAIN|SIGPIPE|EEXIST)\b/g, '<span style="color: #e5c07b;">$1</span>');
+      html = html.replace(/("[^"]*")/g, '<span style="color: #98c379;">$1</span>');
+      html = html.replace(/(\/\/.*)/g, '<span style="color: #5c6370; font-style: italic;">$1</span>');
+      block.innerHTML = html;
+    });
+  </script>
+</body>
+</html>
