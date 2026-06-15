@@ -140,11 +140,29 @@ for (int i = 0; i &lt; NUM_FILE; i++) {
     // Simple syntax highlighting
     document.querySelectorAll('pre code').forEach(block => {
       let html = block.innerHTML;
-      html = html.replace(/\b(int|struct|for|if|while|ssize_t|continue|exit|sizeof|return)\b/g, '<span style="color: #c678dd;">$1</span>');
-      html = html.replace(/\b(poll|read|close|perror|socket|bind|listen|accept|connect|unlink)\b(?=\()/g, '<span style="color: #61afef;">$1</span>');
-      html = html.replace(/\b(POLLIN|POLLHUP|O_RDONLY|O_NONBLOCK|AF_UNIX|SOCK_STREAM|NUM_FILE|NULL|EAGAIN)\b/g, '<span style="color: #e5c07b;">$1</span>');
-      html = html.replace(/("[^"]*")/g, '<span style="color: #98c379;">$1</span>');
-      html = html.replace(/(\/\/.*)/g, '<span style="color: #5c6370; font-style: italic;">$1</span>');
+      let tokens = [];
+      
+      // 1. Protect strings and comments
+      html = html.replace(/("[^"]*")|(\/\/.*)/g, (match) => {
+        tokens.push(match);
+        return `__TOKEN_${tokens.length - 1}__`;
+      });
+
+      // 2. Keywords, functions, constants
+      html = html.replace(/\b(int|struct|for|if|else|while|ssize_t|pid_t|continue|exit|sizeof|return|typedef|char|void|volatile|sig_atomic_t)\b/g, '<span style="color: #c678dd;">$1</span>');
+      html = html.replace(/\b(poll|read|write|close|perror|socket|bind|listen|accept|connect|unlink|pipe|fork|wait|sigaction|mkfifo|open)\b(?=\()/g, '<span style="color: #61afef;">$1</span>');
+      html = html.replace(/\b(POLLIN|POLLHUP|O_RDONLY|O_NONBLOCK|O_RDWR|AF_UNIX|SOCK_STREAM|NUM_FILE|NULL|EAGAIN|SIGPIPE|EEXIST)\b/g, '<span style="color: #e5c07b;">$1</span>');
+
+      // 3. Restore strings and comments with style
+      html = html.replace(/__TOKEN_(\d+)__/g, (match, index) => {
+        let val = tokens[index];
+        if (val.startsWith('//')) {
+          return `<span style="color: #5c6370; font-style: italic;">${val}</span>`;
+        } else {
+          return `<span style="color: #98c379;">${val}</span>`;
+        }
+      });
+      
       block.innerHTML = html;
     });
   </script>
