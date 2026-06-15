@@ -341,6 +341,77 @@ sed -E 's/^([0-9]{4})-([0-9]{2})-([0-9]{2})$/\3\/\2\/\1/' date.txt</code></pre>
         <p style="font-size: 0.9em; color: var(--text-secondary);">Spiegazione: "Trova esattamente due caratteri esadecimali seguiti dai due punti, ripeti questo schema 5 volte, e concludi con altri due caratteri esadecimali".</p>
       </div>
 
+<div style="background: rgba(99, 102, 241, 0.05); border-left: 4px solid #6366f1; padding: 1.5rem; border-radius: 8px; margin: 2rem 0;">
+        <h3 style="margin-top: 0; color: #6366f1;">APPROFONDIMENTO: Elaborazione di File CSV in Bash</h3>
+        <p>I file CSV (Comma-Separated Values) sono il formato standard per l'esportazione di dati tabulari. In Bash, l'elaborazione di CSV "puliti" (dove il separatore non compare mai all'interno dei dati testuali) è un'operazione estremamente comune.</p>
+
+        <h4 style="color: #a855f7; margin-top: 1.5rem;">1. Estrazione rapida di colonne con <code>cut</code></h4>
+        <p>Il tool <code>cut</code> è lo strumento più veloce se devi semplicemente isolare una o più colonne, senza fare calcoli o logica complessa.</p>
+        <ul>
+            <li><code>-d','</code> (Delimiter): Specifica la virgola come separatore.</li>
+            <li><code>-f</code> (Fields): Specifica i numeri delle colonne (1-indexed).</li>
+        </ul>
+<pre><code># Estrae solo la prima e la terza colonna (es. Nome ed Email)
+cut -d',' -f1,3 utenti.csv
+
+# Estrae dalla colonna 2 fino alla fine della riga
+cut -d',' -f2- utenti.csv</code></pre>
+
+        <h4 style="color: #a855f7; margin-top: 1.5rem;">2. Il Ciclo <code>while read</code> con IFS</h4>
+        <p>Se hai bisogno di iterare riga per riga e usare i valori delle colonne come variabili per altre operazioni di sistema (es. creare cartelle o utenti), la combinazione di IFS (Internal Field Separator) e <code>read</code> è la scelta migliore.</p>
+        <p><strong>Pattern: Saltare l'header ed estrarre le variabili</strong><br>
+        Questo è un trucco molto elegante in Bash per ignorare la prima riga (l'intestazione delle colonne) e scorrere il resto del file:</p>
+<pre><code>#!/bin/bash
+
+# Il blocco tra parentesi graffe redirige l'intero file al suo interno
+{
+    # 1. La prima chiamata a 'read' consuma l'intestazione e la ignora
+    read header 
+    
+    # 2. Il ciclo consuma il resto del file
+    # IFS=',' divide la riga. Le variabili prendono i valori delle colonne.
+    while IFS=',' read -r username dipartimento quota; do
+        
+        echo "Creazione utente $username per il reparto $dipartimento..."
+        # Esempio: useradd -m -g "$dipartimento" "$username"
+        
+    done
+} &lt; "utenti.csv"</code></pre>
+
+        <h4 style="color: #a855f7; margin-top: 1.5rem;">3. La Potenza di <code>awk</code> sui CSV (Calcoli e Filtri)</h4>
+        <p>Quando devi fare somme, calcolare medie o filtrare righe basandoti sul valore numerico di una colonna, <code>awk</code> è insuperabile.</p>
+        <ul>
+            <li><code>-F','</code>: Dice ad awk di usare la virgola come separatore di campo.</li>
+            <li><code>NR</code> (Number of Record): È la variabile interna di awk che indica il numero di riga corrente. <code>NR &gt; 1</code> è il modo standard di awk per saltare l'intestazione.</li>
+        </ul>
+        <p><strong>Esempio A: Filtro basato su una colonna</strong></p>
+<pre><code># Stampa il Nome ($1) e il Ruolo ($2) solo se lo Stipendio ($4) è maggiore di 2000.
+# NR > 1 ignora la prima riga (l'header).
+awk -F',' 'NR &gt; 1 &amp;&amp; $4 &gt; 2000 { print $1, "fa il", $2 }' dipendenti.csv</code></pre>
+
+        <p><strong>Esempio B: Somma e Calcolo Media</strong></p>
+<pre><code># Somma tutti i valori della colonna 3 (es. Ore lavorate) e alla fine ne calcola la media
+awk -F',' '
+    NR &gt; 1 { 
+        totale += $3 
+        conteggio++ 
+    } 
+    END { 
+        print "Ore totali:", totale
+        print "Media ore per dipendente:", totale / conteggio
+    }
+' ore_lavoro.csv</code></pre>
+
+        <h4 style="color: #a855f7; margin-top: 1.5rem;">4. Gestire delimitatori diversi (Punto e Virgola, Tab)</h4>
+        <p>Spesso i CSV generati in Europa (es. da Excel italiano) usano il punto e virgola <code>;</code> come separatore per non confondersi con la virgola dei decimali (3,14). Cambiare il parsing è semplicissimo:</p>
+        <ul>
+            <li><strong>In cut:</strong> <code>cut -d';' -f1</code></li>
+            <li><strong>In while:</strong> <code>while IFS=';' read -r ...</code></li>
+            <li><strong>In awk:</strong> <code>awk -F';' '{print $1}'</code></li>
+        </ul>
+        <p style="font-size: 0.9em; color: var(--text-secondary);">Per i file TSV (Tab-Separated Values), il delimitatore di default di awk (che è lo spazio/tab) funziona già perfettamente. Per cut, il tab è il delimitatore di default, quindi basta usare <code>cut -f2 file.tsv</code>.</p>
+      </div>
+
       <h3>9. CONTROLLO DEI PROCESSI, SEGNALI E INTERFACCIA GRAFICA (TUI)</h3>
       <p><strong style="color: var(--text-primary);">Gestione Asincrona (&amp;) e Sincronizzazione (wait)</strong></p>
       <p>Lanciando un comando seguito dal carattere <code>&amp;</code>, la shell esegue una fork() ed inserisce il processo figlio in background asincrono, restituendo immediatamente il controllo al terminale.</p>
