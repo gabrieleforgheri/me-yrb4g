@@ -56,6 +56,108 @@
         <li style="color: var(--text-secondary); margin-bottom: 0.5rem;"><strong style="color: var(--text-primary);">Interruzioni da segnali (EINTR):</strong> Se una chiamata di sistema viene interrotta da un segnale (come il <code>SIGUSR1</code> usato nel gioco), <code>errno</code> viene impostato a <code>EINTR</code>. Il codice usa <code>continue</code> per riprendere l'operazione interrotta senza far fallire il programma.</li>
       </ul>
 
+      <hr style="border: 1px solid var(--card-border); margin: 4rem 0;">
+
+      <h2 style="font-size: 2rem; color: #60a5fa;">CHEATSHEET: I/O e File Control in C</h2>
+      <p style="color: var(--text-secondary); font-style: italic;">[Context: Gestione FIFO, pipe, read/write, poll() e I/O non bloccante in ambiente Unix/Linux]</p>
+
+      <h3>1. APERTURA FILE (open)</h3>
+      <p>Restituisce un File Descriptor (FD) intero. Se fallisce, ritorna -1.</p>
+      <ul>
+        <li style="color: var(--text-secondary); margin-bottom: 0.5rem;"><strong style="color: var(--text-primary);">Bloccante (Default):</strong>
+        <br><code>int fd = open("/tmp/fifo", O_RDONLY);</code></li>
+        <li style="color: var(--text-secondary); margin-bottom: 0.5rem;"><strong style="color: var(--text-primary);">Non Bloccante:</strong>
+        <br><code>int fd = open("/tmp/fifo", O_RDONLY | O_NONBLOCK);</code></li>
+      </ul>
+
+      <h3>2. READ & WRITE SU FIFO</h3>
+      <p>Sintassi base: <code>ssize_t n = read(fd, &amp;buf, sizeof(buf));</code></p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Scenario</th>
+            <th>Bloccante</th>
+            <th>Non Bloccante</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Read: Dati presenti</td>
+            <td>Ritorna byte letti</td>
+            <td>Ritorna byte letti</td>
+          </tr>
+          <tr>
+            <td>Read: Niente dati</td>
+            <td>Si blocca in attesa</td>
+            <td>Ritorna -1, errno=EAGAIN</td>
+          </tr>
+          <tr>
+            <td>Read: Nessun writer</td>
+            <td>Ritorna 0 (EOF)</td>
+            <td>Ritorna -1, poll genera POLLHUP</td>
+          </tr>
+          <tr>
+            <td>Write: Buffer pieno</td>
+            <td>Si blocca in attesa</td>
+            <td>Ritorna -1, errno=EAGAIN</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>3. MULTIPLEXING CON POLL()</h3>
+      <p>Evita il busy waiting su file non bloccanti.</p>
+
+      <p><strong style="color: var(--text-primary);">Struttura e Inizializzazione:</strong></p>
+<pre><code>#include &lt;poll.h&gt;
+struct pollfd poll_set[NUM_FILE];
+
+for (int i = 0; i &lt; NUM_FILE; i++) {
+    poll_set[i].fd = fds[i];     // FD da monitorare
+    poll_set[i].events = POLLIN; // Eventi da ascoltare
+    poll_set[i].revents = 0;     // Output del kernel
+}</code></pre>
+
+      <p><strong style="color: var(--text-primary);">B. Ciclo Principale e Gestione Eventi</strong></p>
+      <p>La system call poll si blocca finché non accade qualcosa. Controllare gli eventi richiede l'uso dell'operatore Bitwise AND (<code>&amp;</code>), mai dell'uguaglianza (<code>==</code>).</p>
+
+<pre><code>// timeout -1 significa attesa infinita
+int pronti = poll(poll_set, NUM_FILE, -1); 
+if (pronti &lt; 0) {
+    perror("Errore poll");
+    exit(1);
+}
+
+for (int i = 0; i &lt; NUM_FILE; i++) {
+    if (poll_set[i].fd == -1) continue; // Salta FD chiusi
+
+    // 1. Controllo Disconnessione (Hang Up)
+    // Usa &amp; per verificare se il bit POLLHUP è acceso tra i vari eventi
+    if (poll_set[i].revents &amp; POLLHUP) {
+        close(poll_set[i].fd);
+        poll_set[i].fd = -1;
+        // Aggiorna contatore chiusure, es: nclosed++;
+        continue;
+    }
+
+    // 2. Controllo Dati Pronti
+    if (poll_set[i].revents &amp; POLLIN) {
+        ssize_t nread;
+        int value;
+        
+        // Loop per svuotare completamente il buffer non bloccante
+        while ((nread = read(poll_set[i].fd, &amp;value, sizeof(value))) &gt; 0) {
+            // Elabora 'value' (es. accumulator += value;)
+        }
+        
+        // Verifica se l'uscita dal while è un VERO errore o solo fine dati
+        if (nread == -1 &amp;&amp; errno != EAGAIN) {
+            perror("Errore in read");
+            exit(1);
+        }
+    }
+}</code></pre>
+
     </div>
   </main>
 
