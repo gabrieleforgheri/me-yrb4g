@@ -99,9 +99,20 @@
       }
     });
 
-    // Advanced Full-Text Search System
+    // Advanced Full-Text Search System with Concepts
     let searchIndexDocs = null;
     let isIndexing = false;
+
+    // Dizionario dei Concetti Chiave (parole non necessariamente presenti nel testo)
+    const conceptIndex = {
+      "fork": ["zombie", "processo non termina", "orfano", "gerarchia", "multiprocesso", "sdoppiare", "clonare", "padre", "figlio"],
+      "segnali": ["interruzione", "asincrono", "evento", "ctrl-c", "allarme"],
+      "shmem": ["ram", "veloce", "prestazioni", "condivisione memoria"],
+      "pipe": ["canale", "unidirezionale", "anello", "tubo"],
+      "socket": ["rete", "internet", "indirizzo", "porta", "web"],
+      "io-file": ["input", "output", "offset", "descrittore"],
+      "bash": ["terminale", "linux", "unix", "console", "automazione"]
+    };
 
     // Levenshtein Distance for typo tolerance
     function levenshtein(a, b) {
@@ -139,6 +150,7 @@
           const url = card.href;
           const title = card.querySelector('.course-title').textContent;
           const icon = card.querySelector('.course-icon').textContent;
+          const id = card.getAttribute('data-id');
           
           const response = await fetch(url);
           const html = await response.text();
@@ -152,7 +164,7 @@
             const text = el.textContent.replace(/\s+/g, ' ').trim();
             if (text.length > 20) {
               const words = text.toLowerCase().split(/\W+/).filter(w => w.length > 2);
-              blocks.push({ url, title, icon, text, words });
+              blocks.push({ url, title, icon, id, text, words });
             }
           });
         }));
@@ -196,6 +208,7 @@
       const scoredBlocks = searchIndexDocs.map(block => {
         let score = 0;
         let matchedWords = new Set();
+        let matchedConcepts = new Set();
         
         searchTerms.forEach(term => {
           let termScore = 0;
@@ -205,6 +218,19 @@
           if (block.title.toLowerCase().includes(term)) {
             termScore = 50;
             matchedWord = term;
+          }
+
+          // Boost concettuale
+          const concepts = conceptIndex[block.id] || [];
+          for (const c of concepts) {
+            if (c === term || c.includes(term)) {
+              if (40 > termScore) { termScore = 40; matchedConcepts.add(c); }
+            } else {
+              const dist = levenshtein(term, c);
+              if (dist <= (term.length > 5 ? 2 : 1) && term.length > 2) {
+                if (20 > termScore) { termScore = 20; matchedConcepts.add(c); }
+              }
+            }
           }
           
           // Ricerca Fuzzy tra le parole del blocco
@@ -228,7 +254,7 @@
           }
         });
         
-        return { ...block, score, matchedWords: Array.from(matchedWords) };
+        return { ...block, score, matchedWords: Array.from(matchedWords), matchedConcepts: Array.from(matchedConcepts) };
       }).filter(b => b.score > 0);
       
       // Ordina per pertinenza
@@ -242,7 +268,18 @@
         }
         
         const pageObj = resultsByUrl.get(b.url);
-        if (pageObj.snippets.length < 3) {
+        
+        // Aggiungi snippet dei concetti se trovati
+        if (b.matchedConcepts && b.matchedConcepts.length > 0) {
+          b.matchedConcepts.forEach(c => {
+            const conceptSnip = `📌 <i>Argomento correlato: <b>${c}</b></i>`;
+            if (!pageObj.snippets.includes(conceptSnip)) {
+              pageObj.snippets.unshift(conceptSnip); // Mettilo in cima
+            }
+          });
+        }
+
+        if (pageObj.snippets.length < 3 && b.matchedWords.length > 0) {
            let snippet = b.text;
            let regexStr = b.matchedWords.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
            
@@ -290,7 +327,8 @@
           data.snippets.forEach(snip => {
             const p = document.createElement('p');
             p.className = 'search-result-snippet';
-            p.innerHTML = `"${snip}"`;
+            // Non mettere le virgolette per lo snippet dei concetti
+            p.innerHTML = snip.startsWith('📌') ? snip : `"${snip}"`;
             a.appendChild(p);
           });
           
