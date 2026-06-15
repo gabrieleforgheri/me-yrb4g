@@ -3,13 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Materiale Esame - Sistemi Operativi | Uni Hub</title>
-  <link rel="stylesheet" href="../../css/uni-style.css">
+  <title>Materiale Esame | Sistemi Operativi | Uni Hub</title>
+  <!-- Uso percorso assoluto per evitare problemi di cache/trailing slash su Nginx -->
+  <link rel="stylesheet" href="/uni/css/uni-style.css">
 </head>
 <body>
 
   <header class="header">
-    <a href="../" class="back-home-btn animate-fade-in">
+    <a href="/uni/sistemioperativi/" class="back-home-btn animate-fade-in">
       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <line x1="19" y1="12" x2="5" y2="12"></line>
         <polyline points="12 19 5 12 12 5"></polyline>
@@ -17,146 +18,25 @@
       Sistemi Operativi
     </a>
     <h1 class="animate-fade-in">Materiale Esame ⚡</h1>
-    <p class="animate-fade-in" style="animation-delay: 0.1s;">Ripasso veloce, codici e spiegazioni per prepararsi al meglio.</p>
+    <p class="animate-fade-in" style="animation-delay: 0.1s;">Seleziona un argomento da ripassare.</p>
   </header>
 
-  <main class="article-container animate-fade-in" style="animation-delay: 0.2s;">
-    <div class="article-content">
+  <main class="container">
+    <div class="course-grid">
       
-      <h2>1. Il Flusso di una Socket Stream (Modello Server-Client)</h2>
-      <p>Per capire come i tuoi due programmi si connettono, immagina una telefonata: il server installa il telefono e aspetta la chiamata; il client compone il numero.</p>
+      <!-- Argomento 1 -->
+      <a href="/uni/sistemioperativi/materiale/socket/" class="course-card animate-fade-in" style="animation-delay: 0.2s; align-items: flex-start; padding: 2rem 1.5rem;">
+        <div class="course-icon" style="font-size: 2.5rem; margin-bottom: 1rem; text-shadow: 0 4px 12px rgba(0,0,0,0.3);">🌐</div>
+        <h2 class="course-title" style="font-size: 1.3rem; margin-bottom: 0.5rem;">Socket Stream in C</h2>
+        <p class="course-desc" style="margin-bottom: 1rem;">Il flusso client-server, socket(), bind(), listen(), accept() e gestione lettura/scrittura byte.</p>
+      </a>
 
-      <h3>Lato Server (Il Ricevente)</h3>
-      <p>Il server deve preparare l'endpoint e mettersi in ascolto. I passaggi chiave nel codice sono:</p>
-      
-      <p><code>socket()</code>: Crea l'endpoint di comunicazione.</p>
-      <pre><code>srv_fd = socket(AF_UNIX, SOCK_STREAM, 0);</code></pre>
-
-      <p><code>bind()</code>: Associa la socket a un indirizzo specifico (in questo caso, il percorso sul file system). Prima di fare il bind, si usa <code>unlink()</code> per rimuovere eventuali file socket residui da esecuzioni precedenti.</p>
-      <pre><code>bind(srv_fd, (struct sockaddr *)&srv_addr, sizeof(srv_addr));</code></pre>
-
-      <p><code>listen()</code>: Trasforma la socket in una socket passiva, pronta ad accettare le connessioni, definendo una coda massima di client in attesa.</p>
-      <pre><code>listen(srv_fd, 2);</code></pre>
-
-      <p><code>accept()</code>: Questa chiamata è bloccante. Il server si ferma finché un client non avvia una connessione. Quando il client si connette, <code>accept()</code> estrae la connessione dalla coda e restituisce un nuovo file descriptor (es. <code>ci1.fd</code>). Questo nuovo FD verrà usato per comunicare esclusivamente con quel determinato client, lasciando <code>srv_fd</code> libero di ascoltare altre chiamate.</p>
-      <pre><code>ci1.fd = accept(srv_fd, NULL, NULL);</code></pre>
-
-      <h3>Lato Client (Il Chiamante)</h3>
-      <p>Il client ha un flusso molto più snello:</p>
-      <p><code>socket()</code>: Crea la sua socket.</p>
-      <p><code>connect()</code>: Avvia la richiesta di connessione verso l'indirizzo (il file del socket) su cui il server è in ascolto. Anche questa operazione è bloccante finché il server non esegue la <code>accept()</code>.</p>
-      <pre><code>connect(sock_fd, (struct sockaddr *)&srv_addr, sizeof(srv_addr));</code></pre>
-
-      <h2>2. Lettura e Scrittura: Gestire il Flusso di Byte</h2>
-      <p>Nelle socket di tipo <code>SOCK_STREAM</code>, i dati sono inviati come un flusso continuo di byte. Questo significa che se invii una struttura di 4 byte, la <code>read()</code> potrebbe riceverne 2 adesso e 2 al prossimo ciclo.</p>
-      <p>Per risolvere questo problema, nel tuo codice sono state implementate le funzioni helper <code>write_full</code> e <code>read_full</code>. Sono utilissime per l'esame perché gestiscono due problemi sistemistici reali:</p>
-      
-      <ul>
-        <li style="color: var(--text-secondary); margin-bottom: 0.5rem;"><strong style="color: var(--text-primary);">Letture/Scritture parziali:</strong> Il ciclo <code>while</code> continua finché non sono stati trasferiti esattamente tutti i byte richiesti (<code>count</code>).</li>
-        <li style="color: var(--text-secondary); margin-bottom: 0.5rem;"><strong style="color: var(--text-primary);">Interruzioni da segnali (EINTR):</strong> Se una chiamata di sistema viene interrotta da un segnale (come il <code>SIGUSR1</code> usato nel gioco), <code>errno</code> viene impostato a <code>EINTR</code>. Il codice usa <code>continue</code> per riprendere l'operazione interrotta senza far fallire il programma.</li>
-      </ul>
-
-      <hr style="border: 1px solid var(--card-border); margin: 4rem 0;">
-
-      <h2 style="font-size: 2rem; color: #60a5fa;">CHEATSHEET: I/O e File Control in C</h2>
-      <p style="color: var(--text-secondary); font-style: italic;">[Context: Gestione FIFO, pipe, read/write, poll() e I/O non bloccante in ambiente Unix/Linux]</p>
-
-      <h3>1. APERTURA FILE (open)</h3>
-      <p>Restituisce un File Descriptor (FD) intero. Se fallisce, ritorna -1.</p>
-      <ul>
-        <li style="color: var(--text-secondary); margin-bottom: 0.5rem;"><strong style="color: var(--text-primary);">Bloccante (Default):</strong>
-        <br><code>int fd = open("/tmp/fifo", O_RDONLY);</code></li>
-        <li style="color: var(--text-secondary); margin-bottom: 0.5rem;"><strong style="color: var(--text-primary);">Non Bloccante:</strong>
-        <br><code>int fd = open("/tmp/fifo", O_RDONLY | O_NONBLOCK);</code></li>
-      </ul>
-
-      <h3>2. READ & WRITE SU FIFO</h3>
-      <p>Sintassi base: <code>ssize_t n = read(fd, &amp;buf, sizeof(buf));</code></p>
-
-      <table>
-        <thead>
-          <tr>
-            <th>Scenario</th>
-            <th>Bloccante</th>
-            <th>Non Bloccante</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Read: Dati presenti</td>
-            <td>Ritorna byte letti</td>
-            <td>Ritorna byte letti</td>
-          </tr>
-          <tr>
-            <td>Read: Niente dati</td>
-            <td>Si blocca in attesa</td>
-            <td>Ritorna -1, errno=EAGAIN</td>
-          </tr>
-          <tr>
-            <td>Read: Nessun writer</td>
-            <td>Ritorna 0 (EOF)</td>
-            <td>Ritorna -1, poll genera POLLHUP</td>
-          </tr>
-          <tr>
-            <td>Write: Buffer pieno</td>
-            <td>Si blocca in attesa</td>
-            <td>Ritorna -1, errno=EAGAIN</td>
-          </tr>
-        </tbody>
-      </table>
-
-      <h3>3. MULTIPLEXING CON POLL()</h3>
-      <p>Evita il busy waiting su file non bloccanti.</p>
-
-      <p><strong style="color: var(--text-primary);">Struttura e Inizializzazione:</strong></p>
-<pre><code>#include &lt;poll.h&gt;
-struct pollfd poll_set[NUM_FILE];
-
-for (int i = 0; i &lt; NUM_FILE; i++) {
-    poll_set[i].fd = fds[i];     // FD da monitorare
-    poll_set[i].events = POLLIN; // Eventi da ascoltare
-    poll_set[i].revents = 0;     // Output del kernel
-}</code></pre>
-
-      <p><strong style="color: var(--text-primary);">B. Ciclo Principale e Gestione Eventi</strong></p>
-      <p>La system call poll si blocca finché non accade qualcosa. Controllare gli eventi richiede l'uso dell'operatore Bitwise AND (<code>&amp;</code>), mai dell'uguaglianza (<code>==</code>).</p>
-
-<pre><code>// timeout -1 significa attesa infinita
-int pronti = poll(poll_set, NUM_FILE, -1); 
-if (pronti &lt; 0) {
-    perror("Errore poll");
-    exit(1);
-}
-
-for (int i = 0; i &lt; NUM_FILE; i++) {
-    if (poll_set[i].fd == -1) continue; // Salta FD chiusi
-
-    // 1. Controllo Disconnessione (Hang Up)
-    // Usa &amp; per verificare se il bit POLLHUP è acceso tra i vari eventi
-    if (poll_set[i].revents &amp; POLLHUP) {
-        close(poll_set[i].fd);
-        poll_set[i].fd = -1;
-        // Aggiorna contatore chiusure, es: nclosed++;
-        continue;
-    }
-
-    // 2. Controllo Dati Pronti
-    if (poll_set[i].revents &amp; POLLIN) {
-        ssize_t nread;
-        int value;
-        
-        // Loop per svuotare completamente il buffer non bloccante
-        while ((nread = read(poll_set[i].fd, &amp;value, sizeof(value))) &gt; 0) {
-            // Elabora 'value' (es. accumulator += value;)
-        }
-        
-        // Verifica se l'uscita dal while è un VERO errore o solo fine dati
-        if (nread == -1 &amp;&amp; errno != EAGAIN) {
-            perror("Errore in read");
-            exit(1);
-        }
-    }
-}</code></pre>
+      <!-- Argomento 2 -->
+      <a href="/uni/sistemioperativi/materiale/io-file/" class="course-card animate-fade-in" style="animation-delay: 0.3s; align-items: flex-start; padding: 2rem 1.5rem;">
+        <div class="course-icon" style="font-size: 2.5rem; margin-bottom: 1rem; text-shadow: 0 4px 12px rgba(0,0,0,0.3);">📁</div>
+        <h2 class="course-title" style="font-size: 1.3rem; margin-bottom: 0.5rem;">I/O e File Control</h2>
+        <p class="course-desc" style="margin-bottom: 1rem;">Gestione FIFO, pipe, read/write bloccanti vs non bloccanti, multiplexing con poll().</p>
+      </a>
 
     </div>
   </main>

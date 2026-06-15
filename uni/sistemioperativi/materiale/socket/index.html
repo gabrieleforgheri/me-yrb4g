@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Socket in C - Materiale Esame | Uni Hub</title>
+  <!-- Percorso assoluto per risolvere bug Nginx -->
+  <link rel="stylesheet" href="/uni/css/uni-style.css">
+</head>
+<body>
+
+  <header class="header">
+    <a href="/uni/sistemioperativi/materiale/" class="back-home-btn animate-fade-in">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+      </svg>
+      Materiale Esame
+    </a>
+    <h1 class="animate-fade-in">Socket Stream in C 🌐</h1>
+    <p class="animate-fade-in" style="animation-delay: 0.1s;">Flusso, connessioni e gestione byte.</p>
+  </header>
+
+  <main class="article-container animate-fade-in" style="animation-delay: 0.2s;">
+    <div class="article-content">
+      
+      <h2>1. Il Flusso di una Socket Stream (Modello Server-Client)</h2>
+      <p>Per capire come i tuoi due programmi si connettono, immagina una telefonata: il server installa il telefono e aspetta la chiamata; il client compone il numero.</p>
+
+      <h3>Lato Server (Il Ricevente)</h3>
+      <p>Il server deve preparare l'endpoint e mettersi in ascolto. I passaggi chiave nel codice sono:</p>
+      
+      <p><code>socket()</code>: Crea l'endpoint di comunicazione.</p>
+      <pre><code>srv_fd = socket(AF_UNIX, SOCK_STREAM, 0);</code></pre>
+
+      <p><code>bind()</code>: Associa la socket a un indirizzo specifico (in questo caso, il percorso sul file system). Prima di fare il bind, si usa <code>unlink()</code> per rimuovere eventuali file socket residui da esecuzioni precedenti.</p>
+      <pre><code>bind(srv_fd, (struct sockaddr *)&srv_addr, sizeof(srv_addr));</code></pre>
+
+      <p><code>listen()</code>: Trasforma la socket in una socket passiva, pronta ad accettare le connessioni, definendo una coda massima di client in attesa.</p>
+      <pre><code>listen(srv_fd, 2);</code></pre>
+
+      <p><code>accept()</code>: Questa chiamata è bloccante. Il server si ferma finché un client non avvia una connessione. Quando il client si connette, <code>accept()</code> estrae la connessione dalla coda e restituisce un nuovo file descriptor (es. <code>ci1.fd</code>). Questo nuovo FD verrà usato per comunicare esclusivamente con quel determinato client, lasciando <code>srv_fd</code> libero di ascoltare altre chiamate.</p>
+      <pre><code>ci1.fd = accept(srv_fd, NULL, NULL);</code></pre>
+
+      <h3>Lato Client (Il Chiamante)</h3>
+      <p>Il client ha un flusso molto più snello:</p>
+      <p><code>socket()</code>: Crea la sua socket.</p>
+      <p><code>connect()</code>: Avvia la richiesta di connessione verso l'indirizzo (il file del socket) su cui il server è in ascolto. Anche questa operazione è bloccante finché il server non esegue la <code>accept()</code>.</p>
+      <pre><code>connect(sock_fd, (struct sockaddr *)&srv_addr, sizeof(srv_addr));</code></pre>
+
+      <h2>2. Lettura e Scrittura: Gestire il Flusso di Byte</h2>
+      <p>Nelle socket di tipo <code>SOCK_STREAM</code>, i dati sono inviati come un flusso continuo di byte. Questo significa che se invii una struttura di 4 byte, la <code>read()</code> potrebbe riceverne 2 adesso e 2 al prossimo ciclo.</p>
+      <p>Per risolvere questo problema, nel tuo codice sono state implementate le funzioni helper <code>write_full</code> e <code>read_full</code>. Sono utilissime per l'esame perché gestiscono due problemi sistemistici reali:</p>
+      
+      <ul>
+        <li style="color: var(--text-secondary); margin-bottom: 0.5rem;"><strong style="color: var(--text-primary);">Letture/Scritture parziali:</strong> Il ciclo <code>while</code> continua finché non sono stati trasferiti esattamente tutti i byte richiesti (<code>count</code>).</li>
+        <li style="color: var(--text-secondary); margin-bottom: 0.5rem;"><strong style="color: var(--text-primary);">Interruzioni da segnali (EINTR):</strong> Se una chiamata di sistema viene interrotta da un segnale (come il <code>SIGUSR1</code> usato nel gioco), <code>errno</code> viene impostato a <code>EINTR</code>. Il codice usa <code>continue</code> per riprendere l'operazione interrotta senza far fallire il programma.</li>
+      </ul>
+
+    </div>
+  </main>
+
+  <script>
+    const header = document.querySelector('.header');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 30) {
+        header.classList.add('scrolled');
+      } else {
+        header.classList.remove('scrolled');
+      }
+    });
+  </script>
+</body>
+</html>
