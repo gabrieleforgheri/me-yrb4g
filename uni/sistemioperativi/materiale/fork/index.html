@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Processi, Fork e Memoria - Materiale Esame | Uni Hub</title>
+  <link rel="stylesheet" href="/uni/css/uni-style.css?v=3">
+</head>
+<body>
+
+  <header class="header">
+    <a href="/uni/sistemioperativi/materiale/" class="back-home-btn animate-fade-in">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+      </svg>
+      Materiale Esame
+    </a>
+    <h1 class="animate-fade-in">Processi, Fork e Memoria 🧬</h1>
+    <p class="animate-fade-in" style="animation-delay: 0.1s;">Creazione processi, sincronizzazione e Copy-On-Write.</p>
+  </header>
+
+  <main class="article-container animate-fade-in" style="animation-delay: 0.2s;">
+    <div class="article-content">
+
+      <h2 style="font-size: 2rem; color: #60a5fa;">Processi (<code>fork</code>), <code>wait</code> e Memoria</h2>
+      <p style="color: var(--text-secondary); font-style: italic;">[Context: Creazione di processi, gerarchie, duplicazione della memoria (Copy-On-Write) e condivisione dei file descriptor in ambiente Unix/Linux.]</p>
+
+      <h3>1. CREAZIONE DI PROCESSI (<code>fork</code>)</h3>
+      <p>La system call <code>fork()</code> crea un nuovo processo duplicando il processo chiamante.</p>
+      
+      <ul>
+        <li><strong style="color: var(--text-primary);">Valori di ritorno della <code>fork()</code>:</strong>
+          <ul>
+            <li><code>&lt; 0</code>: Errore (la fork è fallita).</li>
+            <li><code>== 0</code>: Siamo nel <strong>Processo Figlio</strong> (Child).</li>
+            <li><code>&gt; 0</code>: Siamo nel <strong>Processo Padre</strong> (Parent). Il valore restituito è il PID (Process ID) del figlio appena creato.</li>
+          </ul>
+        </li>
+        <li><strong style="color: var(--text-primary);">Funzioni utili per gli ID:</strong>
+          <ul>
+            <li><code>getpid()</code>: Restituisce il PID del processo corrente.</li>
+            <li><code>getppid()</code>: Restituisce il PID del processo padre (Parent PID).</li>
+          </ul>
+        </li>
+      </ul>
+
+<pre><code>pid_t pid = fork();
+
+if (pid &lt; 0) {
+    perror("fork failed");
+    exit(1);
+} else if (pid == 0) {
+    // CODICE DEL FIGLIO
+    printf("Sono il figlio, il mio PID è %d\n", getpid());
+    exit(0);
+} else {
+    // CODICE DEL PADRE
+    printf("Sono il padre, il PID di mio figlio è %d\n", pid);
+}</code></pre>
+
+      <p><strong style="color: var(--text-primary);">Fork Multiple</strong></p>
+      <p>Se esegui chiamate sequenziali a <code>fork()</code> senza ramificazioni <code>if</code>, il numero di processi cresce esponenzialmente (2<sup>n</sup>). Ad esempio, 3 <code>fork()</code> consecutive creano in totale 8 processi (1 padre originale + 7 figli/nipoti).</p>
+
+      <h3>2. SINCRONIZZAZIONE PADRE-FIGLIO (wait)</h3>
+      <p>Un processo padre usa <code>wait</code> o <code>waitpid</code> per sospendere la propria esecuzione finché un processo figlio non termina.</p>
+      <ul>
+        <li><code>wait(NULL)</code>: Aspetta la terminazione di un qualsiasi processo figlio.</li>
+        <li><code>waitpid(pid, &amp;status, options)</code>: Aspetta la terminazione di uno specifico figlio indicato dal pid.</li>
+      </ul>
+
+      <p><strong style="color: var(--text-primary);">Lettura dello Status</strong></p>
+      <p>Quando il figlio termina tramite <code>exit(valore)</code>, il padre può leggere quel valore decodificando la variabile status con delle macro specifiche:</p>
+
+<pre><code>int status;
+waitpid(pid_figlio, &amp;status, 0);
+
+if (WIFEXITED(status)) {
+    // Il figlio è terminato normalmente
+    int valore_ritorno = WEXITSTATUS(status);
+    printf("Il figlio ha restituito: %d\n", valore_ritorno);
+} else {
+    // Il figlio è terminato in modo anomalo (es. ucciso da un segnale)
+}</code></pre>
+
+      <h3>3. MEMORIA E VARIABILI: COPY-ON-WRITE</h3>
+      <p>Dopo una <code>fork()</code>, il figlio ottiene una copia esatta della memoria del padre.</p>
+      <ul>
+        <li><strong>Variabili Locali e Globali:</strong> Le modifiche fatte dal figlio alle variabili (es. <code>x += 5</code>) NON si riflettono sul padre, e viceversa.</li>
+        <li><strong>Memoria Heap (malloc):</strong> Anche l'allocazione dinamica viene duplicata. Il figlio vedrà la variabile puntata allo stesso indirizzo virtuale del padre.</li>
+        <li><strong>Copy-On-Write (Ottimizzazione del Kernel):</strong> Subito dopo la <code>fork()</code>, padre e figlio condividono la stessa pagina di memoria fisica (PFN - Page Frame Number). La vera duplicazione in RAM avviene solo quando uno dei due processi tenta di scrivere/modificare quel dato.</li>
+      </ul>
+      <p style="padding-left: 1rem; border-left: 3px solid #f59e0b; color: #fbbf24;"><strong style="color: #f59e0b;">Regola d'oro:</strong> Se allochi con <code>malloc</code> prima della fork, sia il padre che il figlio dovranno chiamare <code>free()</code> sui rispettivi puntatori per non avere memory leak.</p>
+
+      <h3>4. CONDIVISIONE DEI FILE DESCRIPTOR</h3>
+      <p>Se il padre apre un file (usando <code>open</code>) prima di chiamare la <code>fork()</code>, i descrittori vengono condivisi tra padre e figlio. Questo ha effetti critici:</p>
+      <ul>
+        <li><strong>Scritture Miste:</strong> Se padre e figlio scrivono contemporaneamente nello stesso descrittore condiviso, i caratteri si mescoleranno in modo imprevedibile nel file (interleaving).</li>
+        <li><strong>Offset Condiviso (Cruciale):</strong> Padre e figlio condividono il "cursore" (offset) all'interno del file. Se il File Descriptor viene clonato e il Figlio 1 legge 1 byte dal file, il cursore avanza. Quando il Figlio 2 andrà a leggere dal file, leggerà il byte successivo, non il primo.</li>
+      </ul>
+
+<pre><code>int fd = open("data.txt", O_RDWR); // Offset a 0
+write(fd, "ABCDEF", 6);
+lseek(fd, 0, SEEK_SET); // Riporta l'offset a 0
+
+pid_t c1 = fork();
+if (c1 == 0) {
+    char ch;
+    read(fd, &amp;ch, 1); // Legge 'A', l'offset condiviso diventa 1
+    exit(0);
+}
+
+wait(NULL); // Aspetta che finisca c1
+
+pid_t c2 = fork();
+if (c2 == 0) {
+    char ch;
+    read(fd, &amp;ch, 1); // Legge 'B', perché l'offset era stato spostato da c1!
+    exit(0);
+}</code></pre>
+
+    </div>
+  </main>
+
+  <script>
+    const header = document.querySelector('.header');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 30) {
+        header.classList.add('scrolled');
+      } else {
+        header.classList.remove('scrolled');
+      }
+    });
+
+    // Simple syntax highlighting
+    document.querySelectorAll('pre code').forEach(block => {
+      let html = block.innerHTML;
+      let tokens = [];
+      
+      // 1. Protect strings and comments
+      html = html.replace(/("[^"]*")|(\/\/.*|\/\*[\s\S]*?\*\/)/g, (match) => {
+        tokens.push(match);
+        return `__TOKEN_${tokens.length - 1}__`;
+      });
+
+      // 2. Keywords, functions, constants
+      html = html.replace(/\b(int|struct|for|if|else|while|ssize_t|pid_t|continue|exit|sizeof|return|typedef|char|void|volatile|sig_atomic_t|sigset_t)\b/g, '<span style="color: #c678dd;">$1</span>');
+      html = html.replace(/\b(poll|read|write|close|perror|socket|bind|listen|accept|connect|unlink|pipe|fork|wait|waitpid|sigaction|mkfifo|open|kill|alarm|pause|sigprocmask|sigemptyset|sigaddset|lseek|printf|malloc|free|getpid|getppid)\b(?=\()/g, '<span style="color: #61afef;">$1</span>');
+      html = html.replace(/\b(POLLIN|POLLHUP|O_RDONLY|O_NONBLOCK|O_RDWR|AF_UNIX|SOCK_STREAM|NUM_FILE|NULL|EAGAIN|SIGPIPE|EEXIST|SIGINT|SIGKILL|SIGSTOP|SIGALRM|SIGUSR1|SIGUSR2|SIG_BLOCK|SIG_UNBLOCK|SA_RESTART|WIFEXITED|WEXITSTATUS|SEEK_SET|SEEK_CUR|SEEK_END)\b/g, '<span style="color: #e5c07b;">$1</span>');
+
+      // 3. Restore strings and comments with style
+      html = html.replace(/__TOKEN_(\d+)__/g, (match, index) => {
+        let val = tokens[index];
+        if (val.startsWith('//') || val.startsWith('/*')) {
+          return `<span style="color: #5c6370; font-style: italic;">${val}</span>`;
+        } else {
+          return `<span style="color: #98c379;">${val}</span>`;
+        }
+      });
+      
+      block.innerHTML = html;
+    });
+  </script>
+</body>
+</html>
