@@ -73,7 +73,6 @@
       <h3>3. MULTIPLEXING CON POLL()</h3>
       <p>Evita il busy waiting su file non bloccanti.</p>
       
-      <p><strong style="color: var(--text-primary);">Struttura e Inizializzazione:</strong></p>
 <pre><code>#include &lt;poll.h&gt;
 struct pollfd poll_set[NUM_FILE];
 
@@ -83,7 +82,6 @@ for (int i = 0; i &lt; NUM_FILE; i++) {
     poll_set[i].revents = 0;     // Output del kernel
 }</code></pre>
 
-      <p><strong style="color: var(--text-primary);">Esecuzione e Gestione Eventi:</strong></p>
       <p>Usare SEMPRE l'AND bit a bit (<code>&amp;</code>) per controllare revents, MAI l'uguaglianza (<code>==</code>).<br>
       La <code>poll()</code> va inserita in un loop principale.</p>
 
@@ -115,7 +113,6 @@ for (int i = 0; i &lt; NUM_FILE; i++) {
       <h3>4. MANIPOLAZIONE DEI FLAG E I/O NON BLOCCANTE (fcntl)</h3>
       <p>Se un file descriptor è già stato aperto (o ereditato, come nei casi standard o nelle pipe), non è possibile cambiare la modalità di blocco direttamente tramite <code>open()</code>. Si usa la system call <code>fcntl()</code> con i comandi <code>F_GETFL</code> (prendi i flag correnti) e <code>F_SETFL</code> (imposta i nuovi flag).</p>
 
-      <p><strong style="color: var(--text-primary);">Pattern per rendere un File Descriptor NON Bloccante</strong></p>
 <pre><code>#include &lt;fcntl.h&gt;
 #include &lt;errno.h&gt;
 
@@ -129,7 +126,6 @@ if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) == -1) {
     exit(1);
 }</code></pre>
 
-      <p><strong style="color: var(--text-primary);">Gestione degli errori nell'I/O Non Bloccante</strong></p>
       <p>Quando un file è impostato come <code>O_NONBLOCK</code>:</p>
       <ul>
         <li><code>read()</code>: Se il canale è vuoto, non si blocca ma restituisce -1 impostando errno = <code>EAGAIN</code> (o <code>EWOULDBLOCK</code>).</li>
@@ -149,7 +145,6 @@ if (n &lt; 0) {
       <h3>5. REDIREZIONE DEI FILE DESCRIPTOR (dup2)</h3>
       <p>La system call <code>dup2(int oldfd, int newfd)</code> clona il file descriptor <code>oldfd</code> sul file descriptor <code>newfd</code>. Se <code>newfd</code> era già aperto, il kernel lo chiude automaticamente prima di effettuare la copia.</p>
 
-      <p><strong style="color: var(--text-primary);">Pattern di Redirezione dello Standard Output (stdout) su File</strong></p>
       <p>Questo meccanismo è la base di come la Shell implementa l'operatore <code>&gt;</code>.</p>
 
 <pre><code>#include &lt;unistd.h&gt;
@@ -185,7 +180,6 @@ if (offset == (off_t)-1) { perror("lseek"); return 1; }
 write(fd, "A", 1); 
 close(fd);</code></pre>
 
-      <p><strong style="color: var(--text-primary);">Comando d'esame per verificare la differenza tra dimensione logica e reale:</strong></p>
       <ul>
         <li><code>ls -lh file_sparso.bin</code> &rarr; Mostra la dimensione logica (es. 1 GB).</li>
         <li><code>du -sh file_sparso.bin</code> &rarr; Mostra lo spazio reale effettivamente allocato sul disco (poche frazioni di KB).</li>
@@ -194,7 +188,6 @@ close(fd);</code></pre>
       <h3>7. ADVISORY FILE LOCKING (struct flock &amp; fcntl)</h3>
       <p>Il locking tramite <code>fcntl()</code> è di tipo advisory (cooperativo). Significa che il Kernel non impedisce fisicamente a un processo malintenzionato di scrivere sul file; spetta ai programmi concorrenti cooperare richiedendo esplicitamente il lock prima di accedere alla risorsa.</p>
 
-      <p><strong style="color: var(--text-primary);">La Struttura struct flock</strong></p>
 <pre><code>struct flock lock;
 lock.l_type   = F_WRLCK;   // Tipo: F_RDLCK (Condiviso/Lettura), F_WRLCK (Esclusivo/Scrittura), F_UNLCK (Sblocca)
 lock.l_whence = SEEK_SET;  // Punto di riferimento dell'offset (SEEK_SET, SEEK_CUR, SEEK_END)
@@ -202,13 +195,11 @@ lock.l_start  = 0;         // Offset iniziale in byte relativo a l_whence
 lock.l_len    = 0;         // Lunghezza della sezione da bloccare. 0 = fino alla fine del file (EOF)
 lock.l_pid    = 0;         // Compilato dal Kernel con F_GETLK per indicare chi possiede il lock</code></pre>
 
-      <p><strong style="color: var(--text-primary);">Acquisizione Lock Non Bloccante (F_SETLK) vs Bloccante (F_SETLKW)</strong></p>
       <ul>
         <li><code>F_SETLK</code>: Tenta di acquisire il lock. Se il file è già bloccato da un altro processo, fallisce immediatamente restituendo -1 e impostando errno = <code>EACCES</code> o <code>EAGAIN</code>.</li>
         <li><code>F_SETLKW</code>: (Wait) Se incontra un lock in conflitto, mette a dormire il processo finché la risorsa non torna libera.</li>
       </ul>
 
-      <p><strong style="color: var(--text-primary);">Pattern: Richiesta Lock Esclusivo (Scrittura) e Interrogazione Proprietario</strong></p>
 <pre><code>#include &lt;fcntl.h&gt;
 #include &lt;unistd.h&gt;
 
@@ -243,7 +234,6 @@ close(fd);</code></pre>
       <h3>8. I/O ASINCRONO GUIDATO DAI SEGNALI (O_ASYNC)</h3>
       <p>L'I/O asincrono permette a un processo di continuare a svolgere i propri calcoli in user-space. Il Kernel invierà un segnale <code>SIGIO</code> al processo non appena sul file descriptor diventano disponibili nuovi dati da leggere.</p>
 
-      <p><strong style="color: var(--text-primary);">Configurazione per l'I/O Asincrono guidato da segnali</strong></p>
       <p>Richiede 3 passaggi fondamentali:</p>
       <ol>
         <li>Assegnare un gestore personalizzato per il segnale <code>SIGIO</code>.</li>
