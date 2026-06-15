@@ -165,79 +165,125 @@ done</code></pre>
     echo "Riga letta: $RIGA"
 done &lt; "miofile.txt"</code></pre>
 
-      <h3>6. FILTRI E MANIPOLAZIONE TESTO (The Core Unix Tools)</h3>
-      <p>Questi strumenti, combinati con le <code>|</code> (pipe), sono il cuore di Bash.</p>
-      
-      <ul>
-        <li><strong style="color: #61afef;">grep</strong> (Ricerca di pattern)
-          <ul>
-            <li><code>grep "errore" file.log</code>: Trova "errore".</li>
-            <li><code>grep -i "errore"</code>: Case-insensitive.</li>
-            <li><code>grep -v "info"</code>: Inverte il match (mostra le righe che NON contengono "info").</li>
-            <li><code>grep -c "errore"</code>: Conta il numero di righe.</li>
-          </ul>
-        </li>
-        <li><strong style="color: #61afef;">awk</strong> (Elaborazione basata su colonne/campi)
-          <ul>
-            <li><code>awk '{print $1, $3}' file.txt</code>: Stampa prima e terza colonna.</li>
-            <li><code>awk -F ":" '{print $1}' /etc/passwd</code>: Usa i due punti come separatore.</li>
-            <li><code>awk '{sum += $1} END {print sum}'</code>: Somma tutti i valori.</li>
-          </ul>
-        </li>
-        <li><strong style="color: #61afef;">sed</strong> (Stream Editor - Sostituzione)
-          <ul>
-            <li><code>sed 's/vecchio/nuovo/' file.txt</code>: Sostituisce la prima occorrenza.</li>
-            <li><code>sed 's/vecchio/nuovo/g' file.txt</code>: Sostituzione globale.</li>
-            <li><code>sed '/PATTERN/d' file.txt</code>: Elimina le righe che contengono il pattern.</li>
-          </ul>
-        </li>
-        <li><strong>Altri filtri utili</strong>
-          <ul>
-            <li><code>cut -d',' -f2 file.csv</code>: Estrae la colonna 2 da un CSV usando la virgola.</li>
-            <li><code>sort -n</code>: Ordina in modo numerico.</li>
-            <li><code>uniq / uniq -c</code>: Rimuove righe duplicate / le conta.</li>
-          </ul>
-        </li>
-      </ul>
+      <h3>6. FUNZIONI E SCOPE DELLE VARIABILI</h3>
+      <p><strong style="color: var(--text-primary);">Definizione e Passaggio dei Parametri</strong></p>
+      <p>Le funzioni in Bash sono blocchi di comandi riutilizzabili isolati in un nome logico. Importante: i parametri passati ad una funzione <strong>non</strong> coincidono con i parametri dello script principale. All'interno della funzione, i registri <code>$1</code>, <code>$2</code>, <code>$#</code> si azzerano e fanno riferimento esclusivamente agli argomenti della funzione stessa.</p>
 
-      <h3>7. PROCESSI IN BACKGROUND E SEGNALI (trap)</h3>
-<pre><code>./script_lungo.sh &amp;
-PID_LUNGO=$!      # Salva il PID dell'ultimo processo in background
-wait $PID_LUNGO   # Il padre si sospende finché questo figlio non termina</code></pre>
+      <p><strong style="color: var(--text-primary);">Uso Obbligatorio di local</strong></p>
+      <p>Di default, tutte le variabili in Bash sono globali. Se modifichi una variabile in una funzione, cambierà anche all'esterno, provocando bug catastrofici. È obbligatorio usare la parola chiave <code>local</code> per isolare lo scope all'interno del record di attivazione della funzione.</p>
 
-      <p><strong style="color: var(--text-primary);">La gestione dei Segnali (trap)</strong></p>
-<pre><code># Definiamo la funzione di cleanup
-cleanup() {
-    echo "Rilevato SIGINT (Ctrl+C). Pulizia dei file temporanei..."
-    rm -f /tmp/temp_*.log
-    exit 1
+<pre><code>calcola_area() {
+    local BASE=$1     # Scope locale, isolato dal resto dello script
+    local ALTEZZA=$2
+    local AREA=$((BASE * ALTEZZA))
+    echo "$AREA"      # Le funzioni restituiscono dati scrivendo sullo stdout
 }
 
-# Installiamo il trap per intercettare SIGINT (2) e SIGTERM (15)
-trap cleanup SIGINT SIGTERM
+# Invocazione della funzione (senza parentesi tonde!)
+RISULTATO=$(calcola_area 10 5)</code></pre>
 
-echo "Script in esecuzione. Premi Ctrl+C per testare..."
-while true; do
-    sleep 1
+      <h3>7. STRUTTURE DATI AVANZATE: ARRAY INDIZZATI E ASSOCIATIVI</h3>
+      <p><strong style="color: var(--text-primary);">Array Indizzati (Liste Standard)</strong></p>
+<pre><code>NOMI=("Alice" "Bob" "Charlie") # Creazione dell'array
+echo "${NOMI[0]}"              # Accesso al primo elemento (Indice 0)
+echo "${#NOMI[@]}"             # Restituisce la lunghezza dell'array</code></pre>
+
+      <p><strong style="color: var(--text-primary);">Array Associativi (Chiave-Valore / Mappe)</strong></p>
+      <p>Gli array associativi permettono di mappare chiavi testuali a valori. Richiedono obbligatoriamente una dichiarazione esplicita tramite il comando builtin <code>declare -A</code>.</p>
+<pre><code># 1. Dichiarazione esplicita obbligatoria
+declare -A MAPPA_ESTENSIONI
+
+# 2. Popolamento e assegnazione
+MAPPA_ESTENSIONI[txt]=15
+MAPPA_ESTENSIONI[pdf]=42
+
+# 3. Iterazione sulle CHIAVI dell'array (Uso del punto esclamativo)
+for ext in "${!MAPPA_ESTENSIONI[@]}"; do
+    echo "Estensione: $ext -&gt; File spostati: ${MAPPA_ESTENSIONI[$ext]}"
 done</code></pre>
 
-      <h3>8. FUNZIONI</h3>
-      <p>Usa la keyword <code>local</code> dentro le funzioni per isolare le variabili!</p>
-<pre><code>mia_funzione() {
-    local PARAM_1=$1  
-    local PARAM_2=$2  
-    
-    echo "Ho ricevuto: $PARAM_1 e $PARAM_2"
-    
-    # In Bash si usa 'echo' per restituire valori catturabili dal chiamante
-    echo "RISULTATO"
+      <h3>8. STRUMENTI DI ELABORAZIONE TESTO (SWISS ARMY KNIVES)</h3>
+      <p><strong style="color: #61afef;">grep (Global Regular Expression Print)</strong></p>
+      <p>Filtra flussi testuali estraendo esclusivamente le righe che corrispondono ad un pattern o espressione regolare.</p>
+      <ul>
+        <li><code>-E</code>: Attiva le Espressioni Regolari Estese (ERE) evitando l'escape di caratteri speciali come <code>( )</code> e <code>|</code>.</li>
+        <li><code>-i</code>: Disattiva la sensibilità alle maiuscole/minuscole (case-insensitive).</li>
+        <li><code>-v</code>: Inverte il filtro, mostrando solo le righe che non corrispondono al pattern.</li>
+        <li><code>-c</code>: Restituisce il conteggio numerico puro delle linee corrispondenti.</li>
+      </ul>
+
+      <p><strong style="color: #61afef;">sed (Stream Editor)</strong></p>
+      <p>Modifica flussi di testo in transito riga per riga basandosi su comandi di editing.</p>
+      <ul>
+        <li><strong>Sostituzione di Base</strong> (<code>s/pattern/replacement/</code>): Cambia la prima occorrenza del pattern trovata in ogni riga.</li>
+        <li><strong>Sostituzione Globale</strong> (<code>s/pattern/replacement/g</code>): Cambia tutte le occorrenze presenti in ogni riga.</li>
+        <li><strong>Capture Groups ed ERE</strong> (<code>sed -E</code>): Permette di isolare parti del testo tramite parentesi tonde e riutilizzarle nella stringa di rimpiazzo mediante i puntatori sequenziali <code>\1</code>, <code>\2</code>, <code>\3</code>.</li>
+      </ul>
+<pre><code># Estrae l'IP (\1), la Data (\2) e l'Errore (\3) da un log HTTP riformattando la riga
+sed -E 's/^([^ ]+) .* \[(.*)\] ".*" (404|500) .*/Error \3 from IP \1 at time \2/' log.txt</code></pre>
+      <ul>
+        <li><strong>Cancellazione Righe</strong> (<code>/pattern/d</code>): Rimuove completamente dal flusso le righe che corrispondono al criterio impostato.</li>
+      </ul>
+
+      <p><strong style="color: #61afef;">awk (Data Extraction &amp; Processing Language)</strong></p>
+      <p><code>awk</code> interpreta le righe di testo come un database strutturato composto da record (righe) e campi (colonne). Di default, usa lo spazio bianco o il tabulatore come separatore di colonna.</p>
+      <ul>
+        <li><strong>Variabili di Colonna:</strong> <code>$0</code> indica l'intera riga corrente; <code>$1</code>, <code>$2</code> indicano rispettivamente la prima e la seconda colonna estratta.</li>
+        <li><strong>Flag -F:</strong> Specifica un delimitatore personalizzato differente dallo spazio.</li>
+      </ul>
+<pre><code># Estrae l'username (colonna 1) dal file degli utenti di sistema usando ':' come separatore
+awk -F ":" '{ print $1 }' /etc/passwd</code></pre>
+      <p><strong>Blocchi Temporali (BEGIN ed END):</strong></p>
+      <ul>
+        <li><code>BEGIN { ... }</code>: Esegue il blocco di codice una volta sola prima di iniziare a leggere il file.</li>
+        <li><code>END { ... }</code>: Esegue il codice al termine della lettura di tutte le righe (perfetto per stampare medie o somme accumulate).</li>
+      </ul>
+<pre><code># Somma i valori presenti nella prima colonna di un file e stampa il totale complessivo
+awk '{ sum += $1 } END { print "Totale Accumulato:", sum }' dati.txt</code></pre>
+
+      <h3>9. CONTROLLO DEI PROCESSI, SEGNALI E INTERFACCIA GRAFICA (TUI)</h3>
+      <p><strong style="color: var(--text-primary);">Gestione Asincrona (&amp;) e Sincronizzazione (wait)</strong></p>
+      <p>Lanciando un comando seguito dal carattere <code>&amp;</code>, la shell esegue una fork() ed inserisce il processo figlio in background asincrono, restituendo immediatamente il controllo al terminale.</p>
+      <ul>
+        <li><code>$!</code>: Cattura immediatamente il PID del job asincrono appena generato.</li>
+        <li><code>wait [PID]</code>: Blocca l'esecuzione dello script padre finché il processo figlio specificato non ha completato l'esecuzione.</li>
+      </ul>
+
+      <p><strong style="color: var(--text-primary);">Intercettazione dei Segnali del Sistema Operativo (trap)</strong></p>
+      <p>Il comando <code>trap</code> permette allo script di registrare una funzione di callback personalizzata per rispondere alla ricezione di segnali asincroni inviati dal Kernel (es. <code>SIGINT</code> generato da Ctrl+C o <code>SIGWINCH</code> generato dal ridimensionamento della finestra).</p>
+<pre><code>cleanup() {
+    tput cnorm # Ripristina il cursore visibile prima di morire
+    clear
+    exit 0
 }
 
-# Chiamata di funzione e cattura del risultato
-RET_VAL=$(mia_funzione "Ciao" "Mondo")
-echo "La funzione ha restituito: $RET_VAL"</code></pre>
+# Registrazione dei trap: Associa la funzione cleanup ai segnali di interruzione e terminazione
+trap cleanup SIGINT SIGTERM</code></pre>
 
-      <h2>9. ESEMPI PRATICI AVANZATI E SCRIPT COMPLETI</h2>
+      <p><strong style="color: var(--text-primary);">Gestione Avanzata del Terminale (tput)</strong></p>
+      <p>L'utility <code>tput</code> permette di interagire direttamente con le capacità dello schermo (ANSI escape sequences) per creare interfacce grafiche testuali (TUI).</p>
+      <ul>
+        <li><code>tput lines</code> / <code>tput cols</code>: Restituiscono in tempo reale il numero di righe e colonne disponibili nella finestra corrente.</li>
+        <li><code>tput cup &lt;y&gt; &lt;x&gt;</code>: Sposta istantaneamente il cursore alle coordinate cartesiane impostate (0-indexed, dall'angolo in alto a sinistra).</li>
+        <li><code>tput civis</code>: (Cursor Invisible) Nasconde alla vista il cursore lampeggiante di sistema.</li>
+        <li><code>tput cnorm</code>: (Cursor Normal) Ripristina la normale visibilità del cursore del terminale.</li>
+      </ul>
+
+      <p><strong style="color: var(--text-primary);">Interfacce Interattive native (whiptail)</strong></p>
+      <p><code>whiptail</code> permette di generare finestre di dialogo grafiche all'interno della CLI sfruttando la libreria newt.</p>
+      <p><strong>Creazione Menu di Selezione Singola (--menu)</strong></p>
+      <p>I parametri richiedono l'altezza, la larghezza, il numero di elementi visibili e coppie composte da Tag e Descrizione. Attenzione: whiptail restituisce la scelta fatta scrivendo sullo <code>stderr</code> (2), non sullo <code>stdout</code> (1). È necessario attuare uno swap dei canali per catturare il dato in una variabile.</p>
+<pre><code># Lo swap '3&gt;&amp;1 1&gt;&amp;2 2&gt;&amp;3' scambia stdout e stderr per permettere la cattura della variabile
+SCELTA=$(whiptail --menu "Seleziona Database" 12 45 3 \
+    "1" "PostgreSQL" \
+    "2" "MariaDB" \
+    "3" "SQLite" \
+    3&gt;&amp;1 1&gt;&amp;2 2&gt;&amp;3)</code></pre>
+
+      <p><strong>Barra di Avanzamento Dinamica (--gauge)</strong></p>
+      <p>La barra legge continuamente un flusso di numeri interi (da 0 a 100) provenienti dallo standard input e aggiorna l'interfaccia grafica in tempo reale, terminando quando rileva l'EOF.</p>
+
+      <h2>10. ESEMPI PRATICI AVANZATI E SCRIPT COMPLETI</h2>
 
       <h3>Esempio 1: Input interattivo e creazione di percorsi</h3>
 <pre><code>#!/bin/bash
@@ -508,7 +554,7 @@ sed -E '
       html = html.replace(/\b(if|then|elif|else|fi|for|in|while|until|do|done|case|esac|function|local|declare|export|continue|break|return|exit|let|read)\b/g, '<span style="color: #c678dd;">$1</span>');
       
       // 4. Commands/Built-ins
-      html = html.replace(/\b(echo|sleep|wait|trap|grep|awk|sed|cut|sort|uniq|mkdir|rm|touch|chmod|stat|printf|xargs|pgrep|ps|renice|tput|cat|clear|bc|date|ls|file|kill|gzip)\b/g, '<span style="color: #61afef;">$1</span>');
+      html = html.replace(/\b(echo|sleep|wait|trap|grep|awk|sed|cut|sort|uniq|mkdir|rm|touch|chmod|stat|printf|xargs|pgrep|ps|renice|tput|whiptail|cat|clear|bc|date|ls|file|kill|gzip)\b/g, '<span style="color: #61afef;">$1</span>');
       
       // 5. Restore strings and comments with style
       html = html.replace(/__TOKEN_(\d+)__/g, (match, index) => {
