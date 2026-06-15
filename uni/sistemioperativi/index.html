@@ -107,6 +107,7 @@
     // Advanced Information Retrieval System
     let searchIndexDocs = null;
     let isIndexing = false;
+    let typingInterval = null; // Per evitare sovrapposizioni del typing effect
 
     // 1. Stop-Words italiane (da filtrare)
     const stopWords = new Set(["il", "lo", "la", "i", "gli", "le", "un", "uno", "una", "di", "a", "da", "in", "con", "su", "per", "tra", "fra", "che", "del", "dello", "della", "dei", "degli", "delle", "al", "allo", "alla", "ai", "agli", "alle", "dal", "dallo", "dalla", "dai", "dagli", "dalle", "nel", "nello", "nella", "nei", "negli", "nelle", "sul", "sullo", "sulla", "sui", "sugli", "sulle", "e", "ed", "o", "oppure", "ma", "se", "non", "si", "mi", "ti", "ci", "vi", "ne", "è", "sono", "ha", "hanno", "come", "più", "molto", "tutto", "tutti"]);
@@ -386,6 +387,51 @@
       if (resultsByUrl.size === 0) {
         resultsContainer.innerHTML = '<div style="text-align:center; padding: 2rem; color: var(--text-secondary);">Nessun risultato trovato. Prova con altre parole chiave.</div>';
       } else {
+        // --- INIZIO AI OVERVIEW ---
+        clearInterval(typingInterval);
+        
+        // Estrai le migliori frasi per l'AI Overview (da blocchi con più di 30 caratteri e punteggio alto)
+        const bestBlocks = scoredBlocks.filter(b => b.text.length > 30).slice(0, 3);
+        if (bestBlocks.length > 0) {
+           let aiSummary = bestBlocks.map(b => {
+              let text = b.text.replace(/<[^>]*>?/gm, '').trim();
+              let dotIndex = text.indexOf('.');
+              // Prendi la prima frase intera, oppure trancia a 120 caratteri
+              if (dotIndex > 10 && dotIndex < 150) {
+                 return text.substring(0, dotIndex + 1);
+              } else {
+                 return text.substring(0, 120) + (text.length > 120 ? "..." : ".");
+              }
+           }).join(" Inoltre, ");
+
+           const aiBox = document.createElement('div');
+           aiBox.className = 'ai-overview-box';
+           
+           const aiTitle = document.createElement('div');
+           aiTitle.className = 'ai-title';
+           aiTitle.innerHTML = '✨ Riassunto generato dall\'IA';
+           aiBox.appendChild(aiTitle);
+           
+           const aiContent = document.createElement('div');
+           aiContent.className = 'ai-content typing';
+           aiBox.appendChild(aiContent);
+           
+           resultsContainer.appendChild(aiBox);
+           
+           let i = 0;
+           function typeWriter() {
+              if (i < aiSummary.length) {
+                 aiContent.innerHTML += aiSummary.charAt(i);
+                 i++;
+                 typingInterval = setTimeout(typeWriter, 15);
+              } else {
+                 aiContent.classList.remove('typing');
+              }
+           }
+           typeWriter();
+        }
+        // --- FINE AI OVERVIEW ---
+
         const sortedPages = Array.from(resultsByUrl.entries()).sort((a, b) => b[1].score - a[1].score);
         
         sortedPages.forEach(([url, data]) => {
