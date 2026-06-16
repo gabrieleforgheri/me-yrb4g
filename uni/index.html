@@ -53,5 +53,18 @@
       }
     });
   </script>
+
+  <script>
+    // Fix for local file:// navigation
+    document.addEventListener("DOMContentLoaded", function() {
+      if (window.location.protocol === "file:") {
+        document.querySelectorAll("a").forEach(a => {
+          if (a.href.endsWith("/")) {
+            a.href += "index.html";
+          }
+        });
+      }
+    });
+  </script>
 </body>
 </html>

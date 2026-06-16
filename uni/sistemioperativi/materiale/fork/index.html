@@ -9,7 +9,7 @@
 <body>
 
   <header class="header">
-    <a href="../../index.html" class="back-home-btn animate-fade-in">
+    <a href="../../" class="back-home-btn animate-fade-in">
       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <line x1="19" y1="12" x2="5" y2="12"></line>
         <polyline points="12 19 5 12 12 5"></polyline>
@@ -254,5 +254,18 @@ if (fork() == 0) {
     });
   </script>
 <script src="../../../js/search-highlight.js"></script>
+
+  <script>
+    // Fix for local file:// navigation
+    document.addEventListener("DOMContentLoaded", function() {
+      if (window.location.protocol === "file:") {
+        document.querySelectorAll("a").forEach(a => {
+          if (a.href.endsWith("/")) {
+            a.href += "index.html";
+          }
+        });
+      }
+    });
+  </script>
 </body>
 </html>

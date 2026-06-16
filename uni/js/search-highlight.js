@@ -24,7 +24,8 @@ document.addEventListener("DOMContentLoaded", () => {
         backBtn.style.gridRow = 'unset';
 
         const searchBackBtn = document.createElement('a');
-        searchBackBtn.href = `../../index.html?search=${encodeURIComponent(query)}`;
+        const baseUrl = window.location.protocol === 'file:' ? '../../index.html' : '../../';
+        searchBackBtn.href = `${baseUrl}?search=${encodeURIComponent(query)}`;
         searchBackBtn.className = 'back-home-btn animate-fade-in';
         searchBackBtn.style.gridColumn = 'unset';
         searchBackBtn.style.gridRow = 'unset';
