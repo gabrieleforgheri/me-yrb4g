@@ -629,6 +629,174 @@ awk -F',' '
         <p style="font-size: 0.9em; color: var(--text-secondary);">Per i file TSV (Tab-Separated Values), il delimitatore di default di awk (che è lo spazio/tab) funziona già perfettamente. Per cut, il tab è il delimitatore di default, quindi basta usare <code>cut -f2 file.tsv</code>.</p>
       </div>
 
+<div style="background: rgba(99, 102, 241, 0.05); border-left: 4px solid #6366f1; padding: 1.5rem; border-radius: 8px; margin: 2rem 0;">
+        <h3 style="margin-top: 0; color: #6366f1;">APPROFONDIMENTO: Il Paradigma e la Potenza di AWK</h3>
+        
+        <h4 style="color: #a855f7; margin-top: 1.5rem;">1. Il Paradigma di awk (Come ragiona)</h4>
+        <p>Prima di scrivere codice, devi capire come awk legge i file:</p>
+        <ul>
+            <li>Legge il file riga per riga (ogni riga è chiamata <strong>Record</strong>).</li>
+            <li>Divide automaticamente ogni riga in colonne (ogni colonna è chiamata <strong>Campo o Field</strong>).</li>
+            <li>Di default, usa lo spazio bianco (o le tabulazioni) come separatore di colonna.</li>
+        </ul>
+        <p><strong>Sintassi Fondamentale:</strong> <code>awk 'pattern { action }' nome_file</code></p>
+        <ul>
+            <li><strong>pattern:</strong> La condizione per cui eseguire l'azione (es. "Se la riga contiene 'Error'"). Se omesso, l'azione viene eseguita per tutte le righe.</li>
+            <li><strong>action:</strong> Cosa fare (es. "Stampa la seconda colonna"). Se omesso, l'azione di default è <code>{print $0}</code> (stampa l'intera riga).</li>
+        </ul>
+
+        <h4 style="color: #a855f7; margin-top: 1.5rem;">2. Il Flusso di Esecuzione (La Trinità di AWK)</h4>
+        <p>Un programma awk perfetto si divide in 3 blocchi logici. Nessuno è obbligatorio, ma conoscerli è fondamentale.</p>
+<pre><code>awk '
+BEGIN { 
+    # Eseguito UNA SOLA VOLTA prima di leggere il file.
+    # Ottimo per inizializzare variabili o stampare intestazioni.
+}
+{ 
+    # Eseguito PER OGNI RIGA del file (Main Loop).
+    # Qui avviene l elaborazione vera e propria.
+}
+END { 
+    # Eseguito UNA SOLA VOLTA alla fine, dopo aver letto tutto il file.
+    # Ottimo per stampare totali, medie o riepiloghi.
+}
+' nome_file</code></pre>
+
+        <h4 style="color: #a855f7; margin-top: 1.5rem;">3. Variabili Predefinite (Il Cuore di AWK)</h4>
+        <p>Queste variabili sono gestite automaticamente da awk e sono essenziali per manipolare i dati.</p>
+        <div class="table-responsive">
+            <table class="theory-table">
+                <thead>
+                    <tr><th>Variabile</th><th>Significato</th><th>Esempio Pratico</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><code>$0</code></td><td>L'intero record (tutta la riga corrente).</td><td><code>print $0</code></td></tr>
+                    <tr><td><code>$1, $2...</code></td><td>Il campo 1, il campo 2, ecc.</td><td><code>print $1, $3</code></td></tr>
+                    <tr><td><code>NR</code></td><td>Number of Record: Il numero della riga corrente.</td><td><code>NR &gt; 1</code> (Salta la riga 1 d'intestazione)</td></tr>
+                    <tr><td><code>NF</code></td><td>Number of Fields: Quante colonne ci sono nella riga corrente.</td><td><code>print $NF</code> (Stampa sempre l'ultima colonna)</td></tr>
+                    <tr><td><code>FS</code></td><td>Field Separator: Il separatore di input (Default: Spazio).</td><td><code>BEGIN { FS="," }</code> (Legge un CSV)</td></tr>
+                    <tr><td><code>OFS</code></td><td>Output Field Separator: Il separatore di output (Default: Spazio).</td><td><code>BEGIN { OFS="-" }</code> (Stampa $1-$2)</td></tr>
+                    <tr><td><code>RS</code></td><td>Record Separator: Separatore di riga in input (Default: \n).</td><td><code>BEGIN { RS="" }</code> (Legge paragrafi vuoti)</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h4 style="color: #a855f7; margin-top: 1.5rem;">4. Pattern Matching e Operatori Relazionali</h4>
+        <p>Puoi filtrare le righe prima di applicare l'azione.</p>
+        <p><strong>Uguaglianza e Matematica:</strong></p>
+<pre><code># Stampa la riga solo se la colonna 3 è maggiore di 100
+awk '$3 &gt; 100 { print $0 }' file.txt
+
+# Stampa la riga se la colonna 1 è ESATTAMENTE uguale a "root"
+awk '$1 == "root" { print $0 }' file.txt</code></pre>
+        <p><strong>Espressioni Regolari (Regex):</strong> Si usa l'operatore <code>~</code> (corrisponde a) o <code>!~</code> (non corrisponde a).</p>
+<pre><code># Stampa se la colonna 2 INIZIA (^) per "Err"
+awk '$2 ~ /^Err/ { print $0 }' log.txt
+
+# Stampa se l intera riga NON contiene la parola "debug"
+awk '$0 !~ /debug/ { print $0 }' log.txt</code></pre>
+        <p><strong>Operatori Logici (&amp;&amp;, ||, !):</strong></p>
+<pre><code># Stampa se la colonna 1 è "Alice" E la colonna 3 è &gt; 50
+awk '$1 == "Alice" &amp;&amp; $3 &gt; 50 { print $2 }' file.txt</code></pre>
+
+        <h4 style="color: #a855f7; margin-top: 1.5rem;">5. Formattazione dell'Output (print vs printf)</h4>
+        <ul>
+            <li><strong>print:</strong> Semplice, aggiunge automaticamente gli spazi tra gli argomenti e va a capo alla fine.</li>
+            <li><strong>printf:</strong> Stile C, ti dà controllo millimetrico sugli spazi, i decimali e l'incolonnamento (NON va a capo automaticamente, devi usare <code>\n</code>).</li>
+        </ul>
+<pre><code># Esempio printf: %-10s (stringa allineata a sx di 10 caratteri), %.2f (float con 2 decimali)
+awk '{ printf "Utente: %-10s | Saldo: €%.2f\n", $1, $3 }' banca.txt</code></pre>
+
+        <h4 style="color: #a855f7; margin-top: 1.5rem;">6. Strutture di Controllo (If, For, While)</h4>
+        <p>Dentro il blocco delle azioni <code>{}</code> puoi programmare esattamente come in C.</p>
+        <p><strong>If - Else:</strong></p>
+<pre><code>awk '{
+    if ($3 &gt;= 18) {
+        print $1 " è Maggiorenne"
+    } else if ($3 &gt; 0) {
+        print $1 " è Minorenne"
+    } else {
+        print "Età non valida per " $1
+    }
+}' utenti.txt</code></pre>
+        <p><strong>Ciclo For (su tutti i campi di una riga):</strong></p>
+<pre><code># Cicla dalla colonna 1 fino all'ultima (NF)
+awk '{
+    for (i = 1; i &lt;= NF; i++) {
+        printf "Colonna %d: %s\n", i, $i
+    }
+}' file.txt</code></pre>
+
+        <h4 style="color: #a855f7; margin-top: 1.5rem;">7. Array Associativi (Il Superpotere di AWK)</h4>
+        <p>Gli array in awk sono "mappe" o "dizionari". Gli indici non devono per forza essere numeri (0, 1, 2...), ma possono essere stringhe! Questo è perfetto per raggruppare e contare.</p>
+<pre><code># Obiettivo: Contare quanti errori ha generato ogni indirizzo IP in un file di log.
+# Supponiamo: Colonna 1 = IP, Colonna 2 = Tipo Errore
+
+awk '{
+    # Creiamo un array chiamato "conteggio".
+    # Usiamo l IP ($1) come chiave. Incrementiamo il suo valore.
+    conteggio[$1]++
+}
+END {
+    # Alla fine, iteriamo su tutte le chiavi (IP) dell array
+    for (ip in conteggio) {
+        print "L IP " ip " ha generato " conteggio[ip] " errori."
+    }
+}' access.log</code></pre>
+
+        <h4 style="color: #a855f7; margin-top: 1.5rem;">8. Funzioni Predefinite Utili</h4>
+        <p>awk include funzioni stringa e matematiche comodissime.</p>
+        <div class="table-responsive">
+            <table class="theory-table">
+                <thead>
+                    <tr><th>Funzione</th><th>Scopo</th><th>Esempio</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><code>length(str)</code></td><td>Lunghezza di una stringa</td><td><code>awk 'length($1) &gt; 5 {print}'</code></td></tr>
+                    <tr><td><code>toupper(str)</code></td><td>Converte in maiuscolo</td><td><code>awk '{print toupper($1)}'</code></td></tr>
+                    <tr><td><code>tolower(str)</code></td><td>Converte in minuscolo</td><td><code>awk '{print tolower($1)}'</code></td></tr>
+                    <tr><td><code>substr(str, in, len)</code></td><td>Estrae una sottostringa</td><td><code>awk '{print substr($1, 1, 3)}'</code> (Primi 3 car.)</td></tr>
+                    <tr><td><code>gsub(old, new, str)</code></td><td>Sostituzione globale (regex)</td><td><code>awk '{gsub(/-/, "_", $1); print}'</code> (Cambia - in _)</td></tr>
+                    <tr><td><code>split(str, arr, sep)</code></td><td>Divide una stringa in un array</td><td><code>split($1, mioArray, ".")</code></td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h4 style="color: #a855f7; margin-top: 1.5rem;">9. Ricettario Pratico ("Snippets" da Copia-Incolla)</h4>
+        <p>Ecco le operazioni più richieste nella vita reale:</p>
+        
+        <p><strong>1. Leggere un file CSV (cambiare il separatore)</strong><br>
+        Usa il flag <code>-F</code> da riga di comando per impostare la virgola come separatore.</p>
+<pre><code>awk -F',' '{ print "Nome: " $1 ", Età: " $3 }' dati.csv</code></pre>
+        
+        <p><strong>2. Calcolare Somma e Media di una colonna</strong></p>
+<pre><code># Somma tutti i valori della colonna 2 e alla fine calcola la media
+awk '{ 
+    somma += $2 
+} 
+END { 
+    print "Somma totale: " somma; 
+    print "Media: " somma/NR 
+}' vendite.txt</code></pre>
+
+        <p><strong>3. Invertire l'ordine delle colonne</strong></p>
+<pre><code># Scambia la prima e la seconda colonna
+awk '{ print $2, $1 }' file.txt</code></pre>
+
+        <p><strong>4. Rimuovere le righe vuote da un file</strong><br>
+        Se la riga ha 0 colonne (<code>NF == 0</code>), viene ignorata. Stampa solo quelle che hanno almeno 1 colonna.</p>
+<pre><code>awk 'NF &gt; 0' file.txt</code></pre>
+
+        <p><strong>5. Stampare un blocco di righe compreso tra due Pattern</strong></p>
+<pre><code># Inizia a stampare quando trovi "START", smetti quando trovi "STOP"
+awk '/START/,/STOP/' file.txt</code></pre>
+
+        <p><strong>6. Identificare processi zombie o filtraggio da altri comandi</strong><br>
+        Spesso awk si usa accoppiato (con la pipe <code>|</code>) ad altri comandi Linux.</p>
+<pre><code># Prendi l output di ps, salta l intestazione (NR&gt;1), stampa il PID ($2) di chi usa troppa CPU ($3 &gt; 80)
+ps aux | awk 'NR &gt; 1 &amp;&amp; $3 &gt; 80.0 { print "Processo critico PID: " $2 }'</code></pre>
+      </div>
+
       <h3>9. CONTROLLO DEI PROCESSI, SEGNALI E INTERFACCIA GRAFICA (TUI)</h3>
       <p><strong style="color: var(--text-primary);">Gestione Asincrona (&amp;) e Sincronizzazione (wait)</strong></p>
       <p>Lanciando un comando seguito dal carattere <code>&amp;</code>, la shell esegue una fork() ed inserisce il processo figlio in background asincrono, restituendo immediatamente il controllo al terminale.</p>
