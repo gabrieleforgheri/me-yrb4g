@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="it">
 <head>
   <meta charset="UTF-8">
@@ -16,7 +16,7 @@
       </svg>
       Sistemi Operativi
     </a>
-    <h1 class="animate-fade-in">Segnali in C 🚨</h1>
+    <h1 class="animate-fade-in">Segnali in C ðŸš¨</h1>
     <p class="animate-fade-in" style="animation-delay: 0.1s;">Comunicazione asincrona, handler e maschere di segnali.</p>
   </header>
 
@@ -27,7 +27,7 @@
       <p style="color: var(--text-secondary); font-style: italic;">[Context: Comunicazione asincrona tra processi tramite interruzioni software generate dal Kernel o da altri processi.]</p>
 
       <h3>1. INVIARE SEGNALI</h3>
-      <p>I segnali sono notifiche asincrone. Un processo può inviare un segnale a un altro processo usando la system call <code>kill()</code>.</p>
+      <p>I segnali sono notifiche asincrone. Un processo puÃ² inviare un segnale a un altro processo usando la system call <code>kill()</code>.</p>
 <pre><code>#include &lt;signal.h&gt;
 
 // Invia SIGUSR1 al processo con PID specificato
@@ -67,7 +67,7 @@ int main() {
 }</code></pre>
 
       <h3>3. MASCHERE E SIGNAL SETS</h3>
-      <p>Spesso è necessario bloccare momentaneamente alcuni segnali in sezioni critiche del codice. I segnali bloccati restano "pendenti" e vengono consegnati appena sbloccati.</p>
+      <p>Spesso Ã¨ necessario bloccare momentaneamente alcuni segnali in sezioni critiche del codice. I segnali bloccati restano "pendenti" e vengono consegnati appena sbloccati.</p>
 <pre><code>sigset_t set;
 sigemptyset(&amp;set);          // Inizializza il set vuoto
 sigaddset(&amp;set, SIGINT);    // Aggiunge SIGINT al set
@@ -98,12 +98,12 @@ sigprocmask(SIG_UNBLOCK, &amp;set, NULL);</code></pre>
           <tr>
             <td><code>SIGKILL</code> (9)</td>
             <td>Termina (Forzato)</td>
-            <td>Uccisione immediata. <strong style="color: #ef4444;">Non può</strong> essere intercettato, bloccato o ignorato.</td>
+            <td>Uccisione immediata. <strong style="color: #ef4444;">Non puÃ²</strong> essere intercettato, bloccato o ignorato.</td>
           </tr>
           <tr>
             <td><code>SIGSTOP</code> (19)</td>
             <td>Sospende</td>
-            <td>Mette in pausa il processo. <strong style="color: #ef4444;">Non può</strong> essere intercettato.</td>
+            <td>Mette in pausa il processo. <strong style="color: #ef4444;">Non puÃ²</strong> essere intercettato.</td>
           </tr>
           <tr>
             <td><code>SIGALRM</code> (14)</td>
@@ -160,5 +160,7 @@ sigprocmask(SIG_UNBLOCK, &amp;set, NULL);</code></pre>
       block.innerHTML = html;
     });
   </script>
+<script src="/uni/js/search-highlight.js"></script>
 </body>
 </html>
+

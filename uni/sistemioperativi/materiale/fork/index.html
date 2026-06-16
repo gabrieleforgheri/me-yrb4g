@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="it">
 <head>
   <meta charset="UTF-8">
@@ -16,7 +16,7 @@
       </svg>
       Sistemi Operativi
     </a>
-    <h1 class="animate-fade-in">Processi, Fork e Memoria 🧬</h1>
+    <h1 class="animate-fade-in">Processi, Fork e Memoria ðŸ§¬</h1>
     <p class="animate-fade-in" style="animation-delay: 0.1s;">Creazione processi, sincronizzazione e Copy-On-Write.</p>
   </header>
 
@@ -32,9 +32,9 @@
       <ul>
         <li><strong style="color: var(--text-primary);">Valori di ritorno della <code>fork()</code>:</strong>
           <ul>
-            <li><code>&lt; 0</code>: Errore (la fork è fallita).</li>
+            <li><code>&lt; 0</code>: Errore (la fork Ã¨ fallita).</li>
             <li><code>== 0</code>: Siamo nel <strong>Processo Figlio</strong> (Child).</li>
-            <li><code>&gt; 0</code>: Siamo nel <strong>Processo Padre</strong> (Parent). Il valore restituito è il PID (Process ID) del figlio appena creato.</li>
+            <li><code>&gt; 0</code>: Siamo nel <strong>Processo Padre</strong> (Parent). Il valore restituito Ã¨ il PID (Process ID) del figlio appena creato.</li>
           </ul>
         </li>
         <li><strong style="color: var(--text-primary);">Funzioni utili per gli ID:</strong>
@@ -54,25 +54,25 @@ if (pid &lt; 0) {
     exit(1);
 } else if (pid == 0) {
     // CODICE DEL FIGLIO: la fork() restituisce 0 al processo appena clonato
-    printf("Sono il figlio, il mio PID è %d\n", getpid());
+    printf("Sono il figlio, il mio PID Ã¨ %d\n", getpid());
     exit(0); // Il figlio termina qui
 } else {
     // CODICE DEL PADRE: la fork() restituisce il PID del nuovo figlio generato
-    printf("Sono il padre, il PID di mio figlio è %d\n", pid);
+    printf("Sono il padre, il PID di mio figlio Ã¨ %d\n", pid);
 }</code></pre>
 
       <p><strong style="color: var(--text-primary);">Fork Multiple</strong></p>
       <p>Se esegui chiamate sequenziali a <code>fork()</code> senza ramificazioni <code>if</code>, il numero di processi cresce esponenzialmente (2<sup>n</sup>). Ad esempio, 3 <code>fork()</code> consecutive creano in totale 8 processi (1 padre originale + 7 figli/nipoti).</p>
 
       <h3>2. SINCRONIZZAZIONE PADRE-FIGLIO (wait)</h3>
-      <p>Un processo padre usa <code>wait</code> o <code>waitpid</code> per sospendere la propria esecuzione finché un processo figlio non termina.</p>
+      <p>Un processo padre usa <code>wait</code> o <code>waitpid</code> per sospendere la propria esecuzione finchÃ© un processo figlio non termina.</p>
       <ul>
         <li><code>wait(NULL)</code>: Aspetta la terminazione di un qualsiasi processo figlio.</li>
         <li><code>waitpid(pid, &amp;status, options)</code>: Aspetta la terminazione di uno specifico figlio indicato dal pid.</li>
       </ul>
 
       <p><strong style="color: var(--text-primary);">Lettura dello Status</strong></p>
-      <p>Quando il figlio termina tramite <code>exit(valore)</code>, il padre può leggere quel valore decodificando la variabile status con delle macro specifiche:</p>
+      <p>Quando il figlio termina tramite <code>exit(valore)</code>, il padre puÃ² leggere quel valore decodificando la variabile status con delle macro specifiche:</p>
 
 <pre><code>int status; // Variabile usata per memorizzare l'esito della terminazione
 // Il padre si blocca e attende la fine dello specifico figlio
@@ -84,14 +84,14 @@ if (WIFEXITED(status)) {
     int valore_ritorno = WEXITSTATUS(status);
     printf("Il figlio ha restituito: %d\n", valore_ritorno);
 } else {
-    // Entra qui se il figlio è stato ucciso da un segnale (es. SIGKILL, segfault)
+    // Entra qui se il figlio Ã¨ stato ucciso da un segnale (es. SIGKILL, segfault)
 }</code></pre>
 
       <h3>3. MEMORIA E VARIABILI: COPY-ON-WRITE</h3>
       <p>Dopo una <code>fork()</code>, il figlio ottiene una copia esatta della memoria del padre.</p>
       <ul>
         <li><strong>Variabili Locali e Globali:</strong> Le modifiche fatte dal figlio alle variabili (es. <code>x += 5</code>) NON si riflettono sul padre, e viceversa.</li>
-        <li><strong>Memoria Heap (malloc):</strong> Anche l'allocazione dinamica viene duplicata. Il figlio vedrà la variabile puntata allo stesso indirizzo virtuale del padre.</li>
+        <li><strong>Memoria Heap (malloc):</strong> Anche l'allocazione dinamica viene duplicata. Il figlio vedrÃ  la variabile puntata allo stesso indirizzo virtuale del padre.</li>
         <li><strong>Copy-On-Write (Ottimizzazione del Kernel):</strong> Subito dopo la <code>fork()</code>, padre e figlio condividono la stessa pagina di memoria fisica (PFN - Page Frame Number). La vera duplicazione in RAM avviene solo quando uno dei due processi tenta di scrivere/modificare quel dato.</li>
       </ul>
       <p style="padding-left: 1rem; border-left: 3px solid #f59e0b; color: #fbbf24;"><strong style="color: #f59e0b;">Regola d'oro:</strong> Se allochi con <code>malloc</code> prima della fork, sia il padre che il figlio dovranno chiamare <code>free()</code> sui rispettivi puntatori per non avere memory leak.</p>
@@ -100,12 +100,12 @@ if (WIFEXITED(status)) {
       <p>Se il padre apre un file (usando <code>open</code>) prima di chiamare la <code>fork()</code>, i descrittori vengono condivisi tra padre e figlio. Questo ha effetti critici:</p>
       <ul>
         <li><strong>Scritture Miste:</strong> Se padre e figlio scrivono contemporaneamente nello stesso descrittore condiviso, i caratteri si mescoleranno in modo imprevedibile nel file (interleaving).</li>
-        <li><strong>Offset Condiviso (Cruciale):</strong> Padre e figlio condividono il "cursore" (offset) all'interno del file. Se il File Descriptor viene clonato e il Figlio 1 legge 1 byte dal file, il cursore avanza. Quando il Figlio 2 andrà a leggere dal file, leggerà il byte successivo, non il primo.</li>
+        <li><strong>Offset Condiviso (Cruciale):</strong> Padre e figlio condividono il "cursore" (offset) all'interno del file. Se il File Descriptor viene clonato e il Figlio 1 legge 1 byte dal file, il cursore avanza. Quando il Figlio 2 andrÃ  a leggere dal file, leggerÃ  il byte successivo, non il primo.</li>
       </ul>
 
-<pre><code>// Apre un file prima della fork: il File Descriptor verrà condiviso!
+<pre><code>// Apre un file prima della fork: il File Descriptor verrÃ  condiviso!
 int fd = open("data.txt", O_RDWR); 
-write(fd, "ABCDEF", 6); // Scrive 6 byte, l'offset ora è a 6
+write(fd, "ABCDEF", 6); // Scrive 6 byte, l'offset ora Ã¨ a 6
 lseek(fd, 0, SEEK_SET); // Riporta l'offset (cursore) all'inizio (0)
 
 pid_t c1 = fork();
@@ -133,7 +133,7 @@ if (c2 == 0) {
     <p>La funzione <code>exec</code> <strong>sostituisce completamente</strong> l'immagine in memoria del processo chiamante con un nuovo programma.</p>
     <ul>
         <li><strong>Non crea un nuovo processo:</strong> Il PID rimane identico!</li>
-        <li><strong>Non ritorna mai:</strong> Se <code>exec</code> ha successo, il codice successivo non verrà MAI eseguito, perché il programma originale è stato spazzato via dalla RAM. Ritorna <code>-1</code> solo se fallisce (es. comando non trovato).</li>
+        <li><strong>Non ritorna mai:</strong> Se <code>exec</code> ha successo, il codice successivo non verrÃ  MAI eseguito, perchÃ© il programma originale Ã¨ stato spazzato via dalla RAM. Ritorna <code>-1</code> solo se fallisce (es. comando non trovato).</li>
     </ul>
 
     <h4 style="color: #a855f7; margin-top: 1.5rem;">La Nomenclatura (I Suffissi di <code>exec</code>)</h4>
@@ -151,7 +151,7 @@ if (c2 == 0) {
     <p><strong>1. Uso di <code>execlp</code> (Lista + Path):</strong></p>
 <pre><code>pid_t pid = fork();
 if (pid == 0) {
-    // Arg 0 è per convenzione il nome del programma stesso
+    // Arg 0 Ã¨ per convenzione il nome del programma stesso
     execlp("ls", "ls", "-l", "-a", "/tmp", NULL); 
     perror("exec fallita"); // Questa riga viene eseguita SOLO se execlp fallisce!
     exit(1);
@@ -170,7 +170,7 @@ if (pid == 0) {
 
 <div style="background: rgba(239, 68, 68, 0.05); border-left: 4px solid #ef4444; padding: 1.5rem; border-radius: 8px; margin: 2rem 0;">
     <h3 style="margin-top: 0; color: #ef4444;">I "WEIRD BEHAVIOURS": Corner Cases di fork ed I/O</h3>
-    <p>I file di test che hai fornito nascondono le "trappole" più comuni che capitano nei laboratori e agli esami di Sistemi Operativi.</p>
+    <p>I file di test che hai fornito nascondono le "trappole" piÃ¹ comuni che capitano nei laboratori e agli esami di Sistemi Operativi.</p>
 
     <h4 style="color: #f87171; margin-top: 1.5rem;">1. La Trappola dei Buffer I/O non svuotati (Il caso printf)</h4>
     <p>Guarda questo codice:</p>
@@ -185,14 +185,14 @@ fork();</code></pre>
         <li><strong><code>exit(0)</code> (Libreria C):</strong> Esegue le procedure di pulizia, svuota tutti i buffer I/O pendenti (stampando i dati rimasti appesi) e poi termina.</li>
         <li><strong><code>_exit(0)</code> (System Call diretta):</strong> Chiede al Kernel di abbattere immediatamente il processo. I buffer in User Space NON vengono svuotati e i dati pendenti vanno persi.</li>
     </ul>
-    <p style="padding-left: 1rem; border-left: 3px solid #f59e0b; color: #fbbf24;"><strong>Regola d'oro:</strong> Quando un processo figlio termina dopo aver fatto il suo lavoro interno o se fallisce una exec, è spesso consigliato usare <code>_exit()</code> per evitare di flussare accidentalmente due volte i buffer aperti dal padre.</p>
+    <p style="padding-left: 1rem; border-left: 3px solid #f59e0b; color: #fbbf24;"><strong>Regola d'oro:</strong> Quando un processo figlio termina dopo aver fatto il suo lavoro interno o se fallisce una exec, Ã¨ spesso consigliato usare <code>_exit()</code> per evitare di flussare accidentalmente due volte i buffer aperti dal padre.</p>
 
     <h4 style="color: #f87171; margin-top: 1.5rem;">3. File Descriptors: Aperti PRIMA o DOPO la Fork?</h4>
-    <p>Questa è una domanda da 30 e lode.</p>
+    <p>Questa Ã¨ una domanda da 30 e lode.</p>
     <ul>
         <li><strong>Apertura PRIMA della fork:</strong> Se il padre fa <code>open()</code> e poi <code>fork()</code>, padre e figlio condividono la stessa voce nella tabella dei file aperti del Kernel.<br>
-        L'offset (cursore) è condiviso. Se il figlio legge 5 byte o fa una lseek spostando il cursore a +5, quando il padre andrà a leggere, partirà dal sesto byte! Questo può causare letture mischiate (interleaving).</li>
-        <li><strong>Apertura DOPO la fork:</strong> Se il padre fa <code>fork()</code> e poi sia il padre che il figlio fanno <code>open("file.txt")</code>, avranno file descriptor indipendenti che puntano a strutture separate nel Kernel. Ognuno avrà il suo cursore (offset) a 0. Se leggono, leggeranno entrambi dall'inizio del file senza disturbarsi.</li>
+        L'offset (cursore) Ã¨ condiviso. Se il figlio legge 5 byte o fa una lseek spostando il cursore a +5, quando il padre andrÃ  a leggere, partirÃ  dal sesto byte! Questo puÃ² causare letture mischiate (interleaving).</li>
+        <li><strong>Apertura DOPO la fork:</strong> Se il padre fa <code>fork()</code> e poi sia il padre che il figlio fanno <code>open("file.txt")</code>, avranno file descriptor indipendenti che puntano a strutture separate nel Kernel. Ognuno avrÃ  il suo cursore (offset) a 0. Se leggono, leggeranno entrambi dall'inizio del file senza disturbarsi.</li>
     </ul>
 
     <h4 style="color: #f87171; margin-top: 1.5rem;">4. L'Illusione della Memoria e il Copy-On-Write (CoW)</h4>
@@ -205,8 +205,8 @@ if (fork() == 0) {
 } else {
     printf("Padre: *p = %d, address = %p\n", *p, p);
 }</code></pre>
-    <p><strong>Il risultato strano:</strong> Entrambi i processi stamperanno lo stesso identico indirizzo di memoria (es. <code>0x55d78</code>), ma il valore letto sarà diverso (111 nel figlio, 100 nel padre).</p>
-    <p><strong>Perché succede?</strong> Linux gestisce la memoria tramite la Virtual Memory. <code>malloc</code> restituisce un Indirizzo Virtuale, che è stato clonato dalla fork.<br>
+    <p><strong>Il risultato strano:</strong> Entrambi i processi stamperanno lo stesso identico indirizzo di memoria (es. <code>0x55d78</code>), ma il valore letto sarÃ  diverso (111 nel figlio, 100 nel padre).</p>
+    <p><strong>PerchÃ© succede?</strong> Linux gestisce la memoria tramite la Virtual Memory. <code>malloc</code> restituisce un Indirizzo Virtuale, che Ã¨ stato clonato dalla fork.<br>
     Tuttavia, quando il figlio tenta di modificare la variabile (<code>*p = 111</code>), la CPU genera una trap. Il Kernel interviene col meccanismo di Copy-On-Write (CoW): copia silenziosamente la pagina fisica della RAM in un'altra zona e reindirizza il puntatore virtuale del figlio verso la nuova pagina.</p>
     <p>Padre e figlio vedono lo stesso indirizzo virtuale, ma fisicamente (il Page Frame Number - PFN) stanno puntando a due chip di RAM diversi!</p>
 </div>
@@ -253,5 +253,7 @@ if (fork() == 0) {
       block.innerHTML = html;
     });
   </script>
+<script src="/uni/js/search-highlight.js"></script>
 </body>
 </html>
+

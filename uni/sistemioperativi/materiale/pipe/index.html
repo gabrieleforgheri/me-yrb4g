@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="it">
 <head>
   <meta charset="UTF-8">
@@ -16,7 +16,7 @@
       </svg>
       Sistemi Operativi
     </a>
-    <h1 class="animate-fade-in">Pipe e FIFO in C 🔄</h1>
+    <h1 class="animate-fade-in">Pipe e FIFO in C ðŸ”„</h1>
     <p class="animate-fade-in" style="animation-delay: 0.1s;">Comunicazione Inter-Processo (IPC) bidirezionale e unidirezionale.</p>
   </header>
 
@@ -30,10 +30,10 @@
       <p>Le pipe anonime vivono solo in memoria e si usano tra processi legati da parentela (es. creati con <code>fork()</code>). Sono <strong style="color: var(--text-primary);">unidirezionali</strong>.</p>
 
       <p><strong style="color: var(--text-primary);">Creazione e Pattern Base (Fork)</strong></p>
-      <p>La system call <code>pipe()</code> prende un array di due interi e lo popola con i File Descriptor. L'indice <code>0</code> è per la lettura, l'indice <code>1</code> è per la scrittura.</p>
+      <p>La system call <code>pipe()</code> prende un array di due interi e lo popola con i File Descriptor. L'indice <code>0</code> Ã¨ per la lettura, l'indice <code>1</code> Ã¨ per la scrittura.</p>
 
-<pre><code>int fd[2]; // Array di due interi: fd[0] sarà per LEGGERE, fd[1] per SCRIVERE
-// La pipe deve essere creata PRIMA della fork, così il figlio la eredita
+<pre><code>int fd[2]; // Array di due interi: fd[0] sarÃ  per LEGGERE, fd[1] per SCRIVERE
+// La pipe deve essere creata PRIMA della fork, cosÃ¬ il figlio la eredita
 if (pipe(fd) == -1) { perror("pipe"); exit(1); }
 
 pid_t pid = fork();
@@ -41,7 +41,7 @@ pid_t pid = fork();
 if (pid == 0) { // CHILD (Es. Lettore)
     close(fd[1]); // Chiudo l'estremo di scrittura inutilizzato dal lettore (cruciale!)
     char buf[128];
-    // Legge dalla pipe: se è vuota, si blocca finché il padre non scrive o non chiude
+    // Legge dalla pipe: se Ã¨ vuota, si blocca finchÃ© il padre non scrive o non chiude
     read(fd[0], buf, sizeof(buf));
     close(fd[0]); // Chiude la lettura quando ha finito
     exit(0);
@@ -50,14 +50,14 @@ if (pid == 0) { // CHILD (Es. Lettore)
     char *msg = "Hello";
     // Scrive il messaggio nella pipe. Il +1 serve a includere il terminatore '\0' della stringa
     write(fd[1], msg, strlen(msg) + 1);
-    close(fd[1]); // Chiude la scrittura, inviando così un EOF al lettore
+    close(fd[1]); // Chiude la scrittura, inviando cosÃ¬ un EOF al lettore
     wait(NULL);   // Aspetta che il figlio lettore termini
 }</code></pre>
 
-      <p style="padding-left: 1rem; border-left: 3px solid #f59e0b; color: #fbbf24;"><strong style="color: #f59e0b;">Regola d'oro:</strong> Chiudere SEMPRE gli estremi non utilizzati! Se un processo lettore non chiude il suo estremo di scrittura, non riceverà mai l'EOF (End of File) quando lo scrittore finisce.</p>
+      <p style="padding-left: 1rem; border-left: 3px solid #f59e0b; color: #fbbf24;"><strong style="color: #f59e0b;">Regola d'oro:</strong> Chiudere SEMPRE gli estremi non utilizzati! Se un processo lettore non chiude il suo estremo di scrittura, non riceverÃ  mai l'EOF (End of File) quando lo scrittore finisce.</p>
 
       <h3>2. COMPORTAMENTO BLOCCANTE E SEGNALI</h3>
-      <p>Le pipe hanno una capacità limitata (tipicamente 65KB).</p>
+      <p>Le pipe hanno una capacitÃ  limitata (tipicamente 65KB).</p>
 
       <table>
         <thead>
@@ -99,7 +99,7 @@ if (pid == 0) { // CHILD (Es. Lettore)
 // Variabile flag modificabile asincronamente dall'handler (sig_atomic_t garantisce scritture atomiche)
 volatile sig_atomic_t sigpipe_received = 0;
 
-// Handler che verrà eseguito automaticamente quando riceviamo il segnale
+// Handler che verrÃ  eseguito automaticamente quando riceviamo il segnale
 void handle_sigpipe(int sig) { sigpipe_received = 1; }
 
 // Nel main, prima di eseguire operazioni di scrittura (write) a rischio:
@@ -111,21 +111,21 @@ sigaction(SIGPIPE, &amp;sa, NULL); // Sostituisce il comportamento letale di def
       <p>Le FIFO appaiono nel filesystem. Permettono la comunicazione tra processi non legati da parentela. Sono anch'esse unidirezionali.</p>
 
       <p><strong style="color: var(--text-primary);">Creazione e Apertura</strong></p>
-      <p>Se la FIFO esiste già, <code>mkfifo</code> fallisce con <code>EEXIST</code>, che di solito è un errore ignorabile.</p>
+      <p>Se la FIFO esiste giÃ , <code>mkfifo</code> fallisce con <code>EEXIST</code>, che di solito Ã¨ un errore ignorabile.</p>
 
 <pre><code>#include &lt;sys/stat.h&gt;
 #include &lt;fcntl.h&gt;
 
 // 1. Creazione della FIFO nel FileSystem
 // I permessi 0666 permettono lettura e scrittura a tutti (soggetti a umask). 
-// EEXIST viene ignorato se un altro processo ha già creato la FIFO
+// EEXIST viene ignorato se un altro processo ha giÃ  creato la FIFO
 if (mkfifo("/tmp/mia_fifo", 0666) == -1 &amp;&amp; errno != EEXIST) {
     perror("mkfifo"); exit(1);
 }
 
 // 2. Apertura Bloccante (Client/Processi normali)
-// L'apertura in sola lettura (O_RDONLY) si ferma qui (si blocca) finché 
-// un altro processo indipendente non aprirà lo stesso file in O_WRONLY
+// L'apertura in sola lettura (O_RDONLY) si ferma qui (si blocca) finchÃ© 
+// un altro processo indipendente non aprirÃ  lo stesso file in O_WRONLY
 int fd = open("/tmp/mia_fifo", O_RDONLY); </code></pre>
 
       <p><strong style="color: var(--text-primary);">Trucco del Server (O_RDWR)</strong></p>
@@ -148,10 +148,10 @@ read(fd_read, &amp;msg_in, sizeof(msg_in));     // Lettura</code></pre>
       <h3>5. TOPOLOGIE MULTIPROCESSO CON PIPE ANONIME</h3>
       <p>Quando si usano <code>fork()</code> multipli,</p><div style="background: rgba(99, 102, 241, 0.05); border-left: 4px solid #6366f1; padding: 1.5rem; border-radius: 8px; margin: 2rem 0;">
     <h3 style="margin-top: 0; color: #6366f1;">APPROFONDIMENTO: Topologie Multiprocesso con Pipe</h3>
-    <p>Quando si generano più processi figli (<code>NCHILDREN</code>), farli comunicare richiede una progettazione attenta dei canali di comunicazione (le pipe) per evitare <em>deadlock</em> (blocchi critici) e assicurare che la lettura restituisca correttamente EOF (End Of File) quando i processi terminano.</p>
+    <p>Quando si generano piÃ¹ processi figli (<code>NCHILDREN</code>), farli comunicare richiede una progettazione attenta dei canali di comunicazione (le pipe) per evitare <em>deadlock</em> (blocchi critici) e assicurare che la lettura restituisca correttamente EOF (End Of File) quando i processi terminano.</p>
 
     <h4 style="color: #a855f7; margin-top: 1.5rem;">1. Topologia ad Anello (Ring Topology)</h4>
-    <p>Nella topologia ad anello, i processi sono disposti in un cerchio logico. Il processo Padre inizia inviando un dato (es. un "token") al Figlio 1. Il Figlio 1 lo elabora e lo passa al Figlio 2, e così via, finché l'ultimo figlio non restituisce il token al Padre.</p>
+    <p>Nella topologia ad anello, i processi sono disposti in un cerchio logico. Il processo Padre inizia inviando un dato (es. un "token") al Figlio 1. Il Figlio 1 lo elabora e lo passa al Figlio 2, e cosÃ¬ via, finchÃ© l'ultimo figlio non restituisce il token al Padre.</p>
     <p><strong>Regola Matematica:</strong> Per <code>N</code> figli (quindi <code>N+1</code> processi totali, contando il padre), servono <strong>esattamente <code>N+1</code> pipe</strong>.</p>
 
     <p><strong style="color: var(--text-primary);">A. Creazione e Struttura</strong><br>
@@ -201,8 +201,8 @@ close(pipes[i + 1][1]);
 _exit(0);</code></pre>
 
     <h4 style="color: #a855f7; margin-top: 1.5rem;">2. Topologia a Stella (Star Topology)</h4>
-    <p>Nella topologia a stella, il processo Padre fa da "Hub" centrale e comunica indipendentemente con ogni singolo figlio. I figli NON comunicano tra di loro. Questo schema è il classico modello Master-Worker.</p>
-    <p><strong>Regola Matematica:</strong> Poiché la pipe anonima è unidirezionale, per avere una comunicazione bidirezionale (Padre &lt;-&gt; Figlio) per N figli, servono <strong>2 * N pipe</strong>.</p>
+    <p>Nella topologia a stella, il processo Padre fa da "Hub" centrale e comunica indipendentemente con ogni singolo figlio. I figli NON comunicano tra di loro. Questo schema Ã¨ il classico modello Master-Worker.</p>
+    <p><strong>Regola Matematica:</strong> PoichÃ© la pipe anonima Ã¨ unidirezionale, per avere una comunicazione bidirezionale (Padre &lt;-&gt; Figlio) per N figli, servono <strong>2 * N pipe</strong>.</p>
 
     <p><strong style="color: var(--text-primary);">A. Creazione e Struttura</strong><br>
     Si usano tipicamente due array separati per chiarezza semantica:</p>
@@ -216,7 +216,7 @@ for (int i = 0; i &lt; NCHILDREN; i++) {
 }</code></pre>
 
     <p><strong style="color: var(--text-primary);">B. Logica dei Descrittori nel Figlio</strong><br>
-    Il figlio di indice <code>i</code> è completamente isolato dagli altri. A lui interessano solo le pipe di indice <code>i</code>.</p>
+    Il figlio di indice <code>i</code> Ã¨ completamente isolato dagli altri. A lui interessano solo le pipe di indice <code>i</code>.</p>
     <ul>
         <li>Deve poter scrivere al padre: usa <code>to_parent[i][1]</code></li>
         <li>Deve poter leggere dal padre: usa <code>to_child[i][0]</code></li>
@@ -252,7 +252,7 @@ for (int i = 0; i &lt; NCHILDREN; i++) {
     close(to_child[i][0]);  // Il padre non legge dalla pipe diretta al figlio
 }
 
-// Ora il padre può fare un ciclo per comunicare con tutti
+// Ora il padre puÃ² fare un ciclo per comunicare con tutti
 for (int r = 0; r &lt; ROUNDS; r++) {
     for (int i = 0; i &lt; NCHILDREN; i++) {
         int valore;
@@ -267,8 +267,8 @@ for (int r = 0; r &lt; ROUNDS; r++) {
 }</code></pre>
 
     <p style="padding-left: 1rem; border-left: 3px solid #f59e0b; color: #fbbf24; margin-top: 1.5rem;">
-    <strong>💡 Suggerimento d'Esame: Il Deadlock Silenzioso</strong><br>
-    Se in una qualsiasi di queste topologie dimentichi un <code>close(pipe[1])</code> (lato scrittura) nel processo sbagliato, la <code>read()</code> non restituirà mai 0 (EOF) perché il Kernel pensa che ci sia ancora un potenziale scrittore attivo... che in realtà è il processo stesso in ascolto! Quando testi il codice, se i processi rimangono "appesi" indefinitamente alla fine dell'esecuzione, hai dimenticato di chiudere un file descriptor.
+    <strong>ðŸ’¡ Suggerimento d'Esame: Il Deadlock Silenzioso</strong><br>
+    Se in una qualsiasi di queste topologie dimentichi un <code>close(pipe[1])</code> (lato scrittura) nel processo sbagliato, la <code>read()</code> non restituirÃ  mai 0 (EOF) perchÃ© il Kernel pensa che ci sia ancora un potenziale scrittore attivo... che in realtÃ  Ã¨ il processo stesso in ascolto! Quando testi il codice, se i processi rimangono "appesi" indefinitamente alla fine dell'esecuzione, hai dimenticato di chiudere un file descriptor.
     </p>
 </div>
 
@@ -314,5 +314,7 @@ for (int r = 0; r &lt; ROUNDS; r++) {
       block.innerHTML = html;
     });
   </script>
+<script src="/uni/js/search-highlight.js"></script>
 </body>
 </html>
+

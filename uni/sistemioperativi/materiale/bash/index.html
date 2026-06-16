@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="it">
 <head>
   <meta charset="UTF-8">
@@ -16,7 +16,7 @@
       </svg>
       Sistemi Operativi
     </a>
-    <h1 class="animate-fade-in">Shell Scripting (Bash) 💻</h1>
+    <h1 class="animate-fade-in">Shell Scripting (Bash) ðŸ’»</h1>
 
     <div class="header-actions animate-fade-in" style="grid-column: 3; grid-row: 1; justify-self: end; display: flex; gap: 0.5rem; align-items: center;">
       <a href="https://regex101.com/" target="_blank" rel="noopener noreferrer" class="back-home-btn" style="grid-column: unset; grid-row: unset; padding: 0.4rem 0.6rem; color: #a855f7; border-color: rgba(168, 85, 247, 0.3);" title="Tester Regex Online (regex101)">
@@ -106,7 +106,7 @@ OGGI=$(date +%F)       # Salva l'output del comando 'date' nella variabile</code
       </table>
 
       <h3>4. STRUTTURE CONDIZIONALI (if, test, [ ])</h3>
-      <p>In Bash, lo spazio tra le parentesi quadre <code>[ ]</code> e la condizione è OBBLIGATORIO.</p>
+      <p>In Bash, lo spazio tra le parentesi quadre <code>[ ]</code> e la condizione Ã¨ OBBLIGATORIO.</p>
 <pre><code>if [ condizione ]; then
     # comandi
 elif [ condizione2 ]; then
@@ -115,7 +115,7 @@ else
     # comandi
 fi</code></pre>
       
-      <p><strong style="color: var(--text-primary);">Operatori di Test Più Comuni</strong></p>
+      <p><strong style="color: var(--text-primary);">Operatori di Test PiÃ¹ Comuni</strong></p>
       <ul>
         <li><strong>Sui Numeri</strong> (Attenzione: si usano le lettere, non > / <)
           <ul>
@@ -128,23 +128,23 @@ fi</code></pre>
           <ul>
             <li><code>=</code> o <code>==</code>: Stringhe identiche</li>
             <li><code>!=</code>: Stringhe diverse</li>
-            <li><code>-z "$STR"</code>: Vero se la stringa è vuota (lunghezza zero)</li>
-            <li><code>-n "$STR"</code>: Vero se la stringa NON è vuota</li>
+            <li><code>-z "$STR"</code>: Vero se la stringa Ã¨ vuota (lunghezza zero)</li>
+            <li><code>-n "$STR"</code>: Vero se la stringa NON Ã¨ vuota</li>
           </ul>
         </li>
         <li><strong>Sui File e Directory</strong>
           <ul>
-            <li><code>-f file</code>: Vero se è un file regolare.</li>
-            <li><code>-d dir</code>: Vero se è una directory.</li>
+            <li><code>-f file</code>: Vero se Ã¨ un file regolare.</li>
+            <li><code>-d dir</code>: Vero se Ã¨ una directory.</li>
             <li><code>-e path</code>: Vero se il percorso esiste.</li>
-            <li><code>-r file</code>: Vero se il file è leggibile.</li>
-            <li><code>-x file</code>: Vero se il file è eseguibile.</li>
+            <li><code>-r file</code>: Vero se il file Ã¨ leggibile.</li>
+            <li><code>-x file</code>: Vero se il file Ã¨ eseguibile.</li>
           </ul>
         </li>
       </ul>
       <p>Esempio combinato:</p>
 <pre><code>if [ -f "$1" ] &amp;&amp; [ -r "$1" ]; then
-    echo "Il file passato come primo argomento esiste ed è leggibile."
+    echo "Il file passato come primo argomento esiste ed Ã¨ leggibile."
 fi</code></pre>
 
       <h3>5. CICLI (for, while, until)</h3>
@@ -165,14 +165,14 @@ for (( i=0; i&lt;10; i++ )); do
 done</code></pre>
 
       <p><strong style="color: var(--text-primary);">Ciclo while e until</strong></p>
-<pre><code># WHILE: cicla finché la condizione è VERA
+<pre><code># WHILE: cicla finchÃ© la condizione Ã¨ VERA
 CONTATORE=0
 while [ $CONTATORE -lt 5 ]; do
     echo "Contatore: $CONTATORE"
     CONTATORE=$((CONTATORE + 1))
 done
 
-# UNTIL: cicla finché la condizione è FALSA
+# UNTIL: cicla finchÃ© la condizione Ã¨ FALSA
 until [ -f "flag.txt" ]; do
     echo "Aspetto che qualcuno crei flag.txt..."
     sleep 2
@@ -188,7 +188,7 @@ done &lt; "miofile.txt"</code></pre>
       <p>Le funzioni in Bash sono blocchi di comandi riutilizzabili isolati in un nome logico. Importante: i parametri passati ad una funzione <strong>non</strong> coincidono con i parametri dello script principale. All'interno della funzione, i registri <code>$1</code>, <code>$2</code>, <code>$#</code> si azzerano e fanno riferimento esclusivamente agli argomenti della funzione stessa.</p>
 
       <p><strong style="color: var(--text-primary);">Uso Obbligatorio di local</strong></p>
-      <p>Di default, tutte le variabili in Bash sono globali. Se modifichi una variabile in una funzione, cambierà anche all'esterno, provocando bug catastrofici. È obbligatorio usare la parola chiave <code>local</code> per isolare lo scope all'interno del record di attivazione della funzione.</p>
+      <p>Di default, tutte le variabili in Bash sono globali. Se modifichi una variabile in una funzione, cambierÃ  anche all'esterno, provocando bug catastrofici. Ãˆ obbligatorio usare la parola chiave <code>local</code> per isolare lo scope all'interno del record di attivazione della funzione.</p>
 
 <pre><code>calcola_area() {
     local BASE=$1     # Scope locale, isolato dal resto dello script
@@ -225,7 +225,7 @@ done</code></pre>
       <p>Filtra flussi testuali estraendo esclusivamente le righe che corrispondono ad un pattern o espressione regolare.</p>
       <ul>
         <li><code>-E</code>: Attiva le Espressioni Regolari Estese (ERE) evitando l'escape di caratteri speciali come <code>( )</code> e <code>|</code>.</li>
-        <li><code>-i</code>: Disattiva la sensibilità alle maiuscole/minuscole (case-insensitive).</li>
+        <li><code>-i</code>: Disattiva la sensibilitÃ  alle maiuscole/minuscole (case-insensitive).</li>
         <li><code>-v</code>: Inverte il filtro, mostrando solo le righe che non corrispondono al pattern.</li>
         <li><code>-c</code>: Restituisce il conteggio numerico puro delle linee corrispondenti.</li>
       </ul>
@@ -281,7 +281,7 @@ awk '{ sum += $1 } END { print "Totale Accumulato:", sum }' dati.txt</code></pre
                     <tr><td><code>.</code></td><td>Qualsiasi singolo carattere</td><td><code>c.o</code></td><td>"ciao", "clown" (c + 2 caratteri)</td></tr>
                     <tr><td><code>[abc]</code></td><td>Classe: uno dei caratteri</td><td><code>[gG]atto</code></td><td>"gatto", "Gatto"</td></tr>
                     <tr><td><code>[a-z]</code></td><td>Range: da 'a' a 'z'</td><td><code>[0-9]</code></td><td>Qualsiasi singolo numero</td></tr>
-                    <tr><td><code>[^abc]</code></td><td>Negazione: tutto tranne...</td><td><code>[^0-9]</code></td><td>Qualsiasi carattere che NON è un numero</td></tr>
+                    <tr><td><code>[^abc]</code></td><td>Negazione: tutto tranne...</td><td><code>[^0-9]</code></td><td>Qualsiasi carattere che NON Ã¨ un numero</td></tr>
                 </tbody>
             </table>
         </div>
@@ -299,8 +299,8 @@ awk '{ sum += $1 } END { print "Totale Accumulato:", sum }' dati.txt</code></pre
                     </tr>
                 </thead>
                 <tbody>
-                    <tr><td><code>*</code></td><td>0 o più volte</td><td><code>ab*c</code></td><td>"ac", "abc", "abbbc"</td></tr>
-                    <tr><td><code>+</code></td><td>1 o più volte</td><td><code>ab+c</code></td><td>"abc", "abbc" (MA NON "ac")</td></tr>
+                    <tr><td><code>*</code></td><td>0 o piÃ¹ volte</td><td><code>ab*c</code></td><td>"ac", "abc", "abbbc"</td></tr>
+                    <tr><td><code>+</code></td><td>1 o piÃ¹ volte</td><td><code>ab+c</code></td><td>"abc", "abbc" (MA NON "ac")</td></tr>
                     <tr><td><code>?</code></td><td>0 o 1 volta (Opzionale)</td><td><code>https?</code></td><td>"http", "https"</td></tr>
                     <tr><td><code>{n}</code></td><td>Esattamente <em>n</em> volte</td><td><code>[0-9]{3}</code></td><td>Esattamente 3 numeri (es. "123")</td></tr>
                     <tr><td><code>{n,m}</code></td><td>Da <em>n</em> a <em>m</em> volte</td><td><code>a{2,4}</code></td><td>"aa", "aaa", "aaaa"</td></tr>
@@ -331,10 +331,10 @@ awk '{ sum += $1 } END { print "Totale Accumulato:", sum }' dati.txt</code></pre
         <p><strong>1. Trovare specifiche estensioni di file (OR testuale):</strong></p>
 <pre><code># Trova tutte le righe che terminano con .png, .jpg o .gif
 grep -E '\.(png|jpg|gif)$' lista_file.txt</code></pre>
-        <p style="font-size: 0.9em; color: var(--text-secondary);">(Nota: il punto <code>.</code> ha il backslash davanti <code>\.</code> perché altrimenti indicherebbe "qualsiasi carattere", mentre noi vogliamo cercare proprio il carattere punto testuale).</p>
+        <p style="font-size: 0.9em; color: var(--text-secondary);">(Nota: il punto <code>.</code> ha il backslash davanti <code>\.</code> perchÃ© altrimenti indicherebbe "qualsiasi carattere", mentre noi vogliamo cercare proprio il carattere punto testuale).</p>
 
         <p><strong>2. Ricerca di un Indirizzo IP (Quantificatori combinati):</strong><br>
-        Un IP è formato da 1 a 3 numeri, seguiti da un punto, il tutto ripetuto.</p>
+        Un IP Ã¨ formato da 1 a 3 numeri, seguiti da un punto, il tutto ripetuto.</p>
 <pre><code># Trova sequenze di numeri tipo 192.168.1.1
 grep -E '^[0-9]{1,3}(\.[0-9]{1,3}){3}$' log.txt</code></pre>
 
@@ -361,10 +361,10 @@ sed -E 's/^([0-9]{4})-([0-9]{2})-([0-9]{2})$/\3\/\2\/\1/' date.txt</code></pre>
 
 <div style="background: rgba(99, 102, 241, 0.05); border-left: 4px solid #6366f1; padding: 1.5rem; border-radius: 8px; margin: 2rem 0;">
         <h3 style="margin-top: 0; color: #6366f1;">APPROFONDIMENTO: Elaborazione di File CSV in Bash</h3>
-        <p>I file CSV (Comma-Separated Values) sono il formato standard per l'esportazione di dati tabulari. In Bash, l'elaborazione di CSV "puliti" (dove il separatore non compare mai all'interno dei dati testuali) è un'operazione estremamente comune.</p>
+        <p>I file CSV (Comma-Separated Values) sono il formato standard per l'esportazione di dati tabulari. In Bash, l'elaborazione di CSV "puliti" (dove il separatore non compare mai all'interno dei dati testuali) Ã¨ un'operazione estremamente comune.</p>
 
         <h4 style="color: #a855f7; margin-top: 1.5rem;">1. Estrazione rapida di colonne con <code>cut</code></h4>
-        <p>Il tool <code>cut</code> è lo strumento più veloce se devi semplicemente isolare una o più colonne, senza fare calcoli o logica complessa.</p>
+        <p>Il tool <code>cut</code> Ã¨ lo strumento piÃ¹ veloce se devi semplicemente isolare una o piÃ¹ colonne, senza fare calcoli o logica complessa.</p>
         <ul>
             <li><code>-d','</code> (Delimiter): Specifica la virgola come separatore.</li>
             <li><code>-f</code> (Fields): Specifica i numeri delle colonne (1-indexed).</li>
@@ -376,9 +376,9 @@ cut -d',' -f1,3 utenti.csv
 cut -d',' -f2- utenti.csv</code></pre>
 
         <h4 style="color: #a855f7; margin-top: 1.5rem;">2. Il Ciclo <code>while read</code> con IFS</h4>
-        <p>Se hai bisogno di iterare riga per riga e usare i valori delle colonne come variabili per altre operazioni di sistema (es. creare cartelle o utenti), la combinazione di IFS (Internal Field Separator) e <code>read</code> è la scelta migliore.</p>
+        <p>Se hai bisogno di iterare riga per riga e usare i valori delle colonne come variabili per altre operazioni di sistema (es. creare cartelle o utenti), la combinazione di IFS (Internal Field Separator) e <code>read</code> Ã¨ la scelta migliore.</p>
         <p><strong>Pattern: Saltare l'header ed estrarre le variabili</strong><br>
-        Questo è un trucco molto elegante in Bash per ignorare la prima riga (l'intestazione delle colonne) e scorrere il resto del file:</p>
+        Questo Ã¨ un trucco molto elegante in Bash per ignorare la prima riga (l'intestazione delle colonne) e scorrere il resto del file:</p>
 <pre><code>#!/bin/bash
 
 # Il blocco tra parentesi graffe redirige l'intero file al suo interno
@@ -397,13 +397,13 @@ cut -d',' -f2- utenti.csv</code></pre>
 } &lt; "utenti.csv"</code></pre>
 
         <h4 style="color: #a855f7; margin-top: 1.5rem;">3. La Potenza di <code>awk</code> sui CSV (Calcoli e Filtri)</h4>
-        <p>Quando devi fare somme, calcolare medie o filtrare righe basandoti sul valore numerico di una colonna, <code>awk</code> è insuperabile.</p>
+        <p>Quando devi fare somme, calcolare medie o filtrare righe basandoti sul valore numerico di una colonna, <code>awk</code> Ã¨ insuperabile.</p>
         <ul>
             <li><code>-F','</code>: Dice ad awk di usare la virgola come separatore di campo.</li>
-            <li><code>NR</code> (Number of Record): È la variabile interna di awk che indica il numero di riga corrente. <code>NR &gt; 1</code> è il modo standard di awk per saltare l'intestazione.</li>
+            <li><code>NR</code> (Number of Record): Ãˆ la variabile interna di awk che indica il numero di riga corrente. <code>NR &gt; 1</code> Ã¨ il modo standard di awk per saltare l'intestazione.</li>
         </ul>
         <p><strong>Esempio A: Filtro basato su una colonna</strong></p>
-<pre><code># Stampa il Nome ($1) e il Ruolo ($2) solo se lo Stipendio ($4) è maggiore di 2000.
+<pre><code># Stampa il Nome ($1) e il Ruolo ($2) solo se lo Stipendio ($4) Ã¨ maggiore di 2000.
 # NR > 1 ignora la prima riga (l'header).
 awk -F',' 'NR &gt; 1 &amp;&amp; $4 &gt; 2000 { print $1, "fa il", $2 }' dipendenti.csv</code></pre>
 
@@ -421,13 +421,13 @@ awk -F',' '
 ' ore_lavoro.csv</code></pre>
 
         <h4 style="color: #a855f7; margin-top: 1.5rem;">4. Gestire delimitatori diversi (Punto e Virgola, Tab)</h4>
-        <p>Spesso i CSV generati in Europa (es. da Excel italiano) usano il punto e virgola <code>;</code> come separatore per non confondersi con la virgola dei decimali (3,14). Cambiare il parsing è semplicissimo:</p>
+        <p>Spesso i CSV generati in Europa (es. da Excel italiano) usano il punto e virgola <code>;</code> come separatore per non confondersi con la virgola dei decimali (3,14). Cambiare il parsing Ã¨ semplicissimo:</p>
         <ul>
             <li><strong>In cut:</strong> <code>cut -d';' -f1</code></li>
             <li><strong>In while:</strong> <code>while IFS=';' read -r ...</code></li>
             <li><strong>In awk:</strong> <code>awk -F';' '{print $1}'</code></li>
         </ul>
-        <p style="font-size: 0.9em; color: var(--text-secondary);">Per i file TSV (Tab-Separated Values), il delimitatore di default di awk (che è lo spazio/tab) funziona già perfettamente. Per cut, il tab è il delimitatore di default, quindi basta usare <code>cut -f2 file.tsv</code>.</p>
+        <p style="font-size: 0.9em; color: var(--text-secondary);">Per i file TSV (Tab-Separated Values), il delimitatore di default di awk (che Ã¨ lo spazio/tab) funziona giÃ  perfettamente. Per cut, il tab Ã¨ il delimitatore di default, quindi basta usare <code>cut -f2 file.tsv</code>.</p>
       </div>
 
       <h3>9. CONTROLLO DEI PROCESSI, SEGNALI E INTERFACCIA GRAFICA (TUI)</h3>
@@ -435,7 +435,7 @@ awk -F',' '
       <p>Lanciando un comando seguito dal carattere <code>&amp;</code>, la shell esegue una fork() ed inserisce il processo figlio in background asincrono, restituendo immediatamente il controllo al terminale.</p>
       <ul>
         <li><code>$!</code>: Cattura immediatamente il PID del job asincrono appena generato.</li>
-        <li><code>wait [PID]</code>: Blocca l'esecuzione dello script padre finché il processo figlio specificato non ha completato l'esecuzione.</li>
+        <li><code>wait [PID]</code>: Blocca l'esecuzione dello script padre finchÃ© il processo figlio specificato non ha completato l'esecuzione.</li>
       </ul>
 
       <p><strong style="color: var(--text-primary);">Intercettazione dei Segnali del Sistema Operativo (trap)</strong></p>
@@ -450,18 +450,18 @@ awk -F',' '
 trap cleanup SIGINT SIGTERM</code></pre>
 
       <p><strong style="color: var(--text-primary);">Gestione Avanzata del Terminale (tput)</strong></p>
-      <p>L'utility <code>tput</code> permette di interagire direttamente con le capacità dello schermo (ANSI escape sequences) per creare interfacce grafiche testuali (TUI).</p>
+      <p>L'utility <code>tput</code> permette di interagire direttamente con le capacitÃ  dello schermo (ANSI escape sequences) per creare interfacce grafiche testuali (TUI).</p>
       <ul>
         <li><code>tput lines</code> / <code>tput cols</code>: Restituiscono in tempo reale il numero di righe e colonne disponibili nella finestra corrente.</li>
         <li><code>tput cup &lt;y&gt; &lt;x&gt;</code>: Sposta istantaneamente il cursore alle coordinate cartesiane impostate (0-indexed, dall'angolo in alto a sinistra).</li>
         <li><code>tput civis</code>: (Cursor Invisible) Nasconde alla vista il cursore lampeggiante di sistema.</li>
-        <li><code>tput cnorm</code>: (Cursor Normal) Ripristina la normale visibilità del cursore del terminale.</li>
+        <li><code>tput cnorm</code>: (Cursor Normal) Ripristina la normale visibilitÃ  del cursore del terminale.</li>
       </ul>
 
       <p><strong style="color: var(--text-primary);">Interfacce Interattive native (whiptail)</strong></p>
       <p><code>whiptail</code> permette di generare finestre di dialogo grafiche all'interno della CLI sfruttando la libreria newt.</p>
       <p><strong>Creazione Menu di Selezione Singola (--menu)</strong></p>
-      <p>I parametri richiedono l'altezza, la larghezza, il numero di elementi visibili e coppie composte da Tag e Descrizione. Attenzione: whiptail restituisce la scelta fatta scrivendo sullo <code>stderr</code> (2), non sullo <code>stdout</code> (1). È necessario attuare uno swap dei canali per catturare il dato in una variabile.</p>
+      <p>I parametri richiedono l'altezza, la larghezza, il numero di elementi visibili e coppie composte da Tag e Descrizione. Attenzione: whiptail restituisce la scelta fatta scrivendo sullo <code>stderr</code> (2), non sullo <code>stdout</code> (1). Ãˆ necessario attuare uno swap dei canali per catturare il dato in una variabile.</p>
 <pre><code># Lo swap '3&gt;&amp;1 1&gt;&amp;2 2&gt;&amp;3' scambia stdout e stderr per permettere la cattura della variabile
 SCELTA=$(whiptail --menu "Seleziona Database" 12 45 3 \
     "1" "PostgreSQL" \
@@ -528,12 +528,12 @@ declare -A EXT_COUNTS
 
 # Cicla su tutti gli elementi nella directory corrente
 for file in *; do
-    # Se non è un file regolare (-f), salta al prossimo giro (continue)
+    # Se non Ã¨ un file regolare (-f), salta al prossimo giro (continue)
     [[ -f "$file" ]] || continue
     
     # Estrae l'estensione: taglia (cut) usando il punto (-d.) e prende dal secondo campo in poi (-f2-)
     ext=$(echo $file | cut -d. -f2-)
-    # Se la variabile è vuota (-z), assegna un nome di default
+    # Se la variabile Ã¨ vuota (-z), assegna un nome di default
     if [[ -z $ext ]]; then ext="no_extension"; fi
     
     # Incrementa il contatore per la specifica chiave (estensione)
@@ -559,7 +559,7 @@ audit_file() {
     # Estrae l'ultimo carattere della stringa (i permessi 'others' / world)
     world_perms="${perms: -1}"
 
-    # Se il permesso per gli altri è >= 4 (lettura), è considerato vulnerabile
+    # Se il permesso per gli altri Ã¨ >= 4 (lettura), Ã¨ considerato vulnerabile
     if [ "$world_perms" -ge 4 ]; then
         echo "[WARNING] $file is world-readable!"
         # Rimuove il permesso di lettura (-r) agli altri (o)
@@ -585,7 +585,7 @@ touch -d "$AGE_THRESHOLD" "$REF_FILE" 2&gt;/dev/null
 
 for log_file in *.log; do
     [ -f "$log_file" ] || continue
-    # -ot (older than) confronta se log_file è più vecchio del nostro file di riferimento
+    # -ot (older than) confronta se log_file Ã¨ piÃ¹ vecchio del nostro file di riferimento
     if [ "$log_file" -ot "$REF_FILE" ]; then
         # 'stat -c "%s"' ottiene la dimensione del file in byte
         file_size=$(stat -c "%s" "$log_file")
@@ -611,17 +611,17 @@ for pid in $pids; do
     # Verifica silenziosamente se il processo esiste ancora
     if ! ps -p "$pid" &gt; /dev/null 2&gt;&amp;1; then continue; fi
     
-    # Richiede all'utente di scegliere la priorità
+    # Richiede all'utente di scegliere la prioritÃ 
     read -p "Select priority for PID $pid [1) High, 2) Low]: " choice
     
     # Analizza la scelta dell'utente per impostare il valore 'nice'
     case "$choice" in
-        1|"[Hh]igh") new_nice="-10" ;; # Priorità alta (valore negativo)
-        2|"[Ll]ow")  new_nice="10"  ;; # Priorità bassa (valore positivo)
-        *) continue ;;                 # Salta se la scelta non è valida
+        1|"[Hh]igh") new_nice="-10" ;; # PrioritÃ  alta (valore negativo)
+        2|"[Ll]ow")  new_nice="10"  ;; # PrioritÃ  bassa (valore positivo)
+        *) continue ;;                 # Salta se la scelta non Ã¨ valida
     esac
     
-    # Applica la modifica della priorità al processo specificato
+    # Applica la modifica della prioritÃ  al processo specificato
     renice -n "$new_nice" -p "$pid" &gt; /dev/null 2&gt;&amp;1
 done</code></pre>
 
@@ -633,7 +633,7 @@ draw_rect() {
 }
 
 cleanup() {
-    tput cnorm  # Ripristina la visibilità del cursore
+    tput cnorm  # Ripristina la visibilitÃ  del cursore
     clear
     exit 0
 }
@@ -758,5 +758,7 @@ sed -E '
       block.innerHTML = html;
     });
   </script>
+<script src="/uni/js/search-highlight.js"></script>
 </body>
 </html>
+

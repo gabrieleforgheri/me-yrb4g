@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="it">
 <head>
   <meta charset="UTF-8">
@@ -16,7 +16,7 @@
       </svg>
       Sistemi Operativi
     </a>
-    <h1 class="animate-fade-in">Socket Stream in C 🌐</h1>
+    <h1 class="animate-fade-in">Socket Stream in C ðŸŒ</h1>
     <p class="animate-fade-in" style="animation-delay: 0.1s;">Comunicazione Inter-Processo bidirezionale e affidabile.</p>
   </header>
 
@@ -89,7 +89,7 @@ if (bind(srv_fd, (struct sockaddr *)&amp;srv_addr, sizeof(srv_addr)) == -1) {
     perror("bind"); exit(1);
 }
 
-// 5. Listen (Mette la socket in modalità passiva/ascolto, backlog 10)
+// 5. Listen (Mette la socket in modalitÃ  passiva/ascolto, backlog 10)
 if (listen(srv_fd, 10) == -1) {
     perror("listen"); exit(1);
 }
@@ -126,7 +126,7 @@ close(srv_fd);
 unlink(SOCKET_PATH);</code></pre>
 
       <h3>3. LATO CLIENT (Il processo che si connette)</h3>
-      <p>Il Client si connette semplicemente al <code>SOCKET_PATH</code> dove il server è in ascolto.</p>
+      <p>Il Client si connette semplicemente al <code>SOCKET_PATH</code> dove il server Ã¨ in ascolto.</p>
 
 <pre><code>#define SOCKET_PATH "/tmp/concurrent.sock"
 
@@ -156,8 +156,8 @@ close(sock_fd);</code></pre>
 
       <h3>Note Fondamentali per l'esame:</h3>
       <ul>
-        <li><strong style="color: var(--text-primary);">Differenza tra Descrittori:</strong> Sul server ricorda sempre che <code>srv_fd</code> serve esclusivamente per rimanere in ascolto (tramite <code>accept</code>), mentre la comunicazione reale coi client avviene su <code>conn_fd</code> (che è generato proprio dall'<code>accept</code>).</li>
-        <li><strong style="color: var(--text-primary);">Unlink Preventivo:</strong> Non dimenticare l'<code>unlink(SOCKET_PATH)</code> prima di fare la <code>bind</code> sul server. Se il server precedente si era chiuso male, il file sul file system bloccherà le nuove aperture.</li>
+        <li><strong style="color: var(--text-primary);">Differenza tra Descrittori:</strong> Sul server ricorda sempre che <code>srv_fd</code> serve esclusivamente per rimanere in ascolto (tramite <code>accept</code>), mentre la comunicazione reale coi client avviene su <code>conn_fd</code> (che Ã¨ generato proprio dall'<code>accept</code>).</li>
+        <li><strong style="color: var(--text-primary);">Unlink Preventivo:</strong> Non dimenticare l'<code>unlink(SOCKET_PATH)</code> prima di fare la <code>bind</code> sul server. Se il server precedente si era chiuso male, il file sul file system bloccherÃ  le nuove aperture.</li>
         <li><strong style="color: var(--text-primary);">Tipi di Dati:</strong> Sulle socket si inviano spesso strutture <code>struct</code> complete (usando i puntatori e <code>sizeof</code>), proprio come si faceva con le pipe.</li>
       </ul>
 
@@ -203,5 +203,7 @@ close(sock_fd);</code></pre>
       block.innerHTML = html;
     });
   </script>
+<script src="/uni/js/search-highlight.js"></script>
 </body>
 </html>
+

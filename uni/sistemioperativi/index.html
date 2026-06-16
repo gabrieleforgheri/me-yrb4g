@@ -396,9 +396,9 @@
           const bestSnip = data.snippets.find(s => !s.startsWith('📌'));
           if (bestSnip) {
              const cleanText = bestSnip.replace(/<[^>]*>?/gm, '').replace(/[^\w\sàèìòùáéíóú]/gi, ' ').replace(/\s+/g, ' ').trim();
-             const fragment = cleanText.split(/\s+/).slice(0, 4).join(' ');
+             const fragment = cleanText.split(/\s+/).slice(0, 3).join(' ');
              if (fragment.length > 3) {
-                targetUrl = `${url}#:~:text=${encodeURIComponent(fragment)}`;
+                targetUrl = `${url}?q=${encodeURIComponent(fragment)}`;
              }
           }
           a.href = targetUrl;
