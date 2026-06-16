@@ -126,6 +126,91 @@ if (c2 == 0) {
     exit(0);
 }</code></pre>
 
+<div style="background: rgba(99, 102, 241, 0.05); border-left: 4px solid #6366f1; padding: 1.5rem; border-radius: 8px; margin: 2rem 0;">
+    <h3 style="margin-top: 0; color: #6366f1;">APPROFONDIMENTO: La Famiglia <code>exec</code> e il Pattern Fork-Exec</h3>
+    <p>La system call <code>fork()</code> crea un clone esatto del processo padre. Ma se vogliamo eseguire un programma completamente diverso (es. lanciare <code>ls</code> o <code>Firefox</code>), dobbiamo usare la famiglia di funzioni <code>exec</code>.</p>
+    
+    <p>La funzione <code>exec</code> <strong>sostituisce completamente</strong> l'immagine in memoria del processo chiamante con un nuovo programma.</p>
+    <ul>
+        <li><strong>Non crea un nuovo processo:</strong> Il PID rimane identico!</li>
+        <li><strong>Non ritorna mai:</strong> Se <code>exec</code> ha successo, il codice successivo non verrà MAI eseguito, perché il programma originale è stato spazzato via dalla RAM. Ritorna <code>-1</code> solo se fallisce (es. comando non trovato).</li>
+    </ul>
+
+    <h4 style="color: #a855f7; margin-top: 1.5rem;">La Nomenclatura (I Suffissi di <code>exec</code>)</h4>
+    <p>Esistono diverse varianti di <code>exec</code>, distinguibili dalle lettere finali:</p>
+    <ul>
+        <li><strong><code>l</code> (List):</strong> Gli argomenti vengono passati come una lista separata da virgole. L'ultimo argomento deve <strong>sempre</strong> essere <code>NULL</code>.</li>
+        <li><strong><code>v</code> (Vector):</strong> Gli argomenti vengono passati come un array di stringhe (<code>char *argv[]</code>).</li>
+        <li><strong><code>p</code> (Path):</strong> Usa la variabile d'ambiente <code>$PATH</code> del sistema operativo per cercare l'eseguibile (non serve scrivere <code>/bin/ls</code>, basta <code>ls</code>).</li>
+        <li><strong><code>e</code> (Environment):</strong> Permette di passare un array customizzato di variabili d'ambiente.</li>
+    </ul>
+
+    <h4 style="color: #a855f7; margin-top: 1.5rem;">Esempi Pratici (Pattern Fork-Exec)</h4>
+    <p>Normalmente si fa una <code>fork()</code> e, solo nel figlio, si chiama la <code>exec</code>:</p>
+
+    <p><strong>1. Uso di <code>execlp</code> (Lista + Path):</strong></p>
+<pre><code>pid_t pid = fork();
+if (pid == 0) {
+    // Arg 0 è per convenzione il nome del programma stesso
+    execlp("ls", "ls", "-l", "-a", "/tmp", NULL); 
+    perror("exec fallita"); // Questa riga viene eseguita SOLO se execlp fallisce!
+    exit(1);
+}
+wait(NULL); // Il padre aspetta che 'ls' finisca</code></pre>
+
+    <p><strong>2. Uso di <code>execv</code> (Vettore, Path Assoluto):</strong></p>
+<pre><code>pid_t pid = fork();
+if (pid == 0) {
+    char *args[] = {"/bin/cat", "miofile.txt", NULL}; // Array terminato da NULL
+    execv("/bin/cat", args);
+    perror("exec fallita");
+    exit(1);
+}</code></pre>
+</div>
+
+<div style="background: rgba(239, 68, 68, 0.05); border-left: 4px solid #ef4444; padding: 1.5rem; border-radius: 8px; margin: 2rem 0;">
+    <h3 style="margin-top: 0; color: #ef4444;">I "WEIRD BEHAVIOURS": Corner Cases di fork ed I/O</h3>
+    <p>I file di test che hai fornito nascondono le "trappole" più comuni che capitano nei laboratori e agli esami di Sistemi Operativi.</p>
+
+    <h4 style="color: #f87171; margin-top: 1.5rem;">1. La Trappola dei Buffer I/O non svuotati (Il caso printf)</h4>
+    <p>Guarda questo codice:</p>
+<pre><code>printf("Hello"); // SENZA \n
+fork();</code></pre>
+    <p><strong>Cosa succede?</strong> La funzione <code>printf</code> della libreria standard C (User Space) usa dei buffer. Se non metti il carattere di a capo <code>\n</code> (o non chiami <code>fflush(stdout)</code>), la stringa "Hello" rimane bloccata nel buffer in RAM, non viene ancora scritta sul terminale.</p>
+    <p>Quando chiami <code>fork()</code>, il Kernel clona interamente la RAM, copiando anche il buffer pieno di "Hello" nel processo figlio! Alla fine del programma, entrambi i processi (padre e figlio) svuoteranno i loro rispettivi buffer, stampando "HelloHello".</p>
+
+    <h4 style="color: #f87171; margin-top: 1.5rem;">2. <code>exit(0)</code> vs <code>_exit(0)</code></h4>
+    <p>Per risolvere il problema dei buffer nei figli, bisogna conoscere la differenza tra le funzioni di uscita:</p>
+    <ul>
+        <li><strong><code>exit(0)</code> (Libreria C):</strong> Esegue le procedure di pulizia, svuota tutti i buffer I/O pendenti (stampando i dati rimasti appesi) e poi termina.</li>
+        <li><strong><code>_exit(0)</code> (System Call diretta):</strong> Chiede al Kernel di abbattere immediatamente il processo. I buffer in User Space NON vengono svuotati e i dati pendenti vanno persi.</li>
+    </ul>
+    <p style="padding-left: 1rem; border-left: 3px solid #f59e0b; color: #fbbf24;"><strong>Regola d'oro:</strong> Quando un processo figlio termina dopo aver fatto il suo lavoro interno o se fallisce una exec, è spesso consigliato usare <code>_exit()</code> per evitare di flussare accidentalmente due volte i buffer aperti dal padre.</p>
+
+    <h4 style="color: #f87171; margin-top: 1.5rem;">3. File Descriptors: Aperti PRIMA o DOPO la Fork?</h4>
+    <p>Questa è una domanda da 30 e lode.</p>
+    <ul>
+        <li><strong>Apertura PRIMA della fork:</strong> Se il padre fa <code>open()</code> e poi <code>fork()</code>, padre e figlio condividono la stessa voce nella tabella dei file aperti del Kernel.<br>
+        L'offset (cursore) è condiviso. Se il figlio legge 5 byte o fa una lseek spostando il cursore a +5, quando il padre andrà a leggere, partirà dal sesto byte! Questo può causare letture mischiate (interleaving).</li>
+        <li><strong>Apertura DOPO la fork:</strong> Se il padre fa <code>fork()</code> e poi sia il padre che il figlio fanno <code>open("file.txt")</code>, avranno file descriptor indipendenti che puntano a strutture separate nel Kernel. Ognuno avrà il suo cursore (offset) a 0. Se leggono, leggeranno entrambi dall'inizio del file senza disturbarsi.</li>
+    </ul>
+
+    <h4 style="color: #f87171; margin-top: 1.5rem;">4. L'Illusione della Memoria e il Copy-On-Write (CoW)</h4>
+    <p>Guarda questo caso con la memoria Heap:</p>
+<pre><code>int *p = malloc(sizeof(int));
+*p = 100;
+if (fork() == 0) {
+    *p = 111;
+    printf("Figlio: *p = %d, address = %p\n", *p, p);
+} else {
+    printf("Padre: *p = %d, address = %p\n", *p, p);
+}</code></pre>
+    <p><strong>Il risultato strano:</strong> Entrambi i processi stamperanno lo stesso identico indirizzo di memoria (es. <code>0x55d78</code>), ma il valore letto sarà diverso (111 nel figlio, 100 nel padre).</p>
+    <p><strong>Perché succede?</strong> Linux gestisce la memoria tramite la Virtual Memory. <code>malloc</code> restituisce un Indirizzo Virtuale, che è stato clonato dalla fork.<br>
+    Tuttavia, quando il figlio tenta di modificare la variabile (<code>*p = 111</code>), la CPU genera una trap. Il Kernel interviene col meccanismo di Copy-On-Write (CoW): copia silenziosamente la pagina fisica della RAM in un'altra zona e reindirizza il puntatore virtuale del figlio verso la nuova pagina.</p>
+    <p>Padre e figlio vedono lo stesso indirizzo virtuale, ma fisicamente (il Page Frame Number - PFN) stanno puntando a due chip di RAM diversi!</p>
+</div>
+
     </div>
   </main>
 
