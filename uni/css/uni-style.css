@@ -531,6 +531,8 @@ mark.highlight {
 }
 
 mark.search-highlight {
+  background-color: transparent;
+  color: inherit;
   border-radius: 4px;
   padding: 0.1rem 0.3rem;
   transition: all 0.3s ease;
