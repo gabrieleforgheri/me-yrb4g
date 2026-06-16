@@ -22,57 +22,58 @@
   </header>
 
   <main class="article-container animate-fade-in" style="animation-delay: 0.2s;">
-    <div class="article-content">
-      <h2 style="font-size: 2rem; color: #60a5fa;">File Control e I/O Avanzato in C</h2>
+        <div class="article-content">
+      <h2 style="font-size: 2rem; color: #60a5fa;">File Control e Paradigmi di I/O</h2>
       <p style="color: var(--text-secondary); font-style: italic;">[Contesto: Gestione FIFO, pipe, read/write, poll(), fcntl(), dup2(), file sparsi, locking cooperativo e I/O asincrono]</p>
 
-      <h3>1. APERTURA FILE (open)</h3>
-      <p>Restituisce un File Descriptor (FD) intero. Se fallisce, ritorna -1.</p>
+      <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem;">
+        <h3 style="color: #10b981; margin-top: 0; display: flex; align-items: center; gap: 0.5rem;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          CHEATSHEET SISTEMI OPERATIVI: Paradigmi di I/O, Asincronia e Descrittori
+        </h3>
+        <p style="margin-bottom: 0; font-size: 0.95rem;">Un'analisi architettonica profonda su come il Kernel Linux gestisce l'input/output e i descrittori di file. Da un approccio sequenziale bloccante fino alle architetture asincrone event-driven.</p>
+      </div>
+
+      <h3 style="color: #60a5fa; border-bottom: 2px solid rgba(96, 165, 250, 0.3); padding-bottom: 0.5rem; margin-top: 2rem;">1. IL COLLO DI BOTTIGLIA: I/O Bloccante (Synchronous Blocking)</h3>
+      <p>Nei classici server e client basati su pipe o FIFO (es. <code>blocking-server.c</code> e <code>02a-blocking-read.c</code>), vediamo il comportamento di default di Unix.</p>
+      <p><strong>La logica:</strong> Quando il server chiama <code>read(fds[i], ...)</code> su una FIFO vuota, il Kernel "addormenta" il processo. Lo toglie dalla coda di esecuzione della CPU e lo mette in attesa finché non arrivano dati.</p>
       <ul>
-        <li><strong style="color: var(--text-primary);">Bloccante (Default):</strong><br>
-        <code>int fd = open("/tmp/fifo", O_RDONLY);</code></li>
-        <li><strong style="color: var(--text-primary);">Non Bloccante:</strong><br>
-        <code>int fd = open("/tmp/fifo", O_RDONLY | O_NONBLOCK);</code></li>
+        <li><strong style="color: #10b981;">Vantaggio:</strong> Il codice è banale da scrivere. Il processo consuma 0% CPU mentre aspetta.</li>
+        <li><strong style="color: #ef4444;">Il grave difetto architetturale:</strong> Se il Server deve gestire 1000 client e si blocca in attesa del Client 0, i Client dall'1 al 999 rimarranno bloccati a loro volta, anche se hanno già inviato i loro dati. È un design strettamente sequenziale che distrugge la concorrenza.</li>
       </ul>
 
-      <h3>2. READ &amp; WRITE SU FIFO</h3>
-      <p>Sintassi base: <code>ssize_t n = read(fd, &amp;buf, sizeof(buf));</code></p>
+      <h4>Apertura e Comportamento Default</h4>
+      <p>L'apertura standard restituisce un File Descriptor (FD) intero (o -1 in caso di errore):</p>
+      <pre><code>int fd = open("/tmp/fifo", O_RDONLY);</code></pre>
+      <p>In questo scenario, una <code>read()</code> su un canale vuoto o una <code>write()</code> su un buffer pieno bloccano irreversibilmente il processo fino allo sblocco della risorsa.</p>
 
-      <table>
-        <thead>
-          <tr>
-            <th>Scenario</th>
-            <th>Bloccante</th>
-            <th>Non Bloccante (O_NONBLOCK)</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Read: Dati presenti</td>
-            <td>Ritorna byte letti</td>
-            <td>Ritorna byte letti</td>
-          </tr>
-          <tr>
-            <td>Read: Niente dati</td>
-            <td>Si blocca in attesa</td>
-            <td>Ritorna -1, errno=EAGAIN</td>
-          </tr>
-          <tr>
-            <td>Read: Nessun writer</td>
-            <td>Ritorna 0 (EOF)</td>
-            <td>Ritorna -1, poll genera POLLHUP</td>
-          </tr>
-          <tr>
-            <td>Write: Buffer pieno</td>
-            <td>Si blocca in attesa</td>
-            <td>Ritorna -1, errno=EAGAIN</td>
-          </tr>
-        </tbody>
-      </table>
+      <h3 style="color: #60a5fa; border-bottom: 2px solid rgba(96, 165, 250, 0.3); padding-bottom: 0.5rem; margin-top: 2rem;">2. LA SOLUZIONE ATTIVA: I/O Non Bloccante (Synchronous Non-Blocking)</h3>
+      <p>L'ingegneria del software qui cambia: imponiamo al Kernel di <strong>non addormentare mai</strong> il processo. Se non ci sono dati, la system call deve fallire "gentilmente" e restituire subito il controllo al programma.</p>
 
-      <h3>3. MULTIPLEXING CON POLL()</h3>
-      <p>Evita il busy waiting su file non bloccanti.</p>
-      
+      <h4>Come si trasforma un file in Non-Bloccante: <code>fcntl</code></h4>
+      <p>Se apriamo un file da zero possiamo usare <code>O_NONBLOCK</code> direttamente nella <code>open</code>. Se il descrittore è già stato aperto o ereditato (es. Standard Input), alteriamo le proprietà a runtime usando <code>fcntl</code> (File Control). L'operazione bit a bit <code>|</code> (OR) è fondamentale per aggiungere un flag senza sovrascrivere quelli già esistenti.</p>
+
+<pre><code>#include &lt;fcntl.h&gt;
+#include &lt;errno.h&gt;
+
+// 1. Legge la maschera dei flag correnti dal Kernel
+int flags = fcntl(fd, F_GETFL); 
+
+// 2. Riscrive la maschera aggiungendo O_NONBLOCK
+fcntl(fd, F_SETFL, flags | O_NONBLOCK);</code></pre>
+
+      <h4>Il significato di EAGAIN</h4>
+      <p>In modalità non bloccante, una <code>read()</code> vuota o una <code>write()</code> su una pipe piena restituiscono -1. Per distinguere un vero errore hardware da un semplice "riprova più tardi", l'ingegnere deve controllare la variabile globale <code>errno</code>:</p>
+
+<pre><code>ssize_t n = read(fd, buf, sizeof(buf));
+if (n < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
+    // Non è un errore critico. Il buffer è solo vuoto/pieno in questo microsecondo.
+    // Il programma può passare a interrogare il client successivo.
+}</code></pre>
+
+      <h4>Multiplexing con poll() per evitare il busy-waiting</h4>
+      <p>Anche se il file è non-bloccante, interrogare continuamente in loop migliaia di descrittori (polling attivo) spreca cicli CPU. La soluzione è usare <code>poll()</code> per delegare al kernel l'ascolto passivo su array di descrittori.</p>
+
 <pre><code>#include &lt;poll.h&gt;
 struct pollfd poll_set[NUM_FILE];
 
@@ -80,207 +81,78 @@ for (int i = 0; i &lt; NUM_FILE; i++) {
     poll_set[i].fd = fds[i];     // FD da monitorare
     poll_set[i].events = POLLIN; // Eventi da ascoltare
     poll_set[i].revents = 0;     // Output del kernel
-}</code></pre>
+}
 
-      <p>Usare SEMPRE l'AND bit a bit (<code>&amp;</code>) per controllare revents, MAI l'uguaglianza (<code>==</code>).<br>
-      La <code>poll()</code> va inserita in un loop principale.</p>
+// -1 = si addormenta finché almeno UNO non ha eventi
+int ready = poll(poll_set, NUM_FILE, -1); 
 
-<pre><code>int ready = poll(poll_set, NUM_FILE, -1); // -1 = attesa infinita
-
+// Loop per trovare chi ha attivato la poll
 for (int i = 0; i &lt; NUM_FILE; i++) {
-    if (poll_set[i].fd == -1) continue;
-
-    // 1. Disconnessione
-    if (poll_set[i].revents &amp; POLLHUP) {
-        close(poll_set[i].fd);
-        poll_set[i].fd = -1;
-        continue;
-    }
-
-    // 2. Dati Pronti (Loop per svuotare il buffer non bloccante)
-    if (poll_set[i].revents &amp; POLLIN) {
-        ssize_t nread;
-        int value;
-        while ((nread = read(poll_set[i].fd, &amp;value, sizeof(value))) &gt; 0) {
-            // Usa i dati
-        }
-        if (nread == -1 &amp;&amp; errno != EAGAIN) {
-            // Gestione vero errore
-        }
+    if (poll_set[i].revents & POLLIN) {
+        // Dati pronti: leggiamo finché il buffer non bloccante non si svuota
+        while ((nread = read(poll_set[i].fd, &value, sizeof(value))) > 0) { /* usa i dati */ }
     }
 }</code></pre>
 
-      <h3>4. MANIPOLAZIONE DEI FLAG E I/O NON BLOCCANTE (fcntl)</h3>
-      <p>Se un file descriptor è già stato aperto (o ereditato, come nei casi standard o nelle pipe), non è possibile cambiare la modalità di blocco direttamente tramite <code>open()</code>. Si usa la system call <code>fcntl()</code> con i comandi <code>F_GETFL</code> (prendi i flag correnti) e <code>F_SETFL</code> (imposta i nuovi flag).</p>
+      <h3 style="color: #60a5fa; border-bottom: 2px solid rgba(96, 165, 250, 0.3); padding-bottom: 0.5rem; margin-top: 2rem;">3. L'INVERSIONE DEL CONTROLLO: I/O Asincrono guidato dai Segnali</h3>
+      <p>Fare polling con <code>poll()</code> risolve molti problemi, ma vincola ancora il processo a dover esplicitamente verificare l'array. L'approccio <strong>Event-Driven</strong> realizza l'inversione del controllo: non sei tu a chiedere al Kernel se ci sono dati, è il Kernel che interrompe il tuo programma in <em>background</em> inviandoti un segnale <code>SIGIO</code> quando i dati sono pronti.</p>
 
-<pre><code>#include &lt;fcntl.h&gt;
-#include &lt;errno.h&gt;
+      <h4>Il Setup Architetturale per l'Asincronia:</h4>
+      <p>Affinché questo meccanismo funzioni, bisogna "istruire" il Kernel con 3 passaggi precisi:</p>
 
-// 1. Recupera i flag correnti associati al file descriptor
-int flags = fcntl(fd, F_GETFL);
-if (flags == -1) { perror("fcntl F_GETFL"); exit(1); }
-
-// 2. Modifica i flag aggiungendo O_NONBLOCK tramite OR bit a bit (|)
-if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) == -1) {
-    perror("fcntl F_SETFL");
-    exit(1);
-}</code></pre>
-
-      <p>Quando un file è impostato come <code>O_NONBLOCK</code>:</p>
-      <ul>
-        <li><code>read()</code>: Se il canale è vuoto, non si blocca ma restituisce -1 impostando errno = <code>EAGAIN</code> (o <code>EWOULDBLOCK</code>).</li>
-        <li><code>write()</code>: Se il buffer della pipe/socket è pieno, non si blocca ma restituisce -1 impostando errno = <code>EAGAIN</code>.</li>
-      </ul>
-
-<pre><code>ssize_t n = read(fd, buf, sizeof(buf));
-if (n &lt; 0) {
-    if (errno == EAGAIN || errno == EWOULDBLOCK) {
-        // Il buffer è temporaneamente vuoto, non è un errore fatale
-        printf("Nessun dato disponibile al momento, riprova più tardi.\n");
-    } else {
-        perror("Errore critico in lettura"); exit(1);
-    }
-}</code></pre>
-
-      <h3>5. REDIREZIONE DEI FILE DESCRIPTOR (dup2)</h3>
-      <p>La system call <code>dup2(int oldfd, int newfd)</code> clona il file descriptor <code>oldfd</code> sul file descriptor <code>newfd</code>. Se <code>newfd</code> era già aperto, il kernel lo chiude automaticamente prima di effettuare la copia.</p>
-
-      <p>Questo meccanismo è la base di come la Shell implementa l'operatore <code>&gt;</code>.</p>
-
-<pre><code>#include &lt;unistd.h&gt;
-#include &lt;fcntl.h&gt;
-
-// Apre un file di log. O_TRUNC svuota il file se esiste già, O_CREAT lo crea se manca
-int logfd = open("output.log", O_WRONLY | O_CREAT | O_TRUNC, 0644);
-if (logfd == -1) { perror("open"); return 1; }
-
-/* Forza il file descriptor 1 (stdout) a puntare allo stesso file di logfd */
-// Il kernel chiude automaticamente il vecchio stdout prima della sovrascrittura
-if (dup2(logfd, 1) == -1) {
-    perror("dup2"); return 1;
-}
-close(logfd); /* Il descrittore originale non serve più, usiamo l'1 clonato */
-
-// Da questo momento in poi, qualsiasi printf scriverà nel file!
-printf("Questo testo non andrà a schermo, ma dentro output.log\n");</code></pre>
-
-      <h3>6. FILE SPARSI (Sparse Files)</h3>
-      <p>Un file sparso è un file che contiene dei "buchi" logici di dati (zeri completi) che non occupano spazio fisico reale sul disco fisso finché non vengono effettivamente sovrascritti. Si creano spostando il cursore molto in avanti con <code>lseek()</code> oltre la fine effettiva dei byte scritti.</p>
-
-<pre><code>#include &lt;unistd.h&gt;
-#include &lt;fcntl.h&gt;
-
-int fd = open("file_sparso.bin", O_CREAT | O_WRONLY, 0644);
-
-// Sposta il cursore a 1 GB di distanza dall'inizio, lasciando un "buco" vuoto
-off_t offset = lseek(fd, 1024LL * 1024 * 1024, SEEK_SET);
-if (offset == (off_t)-1) { perror("lseek"); return 1; }
-
-// Scrivendo anche un solo carattere alla fine, il file risulterà logicamente grande 1GB
-write(fd, "A", 1); 
-close(fd);</code></pre>
-
-      <ul>
-        <li><code>ls -lh file_sparso.bin</code> &rarr; Mostra la dimensione logica (es. 1 GB).</li>
-        <li><code>du -sh file_sparso.bin</code> &rarr; Mostra lo spazio reale effettivamente allocato sul disco (poche frazioni di KB).</li>
-      </ul>
-
-      <h3>7. ADVISORY FILE LOCKING (struct flock &amp; fcntl)</h3>
-      <p>Il locking tramite <code>fcntl()</code> è di tipo advisory (cooperativo). Significa che il Kernel non impedisce fisicamente a un processo malintenzionato di scrivere sul file; spetta ai programmi concorrenti cooperare richiedendo esplicitamente il lock prima di accedere alla risorsa.</p>
-
-<pre><code>struct flock lock;
-lock.l_type   = F_WRLCK;   // Tipo: F_RDLCK (Condiviso/Lettura), F_WRLCK (Esclusivo/Scrittura), F_UNLCK (Sblocca)
-lock.l_whence = SEEK_SET;  // Punto di riferimento dell'offset (SEEK_SET, SEEK_CUR, SEEK_END)
-lock.l_start  = 0;         // Offset iniziale in byte relativo a l_whence
-lock.l_len    = 0;         // Lunghezza della sezione da bloccare. 0 = fino alla fine del file (EOF)
-lock.l_pid    = 0;         // Compilato dal Kernel con F_GETLK per indicare chi possiede il lock</code></pre>
-
-      <ul>
-        <li><code>F_SETLK</code>: Tenta di acquisire il lock. Se il file è già bloccato da un altro processo, fallisce immediatamente restituendo -1 e impostando errno = <code>EACCES</code> o <code>EAGAIN</code>.</li>
-        <li><code>F_SETLKW</code>: (Wait) Se incontra un lock in conflitto, mette a dormire il processo finché la risorsa non torna libera.</li>
-      </ul>
-
-<pre><code>#include &lt;fcntl.h&gt;
-#include &lt;unistd.h&gt;
-
-// Per poter inserire un Write Lock (F_WRLCK), il file DEVE essere aperto almeno in O_WRONLY o O_RDWR
-int fd = open("data.txt", O_RDWR);
-struct flock lock = {0};
-lock.l_type = F_WRLCK;    // Richiesta di Lock Esclusivo (Write Lock)
-lock.l_whence = SEEK_SET; // Partiamo dall'inizio del file
-
-// 1. Tentativo NON bloccante
-if (fcntl(fd, F_SETLK, &amp;lock) == -1) {
-    perror("Impossibile bloccare, file già occupato");
-    
-    // Curiosità d'esame: scopriamo chi sta bloccando il file
-    fcntl(fd, F_GETLK, &amp;lock); // Sovrascrive la struttura lock con le informazioni del lock attivo
-    printf("Il file è attualmente bloccato dal processo con PID: %d\n", lock.l_pid);
-    
-    close(fd);
-    return 1;
-}
-
-/* --- INIZIO SEZIONE CRITICA (Lavoro sul file in sicurezza) --- */
-printf("Lock acquisito con successo dal processo %d\n", getpid());
-sleep(5); 
-/* --- FINE SEZIONE CRITICA --- */
-
-// 2. Rilascio del Lock
-lock.l_type = F_UNLCK; // Imposta il tipo a sblocco
-fcntl(fd, F_SETLK, &amp;lock);
-close(fd);</code></pre>
-
-      <h3>8. I/O ASINCRONO GUIDATO DAI SEGNALI (O_ASYNC)</h3>
-      <p>L'I/O asincrono permette a un processo di continuare a svolgere i propri calcoli in user-space. Il Kernel invierà un segnale <code>SIGIO</code> al processo non appena sul file descriptor diventano disponibili nuovi dati da leggere.</p>
-
-      <p>Richiede 3 passaggi fondamentali:</p>
       <ol>
-        <li>Assegnare un gestore personalizzato per il segnale <code>SIGIO</code>.</li>
-        <li>Impostare la proprietà del file descriptor (<code>F_SETOWN</code>) indicando quale PID deve ricevere il segnale.</li>
-        <li>Attivare il flag <code>O_ASYNC</code> (e solitamente anche <code>O_NONBLOCK</code>) sul file.</li>
+        <li><strong>Gestione del Segnale:</strong> Dire al processo cosa fare quando riceve l'interruzione.
+<pre><code>struct sigaction sa = {0};
+sa.sa_handler = sigio_handler; // Funzione che imposta un flag (es. got_sigio = 1)
+sigaction(SIGIO, &sa, NULL);</code></pre></li>
+        <li><strong>Proprietà del Descrittore (F_SETOWN):</strong> Un file potrebbe essere condiviso. Dobbiamo dire al Kernel esattamente a quale Process ID (PID) inviare il segnale <code>SIGIO</code> quando questo specifico FD riceve dati.
+<pre><code>fcntl(fd, F_SETOWN, getpid());</code></pre></li>
+        <li><strong>Attivazione Flag (O_ASYNC):</strong> Abilitare fisicamente la generazione asincrona dei segnali per quel file.
+<pre><code>int flags = fcntl(fd, F_GETFL);
+fcntl(fd, F_SETFL, flags | O_ASYNC | O_NONBLOCK);</code></pre></li>
       </ol>
+      
+      <p><em>Nota didattica:</em> Si abbina spesso <code>O_ASYNC</code> a <code>O_NONBLOCK</code>. Quando arriva il <code>SIGIO</code>, il programma salta nell'handler, alza la bandierina e poi avvia un ciclo <code>while(read(...) > 0)</code> per svuotare l'intero buffer senza rischiare di bloccarsi se legge un byte di troppo.</p>
 
-<pre><code>#include &lt;stdio.h&gt;
-#include &lt;fcntl.h&gt;
-#include &lt;signal.h&gt;
-#include &lt;unistd.h&gt;
+      <h3 style="color: #60a5fa; border-bottom: 2px solid rgba(96, 165, 250, 0.3); padding-bottom: 0.5rem; margin-top: 2rem;">4. MANIPOLAZIONE AVANZATA A LIVELLO DI KERNEL</h3>
+      
+      <h4>Redirezione dei Canali: dup2</h4>
+      <p>La system call <code>dup2(oldfd, newfd)</code> è il cuore di come la Shell gestisce operatori come <code>&gt;</code>. Clona un descrittore in una posizione specifica della tabella dei file del processo.</p>
 
-// Flag asincrono globale: modificato dall'handler, letto dal main
-volatile sig_atomic_t got_sigio = 0;
-void sigio_handler(int signo) { got_sigio = 1; }
+<pre><code>int logfd = open("output.log", O_WRONLY | O_CREAT | O_TRUNC, 0644);
 
-int main() {
-    int fd = open("/tmp/myfifo", O_RDONLY | O_NONBLOCK);
+// Chiude automaticamente lo standard output (1) e lo ricollega a logfd
+dup2(logfd, 1); 
+close(logfd); // Pulizia: il vecchio fd non serve più, ora logfd e 1 sono la stessa cosa
 
-    // Passaggio 1: Installa il Signal Handler per SIGIO
-    struct sigaction sa = {0};
-    sa.sa_handler = sigio_handler;
-    sigaction(SIGIO, &amp;sa, NULL);
+printf("Questo va nel file, non a schermo!\n");</code></pre>
 
-    // Passaggio 2: Associa il file descriptor al PID corrente (F_SETOWN)
-    // Indica al kernel a chi mandare il segnale SIGIO quando il file è pronto
-    fcntl(fd, F_SETOWN, getpid());
+      <h4>Ottimizzazione Spaziale: File Sparsi (Sparse Files)</h4>
+      <p>Un "Sparse File" sfrutta un'illusione del file system. Usa <code>lseek()</code> per muovere il cursore logico di scrittura molto in avanti rispetto ai dati fisicamente scritti, lasciando un "buco".</p>
 
-    // Passaggio 3: Attiva lo smistamento asincrono aggiungendo O_ASYNC
-    int flags = fcntl(fd, F_GETFL);
-    fcntl(fd, F_SETFL, flags | O_ASYNC);
+<pre><code>// Salta in avanti di 1 GB senza scrivere nulla
+off_t offset = lseek(fd, 1024LL * 1024 * 1024, SEEK_SET);
 
-    printf("Pronto a fare altro in attesa dei dati...\n");
-    
-    while(1) {
-        if (got_sigio) {
-            got_sigio = 0; // Resetta il flag
-            char buf[256];
-            ssize_t n = read(fd, buf, sizeof(buf));
-            if (n &gt; 0) printf("Dati asincroni ricevuti: %.*s\n", (int)n, buf);
-        }
-        // Il programma può fare altri calcoli qui in totale libertà!
-        usleep(500000); 
-    }
-    return 0;
+// Scrivendo un solo byte alla fine, il sistema "crede" che il file sia da 1GB.
+write(fd, "A", 1); </code></pre>
+
+      <p><strong>Spiegazione Logica:</strong> Il Kernel Linux è intelligente. Per i blocchi di zeri logici saltati con <code>lseek</code>, non alloca veri blocchi sui settori del disco fisso (risparmiando usura e spazio). Se esegui <code>ls -l</code> vedrai 1GB (dimensione logica), ma se usi <code>du -h</code> (Disk Usage) vedrai che occupa solo 4 Kilobyte reali sul disco fisico!</p>
+
+      <h4>Advisory File Locking (struct flock)</h4>
+      <p>Il locking tramite <code>fcntl()</code> è di tipo advisory (cooperativo). Significa che il Kernel non impedisce fisicamente a un processo malintenzionato di scrivere sul file; spetta ai programmi concorrenti cooperare richiedendo esplicitamente il lock.</p>
+
+<pre><code>struct flock lock = {0};
+lock.l_type   = F_WRLCK;   // F_RDLCK (Condiviso), F_WRLCK (Esclusivo), F_UNLCK (Sblocca)
+lock.l_whence = SEEK_SET;  // Partiamo dall'inizio del file
+
+// F_SETLK tenta in modo NON bloccante. Se occupato, ritorna -1 e errno=EAGAIN
+if (fcntl(fd, F_SETLK, &lock) == -1) {
+    perror("Impossibile bloccare, file già occupato");
+} else {
+    // Sezione critica
+    lock.l_type = F_UNLCK;
+    fcntl(fd, F_SETLK, &lock);
 }</code></pre>
-
     </div>
   </main>
 
