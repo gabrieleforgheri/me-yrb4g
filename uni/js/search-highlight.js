@@ -24,7 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
         backBtn.style.gridRow = 'unset';
 
         const searchBackBtn = document.createElement('a');
-        searchBackBtn.href = `/uni/sistemioperativi/index.html?search=${encodeURIComponent(query)}`;
+        searchBackBtn.href = `../../index.html?search=${encodeURIComponent(query)}`;
         searchBackBtn.className = 'back-home-btn animate-fade-in';
         searchBackBtn.style.gridColumn = 'unset';
         searchBackBtn.style.gridRow = 'unset';
