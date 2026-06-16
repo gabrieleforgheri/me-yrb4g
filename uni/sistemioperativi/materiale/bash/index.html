@@ -44,6 +44,182 @@
       <h2 style="font-size: 2rem; color: #60a5fa;">Shell Scripting (Bash)</h2>
       <p style="color: var(--text-secondary); font-style: italic;">[Context: Automazione di sistema, gestione di file e processi, redirezione dell'I/O e filtri di testo in ambiente Unix/Linux.]</p>
 
+      <div style="background: rgba(16, 185, 129, 0.05); border: 2px solid #10b981; padding: 1.5rem; border-radius: 12px; margin: 2rem 0; box-shadow: 0 4px 20px rgba(16, 185, 129, 0.1);">
+          <h2 style="margin-top: 0; color: #10b981; font-size: 1.8rem; display: flex; align-items: center; gap: 0.5rem;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+              IL GRANDE DIZIONARIO DEI COMANDI LINUX (CHEATSHEET)
+          </h2>
+          <p style="font-size: 1.05rem; margin-bottom: 1.5rem;">Una rassegna rapida di tutti i comandi essenziali da sapere a memoria per l'esame, completi di flag più usati ed esempi pratici.</p>
+
+          <!-- A. Navigazione -->
+          <h3 style="color: #34d399; margin-top: 1.5rem; border-bottom: 1px solid rgba(52, 211, 153, 0.3); padding-bottom: 0.5rem;">A. Navigazione, File System e Permessi</h3>
+          <p style="color: var(--text-secondary); margin-bottom: 1rem;">Questi comandi sono la base per muoversi nel sistema e manipolare file e directory.</p>
+          <div style="overflow-x: auto;">
+              <table style="width: 100%; border-collapse: collapse; margin-bottom: 2rem;">
+                  <thead>
+                      <tr style="background: rgba(52, 211, 153, 0.1); border-bottom: 2px solid #10b981;">
+                          <th style="padding: 1rem; text-align: left; width: 25%;">Comando (Uso)</th>
+                          <th style="padding: 1rem; text-align: left; width: 35%;">Parametri Importanti</th>
+                          <th style="padding: 1rem; text-align: left; width: 40%;">Esempio d'uso con parametri</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+                      <tr style="border-bottom: 1px solid var(--card-border);">
+                          <td style="padding: 1rem;"><strong><code>ls</code></strong><br><span style="font-size: 0.9em; color: var(--text-secondary);">Elenca il contenuto delle directory.</span></td>
+                          <td style="padding: 1rem; font-size: 0.9em;"><strong><code>-l</code></strong>: Formato lungo (permessi, owner, size).<br><strong><code>-a</code></strong>: Mostra file nascosti (iniziano con <code>.</code>).<br><strong><code>-h</code></strong>: Dimensioni leggibili (KB, MB).<br><strong><code>-R</code></strong>: Ricorsivo nelle sottocartelle.</td>
+                          <td style="padding: 1rem; font-size: 0.9em;"><code>ls -lahR /var/log</code><br><em style="color: var(--text-secondary);">(Mostra tutto il contenuto di /var/log e sottocartelle con dettagli e dimensioni umane)</em></td>
+                      </tr>
+                      <tr style="border-bottom: 1px solid var(--card-border);">
+                          <td style="padding: 1rem;"><strong><code>mkdir</code></strong><br><span style="font-size: 0.9em; color: var(--text-secondary);">Crea nuove directory.</span></td>
+                          <td style="padding: 1rem; font-size: 0.9em;"><strong><code>-p</code></strong> (Parents): Crea l'intero percorso se le cartelle genitrici non esistono e non dà errore se la cartella esiste già.</td>
+                          <td style="padding: 1rem; font-size: 0.9em;"><code>mkdir -p /tmp/progetto/src/</code><br><em style="color: var(--text-secondary);">(Crea <code>src</code>, <code>progetto</code> e <code>tmp</code> in un colpo solo se mancanti)</em></td>
+                      </tr>
+                      <tr style="border-bottom: 1px solid var(--card-border);">
+                          <td style="padding: 1rem;"><strong><code>rm</code></strong><br><span style="font-size: 0.9em; color: var(--text-secondary);">Rimuove file o directory.</span></td>
+                          <td style="padding: 1rem; font-size: 0.9em;"><strong><code>-r</code></strong>: Ricorsivo (obbligatorio per cancellare cartelle).<br><strong><code>-f</code></strong>: Force (ignora file inesistenti e non chiede conferme).</td>
+                          <td style="padding: 1rem; font-size: 0.9em;"><code>rm -rf /tmp/vecchio_progetto/</code><br><em style="color: var(--text-secondary);">(Distrugge la cartella e tutto il suo contenuto senza pietà)</em></td>
+                      </tr>
+                      <tr style="border-bottom: 1px solid var(--card-border);">
+                          <td style="padding: 1rem;"><strong><code>cp</code></strong><br><span style="font-size: 0.9em; color: var(--text-secondary);">Copia file e directory.</span></td>
+                          <td style="padding: 1rem; font-size: 0.9em;"><strong><code>-r</code></strong>: Ricorsivo (copia intere directory).<br><strong><code>-p</code></strong>: Preserve (mantiene permessi, date e owner originali).</td>
+                          <td style="padding: 1rem; font-size: 0.9em;"><code>cp -rp /etc/ssh /backup/ssh_bak</code><br><em style="color: var(--text-secondary);">(Copia la cartella ssh preservando i permessi originali)</em></td>
+                      </tr>
+                      <tr style="border-bottom: 1px solid var(--card-border);">
+                          <td style="padding: 1rem;"><strong><code>chmod</code></strong><br><span style="font-size: 0.9em; color: var(--text-secondary);">Modifica i permessi (rwx) dei file.</span></td>
+                          <td style="padding: 1rem; font-size: 0.9em;"><strong><code>u, g, o, a</code></strong>: User, Group, Others, All.<br><strong><code>+, -, =</code></strong>: Aggiungi, Rimuovi, Imposta esattamente.<br><strong>Valori Ottali</strong>: es. 755 (rwxr-xr-x).</td>
+                          <td style="padding: 1rem; font-size: 0.9em;"><code>chmod 755 script.sh</code><br><code>chmod o-rwx secret.txt</code><br><em style="color: var(--text-secondary);">(Toglie tutti i permessi agli 'others')</em></td>
+                      </tr>
+                      <tr>
+                          <td style="padding: 1rem;"><strong><code>find</code></strong><br><span style="font-size: 0.9em; color: var(--text-secondary);">Ricerca avanzata di file nel file system.</span></td>
+                          <td style="padding: 1rem; font-size: 0.9em;"><strong><code>-name</code></strong>: Cerca per nome (supporta wildcard <code>*</code>).<br><strong><code>-type</code></strong>: Tipo (<code>f</code> file, <code>d</code> directory).<br><strong><code>-mtime -N</code></strong>: Modificato meno di N giorni fa.<br><strong><code>-exec</code></strong>: Esegue un comando sui file trovati.</td>
+                          <td style="padding: 1rem; font-size: 0.9em;"><code>find /var/log -type f -name "*.log" -mtime -7 -exec rm {} \;</code><br><em style="color: var(--text-secondary);">(Trova file .log modificati da meno di 7 giorni e li elimina)</em></td>
+                      </tr>
+                  </tbody>
+              </table>
+          </div>
+
+          <!-- B. Elaborazione Testo -->
+          <h3 style="color: #34d399; margin-top: 1.5rem; border-bottom: 1px solid rgba(52, 211, 153, 0.3); padding-bottom: 0.5rem;">B. Elaborazione Testo e Filtri (I "Coltellini Svizzeri")</h3>
+          <p style="color: var(--text-secondary); margin-bottom: 1rem;">Questi comandi si usano quasi sempre concatenati tramite l'operatore Pipe (<code>|</code>).</p>
+          <div style="overflow-x: auto;">
+              <table style="width: 100%; border-collapse: collapse; margin-bottom: 2rem;">
+                  <thead>
+                      <tr style="background: rgba(52, 211, 153, 0.1); border-bottom: 2px solid #10b981;">
+                          <th style="padding: 1rem; text-align: left; width: 25%;">Comando (Uso)</th>
+                          <th style="padding: 1rem; text-align: left; width: 35%;">Parametri Importanti</th>
+                          <th style="padding: 1rem; text-align: left; width: 40%;">Esempio d'uso con parametri</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+                      <tr style="border-bottom: 1px solid var(--card-border);">
+                          <td style="padding: 1rem;"><strong><code>grep</code></strong><br><span style="font-size: 0.9em; color: var(--text-secondary);">Estrae righe che matchano un pattern.</span></td>
+                          <td style="padding: 1rem; font-size: 0.9em;"><strong><code>-E</code></strong>: Usa regex estese.<br><strong><code>-i</code></strong>: Case-insensitive.<br><strong><code>-v</code></strong>: Invert match (esclude le righe).<br><strong><code>-c</code></strong>: Conta il numero di righe.<br><strong><code>-o</code></strong>: Stampa SOLO la porzione trovata.</td>
+                          <td style="padding: 1rem; font-size: 0.9em;"><code>grep -Eivo "(error|fatal)" server.log</code><br><em style="color: var(--text-secondary);">(Cerca nel log tutte le righe che NON contengono né "error" né "fatal", ignorando le maiuscole)</em></td>
+                      </tr>
+                      <tr style="border-bottom: 1px solid var(--card-border);">
+                          <td style="padding: 1rem;"><strong><code>sed</code></strong><br><span style="font-size: 0.9em; color: var(--text-secondary);">Stream editor per manipolare testo.</span></td>
+                          <td style="padding: 1rem; font-size: 0.9em;"><strong><code>-E</code></strong>: Usa regex estese.<br><strong><code>-e</code></strong>: Concatena più script sed.<br><strong><code>s/old/new/g</code></strong>: Sostituzione globale.</td>
+                          <td style="padding: 1rem; font-size: 0.9em;"><code>sed -E -e 's/#.*//' -e '/^$/d' config.conf</code><br><em style="color: var(--text-secondary);">(Rimuove i commenti e cancella le righe vuote in un colpo solo)</em></td>
+                      </tr>
+                      <tr style="border-bottom: 1px solid var(--card-border);">
+                          <td style="padding: 1rem;"><strong><code>awk</code></strong><br><span style="font-size: 0.9em; color: var(--text-secondary);">Elaborazione basata su colonne.</span></td>
+                          <td style="padding: 1rem; font-size: 0.9em;"><strong><code>-F</code></strong>: Specifica delimitatore di colonna.<br><strong><code>-v var=val</code></strong>: Passa variabile esterna.<br><strong><code>BEGIN / END</code></strong>: Blocchi pre/post elaborazione.</td>
+                          <td style="padding: 1rem; font-size: 0.9em;"><code>awk -F':' -v uid=1000 '$3 &gt;= uid {print $1}' /etc/passwd</code><br><em style="color: var(--text-secondary);">(Stampa gli username con UID maggiore o uguale a 1000)</em></td>
+                      </tr>
+                      <tr style="border-bottom: 1px solid var(--card-border);">
+                          <td style="padding: 1rem;"><strong><code>cut</code></strong><br><span style="font-size: 0.9em; color: var(--text-secondary);">Estrae colonne (campi) dal testo.</span></td>
+                          <td style="padding: 1rem; font-size: 0.9em;"><strong><code>-d</code></strong>: Carattere separatore.<br><strong><code>-f</code></strong>: Colonne da estrarre (es. 1,3 o 2-).</td>
+                          <td style="padding: 1rem; font-size: 0.9em;"><code>cut -d',' -f2-5 dati.csv</code><br><em style="color: var(--text-secondary);">(Estrae dalla seconda alla quinta colonna di un CSV)</em></td>
+                      </tr>
+                      <tr style="border-bottom: 1px solid var(--card-border);">
+                          <td style="padding: 1rem;"><strong><code>sort</code></strong><br><span style="font-size: 0.9em; color: var(--text-secondary);">Ordina le righe di testo.</span></td>
+                          <td style="padding: 1rem; font-size: 0.9em;"><strong><code>-n</code></strong>: Ordinamento numerico.<br><strong><code>-r</code></strong>: Ordine inverso (decrescente).<br><strong><code>-k N</code></strong>: Ordina basandosi sulla colonna N.</td>
+                          <td style="padding: 1rem; font-size: 0.9em;"><code>sort -nrk 2 classifica.txt</code><br><em style="color: var(--text-secondary);">(Ordina numericamente in ordine decrescente sulla seconda colonna)</em></td>
+                      </tr>
+                      <tr style="border-bottom: 1px solid var(--card-border);">
+                          <td style="padding: 1rem;"><strong><code>uniq</code></strong><br><span style="font-size: 0.9em; color: var(--text-secondary);">Rimuove/conta righe duplicate adiacenti.</span></td>
+                          <td style="padding: 1rem; font-size: 0.9em;"><strong><code>-c</code></strong>: Conta occorrenze.<br><strong><code>-d</code></strong>: Mostra SOLO le righe duplicate.</td>
+                          <td style="padding: 1rem; font-size: 0.9em;"><code>sort nomi.txt | uniq -c | sort -rn</code><br><em style="color: var(--text-secondary);">(Ordina, conta frequenze, e riordina dalla più alla meno frequente)</em></td>
+                      </tr>
+                      <tr>
+                          <td style="padding: 1rem;"><strong><code>xargs</code></strong><br><span style="font-size: 0.9em; color: var(--text-secondary);">Converte lo stdin in argomenti.</span></td>
+                          <td style="padding: 1rem; font-size: 0.9em;"><strong><code>-0</code></strong>: Usa il byte nullo <code>\0</code> come delimitatore.<br><strong><code>-I {}</code></strong>: Definisce <code>{}</code> come segnaposto.</td>
+                          <td style="padding: 1rem; font-size: 0.9em;"><code>find . -name "*.bak" -print0 | xargs -0 -I {} mv {} /trash/</code><br><em style="color: var(--text-secondary);">(Sposta i file .bak supportando spazi nei nomi)</em></td>
+                      </tr>
+                  </tbody>
+              </table>
+          </div>
+
+          <!-- C. Gestione Processi -->
+          <h3 style="color: #34d399; margin-top: 1.5rem; border-bottom: 1px solid rgba(52, 211, 153, 0.3); padding-bottom: 0.5rem;">C. Gestione Processi, Segnali e Priorità</h3>
+          <p style="color: var(--text-secondary); margin-bottom: 1rem;">Comandi fondamentali per il controllo dell'esecuzione dei programmi in memoria.</p>
+          <div style="overflow-x: auto;">
+              <table style="width: 100%; border-collapse: collapse; margin-bottom: 2rem;">
+                  <thead>
+                      <tr style="background: rgba(52, 211, 153, 0.1); border-bottom: 2px solid #10b981;">
+                          <th style="padding: 1rem; text-align: left; width: 25%;">Comando (Uso)</th>
+                          <th style="padding: 1rem; text-align: left; width: 35%;">Parametri Importanti</th>
+                          <th style="padding: 1rem; text-align: left; width: 40%;">Esempio d'uso con parametri</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+                      <tr style="border-bottom: 1px solid var(--card-border);">
+                          <td style="padding: 1rem;"><strong><code>ps</code></strong><br><span style="font-size: 0.9em; color: var(--text-secondary);">Mostra lo stato dei processi.</span></td>
+                          <td style="padding: 1rem; font-size: 0.9em;"><strong><code>-e</code> / <code>-A</code></strong>: Tutti i processi.<br><strong><code>-f</code> / <code>-l</code></strong>: Formato esteso (PPID, avvio).<br><strong><code>-o</code></strong>: Formato custom (es. <code>pid,comm</code>).</td>
+                          <td style="padding: 1rem; font-size: 0.9em;"><code>ps -efo pid,ppid,nice,comm</code><br><em style="color: var(--text-secondary);">(Mostra PID, Padre, Priorità e Nome comando)</em></td>
+                      </tr>
+                      <tr style="border-bottom: 1px solid var(--card-border);">
+                          <td style="padding: 1rem;"><strong><code>pgrep</code></strong><br><span style="font-size: 0.9em; color: var(--text-secondary);">Trova i PID in base al nome.</span></td>
+                          <td style="padding: 1rem; font-size: 0.9em;"><strong><code>-i</code></strong>: Case-insensitive.<br><strong><code>-u</code></strong>: Di uno specifico utente.<br><strong><code>-c</code></strong>: Conta quanti processi corrispondono.</td>
+                          <td style="padding: 1rem; font-size: 0.9em;"><code>pgrep -i -u root sshd</code><br><em style="color: var(--text-secondary);">(Trova tutti i PID del servizio sshd avviati da root)</em></td>
+                      </tr>
+                      <tr style="border-bottom: 1px solid var(--card-border);">
+                          <td style="padding: 1rem;"><strong><code>kill</code></strong><br><span style="font-size: 0.9em; color: var(--text-secondary);">Invia segnali a un PID.</span></td>
+                          <td style="padding: 1rem; font-size: 0.9em;"><strong><code>-9</code> (SIGKILL)</strong>: Uccide istantaneamente.<br><strong><code>-15</code> (SIGTERM)</strong>: Terminazione gentile.<br><strong><code>-SIGUSR1</code></strong>: Segnale custom.</td>
+                          <td style="padding: 1rem; font-size: 0.9em;"><code>kill -15 $(pgrep firefox)</code><br><em style="color: var(--text-secondary);">(Invia chiusura pulita ai processi Firefox)</em></td>
+                      </tr>
+                      <tr>
+                          <td style="padding: 1rem;"><strong><code>renice</code></strong><br><span style="font-size: 0.9em; color: var(--text-secondary);">Modifica la priorità.</span></td>
+                          <td style="padding: 1rem; font-size: 0.9em;"><strong><code>-n</code></strong>: Niceness (da -20 alta a +19 bassa).<br><strong><code>-p</code></strong>: Il PID bersaglio.</td>
+                          <td style="padding: 1rem; font-size: 0.9em;"><code>renice -n -10 -p 1234</code><br><em style="color: var(--text-secondary);">(Aumenta drasticamente priorità CPU al proc 1234)</em></td>
+                      </tr>
+                  </tbody>
+              </table>
+          </div>
+
+          <!-- D. Interfacce -->
+          <h3 style="color: #34d399; margin-top: 1.5rem; border-bottom: 1px solid rgba(52, 211, 153, 0.3); padding-bottom: 0.5rem;">D. Interfacce, TUI e Parametri (Avanzati)</h3>
+          <p style="color: var(--text-secondary); margin-bottom: 1rem;">Costrutti per rendere gli script interattivi e professionali.</p>
+          <div style="overflow-x: auto;">
+              <table style="width: 100%; border-collapse: collapse;">
+                  <thead>
+                      <tr style="background: rgba(52, 211, 153, 0.1); border-bottom: 2px solid #10b981;">
+                          <th style="padding: 1rem; text-align: left; width: 25%;">Comando (Uso)</th>
+                          <th style="padding: 1rem; text-align: left; width: 35%;">Parametri Importanti</th>
+                          <th style="padding: 1rem; text-align: left; width: 40%;">Esempio d'uso con parametri</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+                      <tr style="border-bottom: 1px solid var(--card-border);">
+                          <td style="padding: 1rem;"><strong><code>tput</code></strong><br><span style="font-size: 0.9em; color: var(--text-secondary);">Controlla grafica/cursore.</span></td>
+                          <td style="padding: 1rem; font-size: 0.9em;"><strong><code>cup Y X</code></strong>: Sposta il cursore.<br><strong><code>lines</code> / <code>cols</code></strong>: Restituisce altezza/larghezza.<br><strong><code>civis</code> / <code>cnorm</code></strong>: Nasconde/Mostra cursore.</td>
+                          <td style="padding: 1rem; font-size: 0.9em;"><code>tput cup $(($(tput lines)/2)) $(($(tput cols)/2))</code><br><em style="color: var(--text-secondary);">(Sposta il cursore esattamente al centro del terminale)</em></td>
+                      </tr>
+                      <tr style="border-bottom: 1px solid var(--card-border);">
+                          <td style="padding: 1rem;"><strong><code>whiptail</code></strong><br><span style="font-size: 0.9em; color: var(--text-secondary);">Crea finestre di dialogo (TUI).</span></td>
+                          <td style="padding: 1rem; font-size: 0.9em;"><strong><code>--menu</code></strong>: Lista selezionabile.<br><strong><code>--gauge</code></strong>: Barra di caricamento progressiva.</td>
+                          <td style="padding: 1rem; font-size: 0.9em;"><code>whiptail --menu "Scegli:" 10 30 2 "A" "Primo" "B" "Secondo"</code><br><em style="color: var(--text-secondary);">(Crea un menu con due opzioni)</em></td>
+                      </tr>
+                      <tr>
+                          <td style="padding: 1rem;"><strong><code>getopts</code></strong><br><span style="font-size: 0.9em; color: var(--text-secondary);">(Built-in) Parsing argomenti.</span></td>
+                          <td style="padding: 1rem; font-size: 0.9em;"><strong><code>"a:b:c"</code></strong>: I due punti <code>:</code> indicano che l'opzione richiede un valore in <code>$OPTARG</code>.</td>
+                          <td style="padding: 1rem; font-size: 0.9em;"><code>while getopts "p:u:" opt; do ...</code><br><em style="color: var(--text-secondary);">(Ciclo per catturare parametri come <code>-p 8080 -u admin</code>)</em></td>
+                      </tr>
+                  </tbody>
+              </table>
+          </div>
+      </div>
+
       <h3>1. BASI E SINTASSI FONDAMENTALE</h3>
       
       <p><strong style="color: var(--text-primary);">A. L'Intestazione (Shebang)</strong></p>
