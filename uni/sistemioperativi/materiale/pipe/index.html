@@ -146,27 +146,131 @@ Message msg_in;
 read(fd_read, &amp;msg_in, sizeof(msg_in));     // Lettura</code></pre>
 
       <h3>5. TOPOLOGIE MULTIPROCESSO CON PIPE ANONIME</h3>
-      <p>Quando si usano <code>fork()</code> multipli, servono array di pipe.</p>
+      <p>Quando si usano <code>fork()</code> multipli,</p><div style="background: rgba(99, 102, 241, 0.05); border-left: 4px solid #6366f1; padding: 1.5rem; border-radius: 8px; margin: 2rem 0;">
+    <h3 style="margin-top: 0; color: #6366f1;">APPROFONDIMENTO: Topologie Multiprocesso con Pipe</h3>
+    <p>Quando si generano più processi figli (<code>NCHILDREN</code>), farli comunicare richiede una progettazione attenta dei canali di comunicazione (le pipe) per evitare <em>deadlock</em> (blocchi critici) e assicurare che la lettura restituisca correttamente EOF (End Of File) quando i processi terminano.</p>
 
-      <p><strong style="color: var(--text-primary);">A. Topologia a Stella (Star)</strong></p>
-      <p>Il Parent (Centro) comunica singolarmente con N figli (Punte). Servono 2 * N pipe.</p>
+    <h4 style="color: #a855f7; margin-top: 1.5rem;">1. Topologia ad Anello (Ring Topology)</h4>
+    <p>Nella topologia ad anello, i processi sono disposti in un cerchio logico. Il processo Padre inizia inviando un dato (es. un "token") al Figlio 1. Il Figlio 1 lo elabora e lo passa al Figlio 2, e così via, finché l'ultimo figlio non restituisce il token al Padre.</p>
+    <p><strong>Regola Matematica:</strong> Per <code>N</code> figli (quindi <code>N+1</code> processi totali, contando il padre), servono <strong>esattamente <code>N+1</code> pipe</strong>.</p>
 
-<pre><code>int to_parent[N][2]; // Figlio -&gt; Padre
-int to_child[N][2];  // Padre -&gt; Figlio
+    <p><strong style="color: var(--text-primary);">A. Creazione e Struttura</strong><br>
+    Si crea un array bidimensionale di pipe:</p>
+<pre><code>#define NCHILDREN 5
+int pipes[NCHILDREN + 1][2];
 
-// Il figlio 'i' userà:
-// to_child[i][0] per leggere dal padre
-// to_parent[i][1] per scrivere al padre
-// DEVE chiudere tutto il resto!</code></pre>
+for (int i = 0; i &lt; NCHILDREN + 1; i++) {
+    if (pipe(pipes[i]) == -1) { perror("pipe"); exit(1); }
+}</code></pre>
 
-      <p><strong style="color: var(--text-primary);">B. Topologia ad Anello (Ring)</strong></p>
-      <p>Il Parent passa un "token" al Figlio 1, che lo passa al Figlio 2, ..., fino all'ultimo che lo restituisce al Parent. Servono N + 1 pipe.</p>
+    <p><strong style="color: var(--text-primary);">B. Logica di Routing (Chi legge da dove e chi scrive a chi?)</strong><br>
+    L'indice della pipe definisce il confine tra due processi adiacenti.</p>
+    <ul>
+        <li><strong>Il Figlio <code>i</code></strong> (dove <code>i</code> va da 0 a N-1 nel ciclo di fork):
+            <ul>
+                <li>Legge dalla pipe che lo collega al predecessore: <code>pipes[i][0]</code></li>
+                <li>Scrive sulla pipe che lo collega al successore: <code>pipes[i + 1][1]</code></li>
+            </ul>
+        </li>
+        <li><strong>Il Padre:</strong>
+            <ul>
+                <li>Scrive sulla prima pipe per innescare l'anello: <code>pipes[0][1]</code></li>
+                <li>Legge dall'ultima pipe per chiudere l'anello: <code>pipes[NCHILDREN][0]</code></li>
+            </ul>
+        </li>
+    </ul>
 
-<pre><code>int pipes[N + 1][2];
+    <p><strong style="color: var(--text-primary);">C. Chiusura dei File Descriptor (Cruciale!)</strong><br>
+    Se non chiudi i file descriptor inutilizzati, i processi si bloccheranno per sempre sulle read(). Ogni processo deve tenere aperti esattamente e solo 2 file descriptor.</p>
+    <p><em>Codice del Figlio:</em></p>
+<pre><code>// Chiusura di tutto tranne i 2 estremi necessari al Figlio 'i'
+for (int j = 0; j &lt; NCHILDREN + 1; j++) {
+    if (j != i)     close(pipes[j][0]); // Chiudo in lettura tutte le pipe tranne la 'i'
+    if (j != i + 1) close(pipes[j][1]); // Chiudo in scrittura tutte le pipe tranne la 'i+1'
+}
 
-// Il figlio 'i' legge da pipes[i][0]
-// Il figlio 'i' scrive su pipes[i+1][1]
-// Il Parent scrive in pipes[0][1] e legge da pipes[N][0]</code></pre>
+// Lettura, elaborazione e inoltro
+int token;
+while (read(pipes[i][0], &amp;token, sizeof(token)) &gt; 0) {
+    token++;
+    write(pipes[i + 1][1], &amp;token, sizeof(token));
+}
+// Chiusura finale ed exit
+close(pipes[i][0]);
+close(pipes[i + 1][1]);
+_exit(0);</code></pre>
+
+    <h4 style="color: #a855f7; margin-top: 1.5rem;">2. Topologia a Stella (Star Topology)</h4>
+    <p>Nella topologia a stella, il processo Padre fa da "Hub" centrale e comunica indipendentemente con ogni singolo figlio. I figli NON comunicano tra di loro. Questo schema è il classico modello Master-Worker.</p>
+    <p><strong>Regola Matematica:</strong> Poiché la pipe anonima è unidirezionale, per avere una comunicazione bidirezionale (Padre &lt;-&gt; Figlio) per N figli, servono <strong>2 * N pipe</strong>.</p>
+
+    <p><strong style="color: var(--text-primary);">A. Creazione e Struttura</strong><br>
+    Si usano tipicamente due array separati per chiarezza semantica:</p>
+<pre><code>int to_parent[NCHILDREN][2]; // Figlio scrive, Padre legge
+int to_child[NCHILDREN][2];  // Padre scrive, Figlio legge
+
+for (int i = 0; i &lt; NCHILDREN; i++) {
+    if (pipe(to_parent[i]) == -1 || pipe(to_child[i]) == -1) {
+        perror("pipe"); exit(1);
+    }
+}</code></pre>
+
+    <p><strong style="color: var(--text-primary);">B. Logica dei Descrittori nel Figlio</strong><br>
+    Il figlio di indice <code>i</code> è completamente isolato dagli altri. A lui interessano solo le pipe di indice <code>i</code>.</p>
+    <ul>
+        <li>Deve poter scrivere al padre: usa <code>to_parent[i][1]</code></li>
+        <li>Deve poter leggere dal padre: usa <code>to_child[i][0]</code></li>
+    </ul>
+    <p><em>Codice del Figlio:</em></p>
+<pre><code>// 1. Chiusura totale delle pipe degli ALTRI figli
+for (int j = 0; j &lt; NCHILDREN; j++) {
+    if (j != i) {
+        close(to_parent[j][0]); close(to_parent[j][1]);
+        close(to_child[j][0]);  close(to_child[j][1]);
+    }
+}
+
+// 2. Chiusura degli estremi non usati della PROPRIA pipe
+close(to_parent[i][0]); // Il figlio non legge dalla pipe diretta al padre
+close(to_child[i][1]);  // Il figlio non scrive sulla pipe proveniente dal padre
+
+// 3. Comunicazione
+int msg = 42;
+write(to_parent[i][1], &amp;msg, sizeof(msg));         // Invia al master
+read(to_child[i][0], &amp;msg, sizeof(msg));           // Aspetta risposta
+
+close(to_parent[i][1]);
+close(to_child[i][0]);
+exit(0);</code></pre>
+
+    <p><strong style="color: var(--text-primary);">C. Logica dei Descrittori nel Padre</strong><br>
+    Il padre (Master) deve mantenere una connessione in lettura e una in scrittura con tutti i figli, ma deve chiudere i propri estremi opposti per non causare deadlock.</p>
+    <p><em>Codice del Padre:</em></p>
+<pre><code>// Il padre deve chiudere gli estremi che appartengono ai figli
+for (int i = 0; i &lt; NCHILDREN; i++) {
+    close(to_parent[i][1]); // Il padre non scrive sulla pipe diretta a se stesso
+    close(to_child[i][0]);  // Il padre non legge dalla pipe diretta al figlio
+}
+
+// Ora il padre può fare un ciclo per comunicare con tutti
+for (int r = 0; r &lt; ROUNDS; r++) {
+    for (int i = 0; i &lt; NCHILDREN; i++) {
+        int valore;
+        // Legge dal figlio i
+        read(to_parent[i][0], &amp;valore, sizeof(valore)); 
+        
+        valore += 1000;
+        
+        // Risponde al figlio i
+        write(to_child[i][1], &amp;valore, sizeof(valore)); 
+    }
+}</code></pre>
+
+    <p style="padding-left: 1rem; border-left: 3px solid #f59e0b; color: #fbbf24; margin-top: 1.5rem;">
+    <strong>💡 Suggerimento d'Esame: Il Deadlock Silenzioso</strong><br>
+    Se in una qualsiasi di queste topologie dimentichi un <code>close(pipe[1])</code> (lato scrittura) nel processo sbagliato, la <code>read()</code> non restituirà mai 0 (EOF) perché il Kernel pensa che ci sia ancora un potenziale scrittore attivo... che in realtà è il processo stesso in ascolto! Quando testi il codice, se i processi rimangono "appesi" indefinitamente alla fine dell'esecuzione, hai dimenticato di chiudere un file descriptor.
+    </p>
+</div>
 
     </div>
   </main>
