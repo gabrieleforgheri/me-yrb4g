@@ -353,7 +353,18 @@ sed -E 's/^([0-9]{4})-([0-9]{2})-([0-9]{2})$/\3\/\2\/\1/' date.txt</code></pre>
         <code>\3\/\2\/\1</code> -&gt; Scrive il terzo gruppo, poi una barra (escapata \/), il secondo, barra, il primo.
         </p>
 
-        <p><strong>4. Validare un indirizzo MAC:</strong><br>
+        <p><strong>4. Estrapolare un Indirizzo IP con sed -E:</strong><br>
+        In questo esempio catturiamo i quattro gruppi numerici (ottetti) di un indirizzo IP, ignorando tutto il testo che lo precede e lo segue.</p>
+<pre><code>sed -E "s/^.* ([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3}) .*/\1.\2.\3.\4/" network.log</code></pre>
+        <p style="font-size: 0.9em; color: var(--text-secondary);">
+        Spiegazione del comando:<br>
+        <code>^.* </code> -&gt; Ignora qualsiasi testo dall'inizio della riga fino allo spazio che precede l'IP.<br>
+        <code>([0-9]{1,3})</code> -&gt; Cattura da 1 a 3 cifre. Siccome ci sono quattro gruppi parentetici, creano i puntatori <code>\1</code>, <code>\2</code>, <code>\3</code>, <code>\4</code>.<br>
+        <code>\.</code> -&gt; Fai il match letterale del punto (deve essere escapato).<br>
+        La sostituzione <code>\1.\2.\3.\4</code> rimpiazza l'intera riga lasciando solo l'IP estratto.
+        </p>
+
+        <p><strong>5. Validare un indirizzo MAC:</strong><br>
         I MAC Address sono formati da coppie di caratteri esadecimali separati da due punti (es. 00:1A:2B:3C:4D:5E).</p>
 <pre><code>grep -E '^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$' network.log</code></pre>
         <p style="font-size: 0.9em; color: var(--text-secondary);">Spiegazione: "Trova esattamente due caratteri esadecimali seguiti dai due punti, ripeti questo schema 5 volte, e concludi con altri due caratteri esadecimali".</p>
