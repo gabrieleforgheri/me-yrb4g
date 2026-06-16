@@ -4,6 +4,43 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!query) return;
 
     const searchTerms = query.toLowerCase().split(/\s+/).filter(w => w.length > 2);
+    
+    // Inserisce il pulsante "Torna alla ricerca" di fianco al pulsante back
+    const backBtn = document.querySelector('.back-home-btn');
+    if (backBtn && searchTerms.length > 0) {
+        const wrapper = document.createElement('div');
+        wrapper.style.gridColumn = '1';
+        wrapper.style.gridRow = '1';
+        wrapper.style.justifySelf = 'start';
+        wrapper.style.display = 'flex';
+        wrapper.style.gap = '0.5rem';
+        wrapper.style.alignItems = 'center';
+
+        backBtn.parentNode.insertBefore(wrapper, backBtn);
+        wrapper.appendChild(backBtn);
+        
+        // Reset grid styles per il flex
+        backBtn.style.gridColumn = 'unset';
+        backBtn.style.gridRow = 'unset';
+
+        const searchBackBtn = document.createElement('a');
+        searchBackBtn.href = `/uni/sistemioperativi/index.html?search=${encodeURIComponent(query)}`;
+        searchBackBtn.className = 'back-home-btn animate-fade-in';
+        searchBackBtn.style.gridColumn = 'unset';
+        searchBackBtn.style.gridRow = 'unset';
+        searchBackBtn.style.color = '#fcd34d'; // yellow-300
+        searchBackBtn.style.borderColor = 'rgba(252, 211, 77, 0.3)';
+        searchBackBtn.title = "Torna ai risultati di ricerca";
+        searchBackBtn.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <span style="font-size: 0.8rem; font-weight: 600;">Ricerca</span>
+        `;
+        wrapper.appendChild(searchBackBtn);
+    }
+
     if (searchTerms.length === 0) return;
 
     const elements = document.querySelectorAll('.article-content p, .article-content li, .article-content h2, .article-content h3, .article-content h4, .article-content td');

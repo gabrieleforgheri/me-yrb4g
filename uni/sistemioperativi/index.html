@@ -428,6 +428,19 @@
       buildIndex();
       executeSearch(e.target.value);
     });
+
+    // Auto-search logic
+    const params = new URLSearchParams(window.location.search);
+    const searchQuery = params.get('search');
+    if (searchQuery) {
+        searchInput.value = searchQuery;
+        buildIndex();
+        executeSearch(searchQuery);
+        // Scroll to the search results to ensure they are visible
+        setTimeout(() => {
+            document.querySelector('.search-results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+    }
   </script>
 </body>
 </html>
