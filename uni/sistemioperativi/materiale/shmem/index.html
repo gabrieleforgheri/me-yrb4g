@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="it">
 <head>
   <meta charset="UTF-8">
@@ -16,7 +16,7 @@
       </svg>
       Sistemi Operativi
     </a>
-    <h1 class="animate-fade-in">Memoria Condivisa ðŸ§ </h1>
+    <h1 class="animate-fade-in">Memoria Condivisa 🧠</h1>
     <p class="animate-fade-in" style="animation-delay: 0.1s;">Shared Memory, mmap() e shm_open().</p>
   </header>
 
@@ -26,12 +26,12 @@
       <h2 style="font-size: 2rem; color: #60a5fa;">Memoria Condivisa (Shared Memory)</h2>
       <p style="color: var(--text-secondary); font-style: italic;">[Context: Condivisione di un'area di memoria (RAM) ad altissime prestazioni tra processi. Richiede sincronizzazione manuale (tramite flag, semafori o segnali) per evitare race conditions.]</p>
 
-      <h3>0. âš ï¸ ATTENZIONE: COMPILAZIONE SUI PC DEL LABORATORIO</h3>
+      <h3>0. ⚠️ ATTENZIONE: COMPILAZIONE SUI PC DEL LABORATORIO</h3>
       <p>Sulle macchine del laboratorio virtuale (e su molte distribuzioni Linux), per usare la memoria condivisa POSIX con nome (es. <code>shm_open</code>, <code>shm_unlink</code>) <strong style="color: #ef4444;">DEVI</strong> compilare linkando la libreria runtime del C (<code>librt</code>).</p>
       
       <p><strong style="color: var(--text-primary);">Comando obbligatorio all'esame:</strong></p>
 <pre><code>gcc -o eseguibile sorgente.c -lrt</code></pre>
-      <p style="padding-left: 1rem; border-left: 3px solid #ef4444; color: #fca5a5;">Se dimentichi <code>-lrt</code>, il linker ti darÃ  un errore del tipo "undefined reference to 'shm_open'" e la compilazione fallirÃ .</p>
+      <p style="padding-left: 1rem; border-left: 3px solid #ef4444; color: #fca5a5;">Se dimentichi <code>-lrt</code>, il linker ti darà un errore del tipo "undefined reference to 'shm_open'" e la compilazione fallirà.</p>
 
       <h3>1. SHARED MEMORY ANONIMA (mmap senza file)</h3>
       <p>Si usa ESCLUSIVAMENTE tra processi legati da parentela (es. padre e figlio tramite <code>fork()</code>). La memoria viene mappata direttamente senza appoggiarsi a un file nel filesystem.</p>
@@ -92,10 +92,10 @@ printf("Letto: %s\n", ptr);
 
 // 4. Distruzione finale (Solo un processo deve farlo!)
 shm_unlink(name); // Rimuove l'oggetto da /dev/shm</code></pre>
-      <p style="padding-left: 1rem; border-left: 3px solid #f59e0b; color: #fbbf24;"><strong style="color: #f59e0b;">Nota sulla persistenza:</strong> Se non chiami <code>shm_unlink</code>, l'oggetto sopravvive alla terminazione dei processi e occupa RAM finchÃ© non riavvii il PC.</p>
+      <p style="padding-left: 1rem; border-left: 3px solid #f59e0b; color: #fbbf24;"><strong style="color: #f59e0b;">Nota sulla persistenza:</strong> Se non chiami <code>shm_unlink</code>, l'oggetto sopravvive alla terminazione dei processi e occupa RAM finché non riavvii il PC.</p>
 
       <h3>3. SINCRONIZZAZIONE: L'USO DELLE struct</h3>
-      <p>La memoria condivisa Ã¨ "troppo veloce". Se due processi ci scrivono assieme, si corrompe (Race Condition). Per ovviare, si mappa un'intera struct contenente campi di stato.</p>
+      <p>La memoria condivisa è "troppo veloce". Se due processi ci scrivono assieme, si corrompe (Race Condition). Per ovviare, si mappa un'intera struct contenente campi di stato.</p>
 <pre><code>// Esempio di struttura condivisa
 typedef struct {
     int status; // Flag (es. 0 = VUOTO, 1 = DATI_PRONTI, 2 = RISULTATO_PRONTO) 
@@ -105,9 +105,9 @@ typedef struct {
 
 // Mappatura
 shared_data *shm = mmap(NULL, sizeof(shared_data), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);</code></pre>
-      <p>Per attendere che i dati siano pronti, un processo puÃ²:</p>
+      <p>Per attendere che i dati siano pronti, un processo può:</p>
       <ul>
-        <li>Fare "Busy Waiting" ciclando passivamente con una <code>sleep(1)</code> finchÃ© lo stato non cambia.</li>
+        <li>Fare "Busy Waiting" ciclando passivamente con una <code>sleep(1)</code> finché lo stato non cambia.</li>
         <li>Usare una <code>pause()</code> accoppiata a segnali (<code>SIGUSR1</code>, <code>SIGUSR2</code>) per risvegliarsi solo quando l'altro processo lo avvisa.</li>
       </ul>
 
@@ -156,4 +156,3 @@ shared_data *shm = mmap(NULL, sizeof(shared_data), PROT_READ | PROT_WRITE, MAP_S
 <script src="/uni/js/search-highlight.js"></script>
 </body>
 </html>
-
