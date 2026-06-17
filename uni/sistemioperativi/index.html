@@ -519,13 +519,15 @@
       aiAbortController = new AbortController();
 
       const contextText = contextSnippets.map(s => s.replace(/<[^>]*>?/gm, '')).join("\n");
-      const prompt = `Sei un assistente universitario esperto di Sistemi Operativi. 
-Rispondi in modo molto conciso, chiaro e in italiano alla seguente ricerca dello studente: "${query}".
-Usa SOLO queste informazioni di contesto estratte dagli appunti del corso per formulare la risposta. Se non ci sono informazioni rilevanti, di che non hai trovato risultati negli appunti. Non inventare nulla:
---- CONTESTO ---
+      const prompt = `Sei un professore universitario di Sistemi Operativi esperto in linguaggio C e Linux. 
+Rispondi in modo MOLTO conciso, tecnico e in italiano alla ricerca: "${query}".
+Il tuo obiettivo è spiegare il concetto e mostrare SEMPRE la sintassi o il codice (es. come usare fork(), mkfifo(), open(), segnali, ecc.) per l'operazione richiesta.
+Prendi spunto da questi appunti come contesto, ma aggiungi tu i blocchi di codice C esatti e le spiegazioni tecniche necessarie che mancano negli appunti.
+Usa SEMPRE la formattazione markdown per il codice (\`\`\`c ... \`\`\`).
+
+--- APPUNTI DI CONTESTO ---
 ${contextText}
---- FINE CONTESTO ---
-Riassumi il concetto in massimo 3 o 4 frasi.`;
+--- FINE APPUNTI ---`;
 
       try {
         const response = await fetch('http://192.168.1.215:11434/api/generate', {

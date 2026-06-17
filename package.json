@@ -12,5 +12,8 @@
     "prestart": "node scripts/ensure-entry.js",
     "start": "node index.js",
     "dev": "node index.js"
+  },
+  "dependencies": {
+    "jsdom": "^29.1.1"
   }
 }
