@@ -492,6 +492,7 @@
       if (existingCard) existingCard.remove();
       
       if (!query || query.length < 3 || contextSnippets.length === 0) return;
+      if (typeof aiEnabled !== 'undefined' && !aiEnabled) return;
 
       const aiCard = document.createElement('div');
       aiCard.id = 'ai-overview';
