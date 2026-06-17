@@ -505,20 +505,26 @@
        if (wrapper && contentText && moreContainer && moreBtn) {
            if (contentText.scrollHeight > 250) {
                wrapper.style.maxHeight = '200px';
-               wrapper.classList.add('collapsed');
                moreContainer.style.display = 'flex';
+               const textSpanBtn = document.getElementById('ai-show-more-text');
                
                moreBtn.onclick = () => {
                    if (wrapper.classList.contains('collapsed')) {
                        wrapper.classList.remove('collapsed');
+                       wrapper.classList.add('expanded');
                        wrapper.style.maxHeight = contentText.scrollHeight + 'px';
-                       moreBtn.innerHTML = 'Mostra meno';
+                       textSpanBtn.innerHTML = 'Mostra meno';
                    } else {
                        wrapper.classList.add('collapsed');
+                       wrapper.classList.remove('expanded');
                        wrapper.style.maxHeight = '200px';
-                       moreBtn.innerHTML = 'Mostra altro';
+                       textSpanBtn.innerHTML = 'Mostra altro';
                    }
                };
+           } else {
+               wrapper.classList.remove('collapsed');
+               wrapper.style.maxHeight = 'none';
+               moreContainer.style.display = 'none';
            }
        }
     }
@@ -540,7 +546,7 @@
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
           AI Overview
         </div>
-        <div class="ai-content-wrapper" id="ai-wrapper">
+        <div class="ai-content-wrapper collapsed" id="ai-wrapper">
           <div class="ai-content" id="ai-content-text">
             
             <div class="ai-skeleton">
@@ -552,7 +558,10 @@
           </div>
         </div>
         <div class="ai-show-more-container" id="ai-show-more-container" style="display: none;">
-          <button id="ai-show-more-btn" class="ai-show-more">Mostra altro</button>
+          <button id="ai-show-more-btn" class="ai-show-more">
+            <span id="ai-show-more-text">Mostra altro</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </button>
         </div>
       `;
       
