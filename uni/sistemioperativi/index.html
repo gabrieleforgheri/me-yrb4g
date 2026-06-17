@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sistemi Operativi | Uni Hub</title>
   <link rel="stylesheet" href="../css/uni-style.css?v=1781694171557">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
 </head>
 <body>
 
@@ -465,8 +468,9 @@
     function parseAIMarkdown(text) {
       let h = text;
       // Code blocks
-      h = h.replace(/```[a-z]*\n([\s\S]*?)```/g, (match, code) => {
-          return '<pre style="background:#0f172a; border: 1px solid #1e293b; padding:12px; border-radius:8px; overflow-x:auto; margin:10px 0; font-family: monospace;"><code>' + code.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</code></pre>';
+      h = h.replace(/```([a-z]*)\n([\s\S]*?)```/g, (match, lang, code) => {
+          const languageClass = lang ? `language-${lang}` : 'language-c';
+          return `<pre style="background:#0f172a; border: 1px solid #1e293b; padding:12px; border-radius:8px; overflow-x:auto; margin:10px 0; font-family: monospace;"><code class="${languageClass}">` + code.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</code></pre>';
       });
       // Inline code
       h = h.replace(/`([^`]+)`/g, (match, code) => {
@@ -579,6 +583,12 @@ ${contextText}
                   const data = JSON.parse(line);
                   fullResponse += data.response;
                   textSpan.innerHTML = parseAIMarkdown(fullResponse) + '<span class="ai-cursor"></span>';
+                  
+                  if (data.done) {
+                    done = true;
+                    textSpan.innerHTML = parseAIMarkdown(fullResponse);
+                    if (window.Prism) Prism.highlightAllUnder(textSpan);
+                  }
                 } catch(e) {}
               }
             }
@@ -590,6 +600,10 @@ ${contextText}
              const data = JSON.parse(buffer);
              fullResponse += data.response;
              textSpan.innerHTML = parseAIMarkdown(fullResponse) + '<span class="ai-cursor"></span>';
+             if (data.done) {
+                textSpan.innerHTML = parseAIMarkdown(fullResponse);
+                if (window.Prism) Prism.highlightAllUnder(textSpan);
+             }
           } catch(e) {}
         }
         
