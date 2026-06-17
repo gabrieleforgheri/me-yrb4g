@@ -483,17 +483,33 @@ Riassumi il concetto in massimo 3 o 4 frasi.`;
         const decoder = new TextDecoder();
         
         let done = false;
+        let buffer = '';
         while (!done) {
           const { value, done: readerDone } = await reader.read();
           done = readerDone;
           if (value) {
-            const chunk = decoder.decode(value, { stream: true });
-            const lines = chunk.split('\n').filter(l => l.trim() !== '');
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\\n');
+            buffer = lines.pop(); // Keep the last incomplete line in the buffer
+            
             for (const line of lines) {
-              const data = JSON.parse(line);
-              textSpan.innerHTML += data.response.replace(/\n/g, '<br>');
+              if (line.trim() !== '') {
+                try {
+                  const data = JSON.parse(line);
+                  textSpan.innerHTML += data.response.replace(/\\n/g, '<br>');
+                } catch(e) {
+                  console.error("JSON parse error on line:", line, e);
+                }
+              }
             }
           }
+        }
+        
+        if (buffer.trim() !== '') {
+          try {
+             const data = JSON.parse(buffer);
+             textSpan.innerHTML += data.response.replace(/\\n/g, '<br>');
+          } catch(e) {}
         }
         
         const cursor = document.querySelector('.ai-cursor');
@@ -501,8 +517,9 @@ Riassumi il concetto in massimo 3 o 4 frasi.`;
         
       } catch (err) {
         if (err.name === 'AbortError') return;
+        console.error("AI Overview Error:", err);
         const contentEl = document.getElementById('ai-content-text');
-        contentEl.innerHTML = `<span class="ai-error"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg> Impossibile generare l'Overview (Ollama offline o errore CORS)</span>`;
+        contentEl.innerHTML = \`<span class="ai-error"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg> Errore AI (Sei sicuro che Ollama sia acceso e OLLAMA_ORIGINS="*" sia configurato?)</span>\`;
       }
     }
 
