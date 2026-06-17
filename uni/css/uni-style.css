@@ -141,6 +141,56 @@ body {
   gap: 1rem;
 }
 
+.ai-overview-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  margin-bottom: 1rem;
+}
+
+.ai-content-wrapper {
+  position: relative;
+  overflow: hidden;
+  transition: max-height 0.4s ease;
+}
+
+.ai-content-wrapper.collapsed::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 80px;
+  background: linear-gradient(to bottom, transparent, var(--card-bg));
+  pointer-events: none;
+}
+
+.ai-show-more-container {
+  display: flex;
+  justify-content: center;
+  margin-top: -15px;
+  position: relative;
+  z-index: 10;
+}
+
+.ai-show-more {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  color: var(--text-primary);
+  border-radius: 20px;
+  padding: 6px 16px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.ai-show-more:hover {
+  background: var(--card-hover-bg);
+  transform: translateY(-1px);
+}
+
 .course-card {
   background: var(--card-bg);
   border: 1px solid var(--card-border);
