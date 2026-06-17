@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sistemi Operativi | Uni Hub</title>
-  <link rel="stylesheet" href="../css/uni-style.css?v=1781600442628">
+  <link rel="stylesheet" href="../css/uni-style.css?v=1781694171557">
 </head>
 <body>
 
@@ -536,18 +536,23 @@ Riassumi il concetto in massimo 3 o 4 frasi.`;
 
         if (!response.ok) throw new Error("API errata");
 
-        const contentEl = document.getElementById('ai-content-text');
-        contentEl.innerHTML = '<span id="ai-text-span"></span>';
-        const textSpan = document.getElementById('ai-text-span');
-
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
         
-                let done = false;
+        let done = false;
         let buffer = '';
         let fullResponse = '';
+        let isFirstChunk = true;
+        let textSpan = null;
+        
         while (!done) {
           const { value, done: readerDone } = await reader.read();
+          if (isFirstChunk && value) {
+            const contentEl = document.getElementById('ai-content-text');
+            contentEl.innerHTML = '<span id="ai-text-span"></span>';
+            textSpan = document.getElementById('ai-text-span');
+            isFirstChunk = false;
+          }
           done = readerDone;
           if (value) {
             buffer += decoder.decode(value, { stream: true });
