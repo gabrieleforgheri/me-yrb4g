@@ -423,6 +423,61 @@
       }
     }
 
+
+    let aiEnabled = localStorage.getItem('ai_enabled') !== 'false';
+    const aiToggleBtn = document.getElementById('ai-toggle-btn');
+    const aiToggleText = document.getElementById('ai-toggle-text');
+    const aiToggleIcon = document.getElementById('ai-toggle-icon');
+
+    function updateAIToggleUI() {
+      if (!aiToggleBtn) return;
+      if (aiEnabled) {
+        aiToggleText.innerText = 'AI ON';
+        aiToggleBtn.style.borderColor = 'rgba(139, 92, 246, 0.8)';
+        aiToggleIcon.style.color = '#c4b5fd';
+      } else {
+        aiToggleText.innerText = 'AI OFF';
+        aiToggleBtn.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+        aiToggleIcon.style.color = '#64748b';
+        const existingCard = document.getElementById('ai-overview');
+        if (existingCard) existingCard.remove();
+      }
+    }
+
+    if (aiToggleBtn) {
+       updateAIToggleUI();
+       aiToggleBtn.addEventListener('click', () => {
+         aiEnabled = !aiEnabled;
+         localStorage.setItem('ai_enabled', aiEnabled);
+         updateAIToggleUI();
+         
+         const searchInput = document.getElementById('topic-search');
+         if(searchInput && searchInput.value.trim().length >= 3) {
+            searchInput.dispatchEvent(new Event('input'));
+         }
+       });
+    }
+
+    function parseAIMarkdown(text) {
+      let h = text;
+      // Code blocks
+      h = h.replace(/```[a-z]*\n([\s\S]*?)```/g, '<pre style="background:#0f172a; border: 1px solid #1e293b; padding:12px; border-radius:8px; overflow-x:auto; margin:10px 0; font-family: monospace;"><code>$1</code></pre>');
+      // Inline code
+      h = h.replace(/`([^`]+)`/g, '<code style="background:#1e293b; border: 1px solid #334155; padding:2px 6px; border-radius:4px; color:#c4b5fd; font-family: monospace;">$1</code>');
+      // Bold
+      h = h.replace(/\*\*([^\*]+)\*\*/g, '<strong style="color: #fff;">$1</strong>');
+      // Lists
+      h = h.replace(/^\*\s+(.*)/gm, '• $1');
+      
+      const parts = h.split(/(<pre[\s\S]*?<\/pre>)/);
+      for(let i=0; i<parts.length; i++) {
+         if(!parts[i].startsWith('<pre')) {
+            parts[i] = parts[i].replace(/\n/g, '<br>');
+         }
+      }
+      return parts.join('');
+    }
+
     let aiAbortController = null;
     let aiDebounceTimer = null;
 
@@ -476,14 +531,15 @@ Riassumi il concetto in massimo 3 o 4 frasi.`;
         if (!response.ok) throw new Error("API errata");
 
         const contentEl = document.getElementById('ai-content-text');
-        contentEl.innerHTML = '<span id="ai-text-span"></span><span class="ai-cursor"></span>';
+        contentEl.innerHTML = '<span id="ai-text-span"></span>';
         const textSpan = document.getElementById('ai-text-span');
 
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
         
-        let done = false;
+                let done = false;
         let buffer = '';
+        let fullResponse = '';
         while (!done) {
           const { value, done: readerDone } = await reader.read();
           done = readerDone;
@@ -496,10 +552,9 @@ Riassumi il concetto in massimo 3 o 4 frasi.`;
               if (line.trim() !== '') {
                 try {
                   const data = JSON.parse(line);
-                  textSpan.innerHTML += data.response.replace(/\n/g, '<br>');
-                } catch(e) {
-                  console.error("JSON parse error on line:", line, e);
-                }
+                  fullResponse += data.response;
+                  textSpan.innerHTML = parseAIMarkdown(fullResponse) + '<span class="ai-cursor"></span>';
+                } catch(e) {}
               }
             }
           }
@@ -508,13 +563,13 @@ Riassumi il concetto in massimo 3 o 4 frasi.`;
         if (buffer.trim() !== '') {
           try {
              const data = JSON.parse(buffer);
-             textSpan.innerHTML += data.response.replace(/\n/g, '<br>');
+             fullResponse += data.response;
+             textSpan.innerHTML = parseAIMarkdown(fullResponse) + '<span class="ai-cursor"></span>';
           } catch(e) {}
         }
         
         const cursor = document.querySelector('.ai-cursor');
         if (cursor) cursor.remove();
-        
       } catch (err) {
         if (err.name === 'AbortError') return;
         console.error("AI Overview Error:", err);
@@ -581,5 +636,11 @@ Riassumi il concetto in massimo 3 o 4 frasi.`;
       }
     });
   </script>
+
+  <div id="ai-toggle-btn" title="Attiva/Disattiva AI Overview" style="position: fixed; bottom: 20px; right: 20px; background: #0f172a; border: 1px solid rgba(139, 92, 246, 0.5); border-radius: 50px; padding: 10px 15px; cursor: pointer; display: flex; align-items: center; gap: 8px; color: #e2e8f0; font-size: 0.9rem; box-shadow: 0 4px 12px rgba(0,0,0,0.5); z-index: 1000; transition: all 0.2s;">
+    <svg id="ai-toggle-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+    <span id="ai-toggle-text">AI ON</span>
+  </div>
+
 </body>
 </html>
