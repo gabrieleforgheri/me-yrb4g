@@ -97,9 +97,9 @@
   <script>
     const header = document.querySelector('.header');
     window.addEventListener('scroll', () => {
-      if (window.scrollY > 30) {
+      if (window.scrollY > 80) {
         header.classList.add('scrolled');
-      } else {
+      } else if (window.scrollY < 20) {
         header.classList.remove('scrolled');
       }
     });
@@ -465,9 +465,13 @@
     function parseAIMarkdown(text) {
       let h = text;
       // Code blocks
-      h = h.replace(/```[a-z]*\n([\s\S]*?)```/g, '<pre style="background:#0f172a; border: 1px solid #1e293b; padding:12px; border-radius:8px; overflow-x:auto; margin:10px 0; font-family: monospace;"><code>$1</code></pre>');
+      h = h.replace(/```[a-z]*\n([\s\S]*?)```/g, (match, code) => {
+          return '<pre style="background:#0f172a; border: 1px solid #1e293b; padding:12px; border-radius:8px; overflow-x:auto; margin:10px 0; font-family: monospace;"><code>' + code.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</code></pre>';
+      });
       // Inline code
-      h = h.replace(/`([^`]+)`/g, '<code style="background:#1e293b; border: 1px solid #334155; padding:2px 6px; border-radius:4px; color:#c4b5fd; font-family: monospace;">$1</code>');
+      h = h.replace(/`([^`]+)`/g, (match, code) => {
+          return '<code style="background:#1e293b; border: 1px solid #334155; padding:2px 6px; border-radius:4px; color:#c4b5fd; font-family: monospace;">' + code.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</code>';
+      });
       // Bold
       h = h.replace(/\*\*([^\*]+)\*\*/g, '<strong style="color: #fff;">$1</strong>');
       // Lists
