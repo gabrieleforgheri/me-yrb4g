@@ -674,3 +674,24 @@ mark.search-highlight {
   0%, 80%, 100% { transform: scale(0); }
   40% { transform: scale(1); }
 }
+
+/* Skeleton Loader stile Google AI */
+.ai-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.skeleton-line {
+  height: 14px;
+  background: linear-gradient(90deg, rgba(148, 163, 184, 0.1) 25%, rgba(167, 139, 250, 0.2) 50%, rgba(148, 163, 184, 0.1) 75%);
+  background-size: 400% 100%;
+  border-radius: 6px;
+  animation: skeletonShimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes skeletonShimmer {
+  0% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
