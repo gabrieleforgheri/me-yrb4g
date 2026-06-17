@@ -539,7 +539,10 @@ Riassumi il concetto in massimo 3 o 4 frasi.`;
           signal: aiAbortController.signal
         });
 
-        if (!response.ok) throw new Error("API errata");
+        if (!response.ok) {
+          const errText = await response.text();
+          throw new Error(errText || "API errata");
+        }
 
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
@@ -590,7 +593,15 @@ Riassumi il concetto in massimo 3 o 4 frasi.`;
         if (err.name === 'AbortError') return;
         console.error("AI Overview Error:", err);
         const contentEl = document.getElementById('ai-content-text');
-        contentEl.innerHTML = `<span class="ai-error"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg> Errore AI (Sei sicuro che Ollama sia acceso e OLLAMA_ORIGINS="*" sia configurato?)</span>`;
+        
+        let errorMsg = err.message;
+        try {
+          // If Ollama returns {"error":"model '...' not found"}
+          const parsed = JSON.parse(err.message);
+          if (parsed.error) errorMsg = parsed.error;
+        } catch(e) {}
+        
+        contentEl.innerHTML = \`<span class="ai-error"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg> Errore AI: \${errorMsg} (Controlla che Ollama sia avviato e il modello esista)</span>\`;
       }
     }
 
