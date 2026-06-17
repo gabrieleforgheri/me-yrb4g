@@ -425,9 +425,7 @@
 
 
     let aiEnabled = localStorage.getItem('ai_enabled') !== 'false';
-    const aiToggleBtn = document.getElementById('ai-toggle-btn');
-    const aiToggleText = document.getElementById('ai-toggle-text');
-    const aiToggleIcon = document.getElementById('ai-toggle-icon');
+    let aiToggleBtn, aiToggleText, aiToggleIcon;
 
     function updateAIToggleUI() {
       if (!aiToggleBtn) return;
@@ -444,19 +442,25 @@
       }
     }
 
-    if (aiToggleBtn) {
-       updateAIToggleUI();
-       aiToggleBtn.addEventListener('click', () => {
-         aiEnabled = !aiEnabled;
-         localStorage.setItem('ai_enabled', aiEnabled);
+    document.addEventListener('DOMContentLoaded', () => {
+      aiToggleBtn = document.getElementById('ai-toggle-btn');
+      aiToggleText = document.getElementById('ai-toggle-text');
+      aiToggleIcon = document.getElementById('ai-toggle-icon');
+      
+      if (aiToggleBtn) {
          updateAIToggleUI();
-         
-         const searchInput = document.getElementById('topic-search');
-         if(searchInput && searchInput.value.trim().length >= 3) {
-            searchInput.dispatchEvent(new Event('input'));
-         }
-       });
-    }
+         aiToggleBtn.addEventListener('click', () => {
+           aiEnabled = !aiEnabled;
+           localStorage.setItem('ai_enabled', aiEnabled);
+           updateAIToggleUI();
+           
+           const searchInput = document.getElementById('topic-search');
+           if(searchInput && searchInput.value.trim().length >= 3) {
+              searchInput.dispatchEvent(new Event('input'));
+           }
+         });
+      }
+    });
 
     function parseAIMarkdown(text) {
       let h = text;
