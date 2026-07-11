@@ -165,34 +165,50 @@ def scrape_karlskronahem(page):
         page.wait_for_timeout(5000)
         soup = BeautifulSoup(page.content(), 'html.parser')
         
-        for a in soup.find_all('a'):
-            text = a.get_text(separator=' | ', strip=True)
-            if "kr/mån" in text or "kr/månad" in text:
-                price = parse_price(text)
-                href = "https://marknad.karlskronahem.se" + a.get('href', '') if a.get('href', '').startswith('/') else a.get('href', '')
-                img_url = extract_image(a, "https://marknad.karlskronahem.se")
+        cards = soup.find_all('div', class_=lambda c: c and 'object-preview-cc' in c)
+        for card in cards:
+            text = card.get_text(separator=' | ', strip=True)
+            a_tag = card.find('a')
+            if not a_tag:
+                continue
                 
-                item = {
-                    'id': href,
-                    'source': 'Karlskronahem',
-                    'url': href,
-                    'title': translate_to_english(text).split(' | ')[0] if len(text.split(' | ')) > 0 else 'Student Apartment',
-                    'price': price,
-                    'details': translate_to_english(text),
-                    'image': img_url
-                }
+            href = "https://marknad.karlskronahem.se" + a_tag.get('href', '') if a_tag.get('href', '').startswith('/') else a_tag.get('href', '')
+            price = parse_price(text)
+            img_url = extract_image(a_tag, "https://marknad.karlskronahem.se")
+            
+            clean_text = text.replace('m | 2', 'sqm').replace('m 2', 'sqm').replace('• |', '')
+            clean_text = re.sub(r'\|\s*\|', '|', clean_text)
+            
+            h2 = card.find('h2')
+            title = h2.get_text(strip=True) if h2 else 'Student Apartment'
+            
+            item = {
+                'id': href,
+                'source': 'Karlskronahem',
+                'url': href,
+                'title': title,
+                'price': price,
+                'details': translate_to_english(clean_text),
+                'image': img_url
+            }
+            
+            valid = True
+            if price and price >= 5000:
+                valid = False
                 
-                valid = True
-                if price and price >= 5000:
-                    valid = False
-                if valid and not is_close_to_bth(text):
+            date_match = re.search(r'(?:Ledig från|Inflyttning|Tillträde)[\s:|]*([^|]+)', text, re.IGNORECASE)
+            if date_match and valid:
+                if not check_date(date_match.group(1).strip()):
                     valid = False
                     
-                if href not in [r['url'] for r in results] and href not in [r['url'] for r in others]:
-                    if valid:
-                        results.append(item)
-                    else:
-                        others.append(item)
+            if valid and not is_close_to_bth(text):
+                valid = False
+                
+            if href not in [r['url'] for r in results] and href not in [r['url'] for r in others]:
+                if valid:
+                    results.append(item)
+                else:
+                    others.append(item)
     except Exception as e:
         print(f"Error scraping Karlskronahem: {e}")
         
@@ -220,7 +236,8 @@ def main():
         'other_apartments': all_other
     }
     
-    out_path = '/data/data.json'
+    import os
+    out_path = '/data/data.json' if os.path.exists('/data') else '../data.json'
     try:
         with open(out_path, 'w') as f:
             json.dump(data, f, indent=2, ensure_ascii=False)
