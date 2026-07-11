@@ -8,5 +8,5 @@ RUN playwright install chromium
 
 COPY run.py .
 
-# Run the script immediately, then every 12 hours (43200 seconds)
-CMD ["sh", "-c", "while true; do python run.py; sleep 43200; done"]
+# Run the script immediately, then every 6 hours (21600 seconds)
+CMD ["sh", "-c", "while true; do python run.py; sleep 21600; done"]
