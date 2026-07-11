@@ -1,0 +1,15 @@
+{
+  "last_updated": "2026-07-12T00:25:00.000Z",
+  "count": 1,
+  "apartments": [
+    {
+      "id": "https://sbsstudent.se/lediga-bostader/kolonivagen-1h-lgh-1002-2/",
+      "source": "SBS",
+      "url": "https://sbsstudent.se/lediga-bostader/kolonivagen-1h-lgh-1002-2/",
+      "title": "Kolonivägen 1H lgh 1002",
+      "price": 4605,
+      "details": "Student & Ungdom | Karlskrona | Kolonivägen 1H lgh 1002 | Inflyttning: Enligt överenskommelse | 4 605 kr/mån | 18 m² | 1 rum",
+      "image": "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&auto=format&fit=crop&q=60"
+    }
+  ]
+}

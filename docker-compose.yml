@@ -17,3 +17,10 @@ services:
     restart: unless-stopped
     env_file:
       - .env
+
+  apartments-scraper:
+    build: ./apartments/scraper
+    container_name: yrb4g-apartments-scraper
+    restart: unless-stopped
+    volumes:
+      - ./apartments:/data
