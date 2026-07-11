@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-07-12T00:25:00.000Z",
+  "last_updated": "2026-07-12T00:52:24.747282",
   "count": 1,
   "apartments": [
     {
@@ -9,18 +9,162 @@
       "title": "Kolonivägen 1H lgh 1002",
       "price": 4605,
       "details": "Student & Youth | Karlskrona | Kolonivägen 1H lgh 1002 | Move-in date: Upon agreement | 18 sqm | 1 room(s)",
-      "image": "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&auto=format&fit=crop&q=60"
+      "image": "https://lettingdocuments.blob.core.windows.net/public/10101_a51163b3-ab6d-42dc-810a-a910a217cafb/Area/3d83c23b-f76d-444e-99e9-677dec7020a2/4331795c-6342-48a1-9d9a-04064aad8364_tn.jpg"
     }
   ],
   "other_apartments": [
     {
-      "id": "https://sbsstudent.se/lediga-bostader/some-other-flat/",
+      "id": "https://sbsstudent.se/lediga-bostader/kolonivagen-1g-lgh-1004/",
       "source": "SBS",
-      "url": "https://sbsstudent.se/lediga-bostader/some-other-flat/",
-      "title": "Example Too Expensive Flat",
-      "price": 6500,
-      "details": "Student & Youth | Karlskrona | Move-in date: 1 Aug 2026 | 25 sqm | 1 room(s)",
-      "image": "https://images.unsplash.com/photo-1554995207-c18c203602cb?w=800&auto=format&fit=crop&q=60"
+      "url": "https://sbsstudent.se/lediga-bostader/kolonivagen-1g-lgh-1004/",
+      "title": "Kolonivägen 1G lgh 1004",
+      "price": 4339,
+      "details": "Student & Youth | Karlskrona | Kolonivägen 1G lgh 1004 | Move-in date: 1 Aug 2026 | 15 sqm | 1 room(s)",
+      "image": "https://lettingdocuments.blob.core.windows.net/public/10101_a51163b3-ab6d-42dc-810a-a910a217cafb/Area/3d83c23b-f76d-444e-99e9-677dec7020a2/4331795c-6342-48a1-9d9a-04064aad8364_tn.jpg"
+    },
+    {
+      "id": "https://sbsstudent.se/lediga-bostader/kolonivagen-1h-lgh-1104/",
+      "source": "SBS",
+      "url": "https://sbsstudent.se/lediga-bostader/kolonivagen-1h-lgh-1104/",
+      "title": "Kolonivägen 1H lgh 1104",
+      "price": 4339,
+      "details": "Student Housing | Karlskrona | Kolonivägen 1H lgh 1104 | Move-in date: 1 Aug 2026 | 15 sqm | 1 room(s)",
+      "image": "https://lettingdocuments.blob.core.windows.net/public/10101_a51163b3-ab6d-42dc-810a-a910a217cafb/Area/3d83c23b-f76d-444e-99e9-677dec7020a2/4331795c-6342-48a1-9d9a-04064aad8364_tn.jpg"
+    },
+    {
+      "id": "https://sbsstudent.se/lediga-bostader/kolonivagen-1j-lgh-1003/",
+      "source": "SBS",
+      "url": "https://sbsstudent.se/lediga-bostader/kolonivagen-1j-lgh-1003/",
+      "title": "Kolonivägen 1J lgh 1003",
+      "price": 5598,
+      "details": "Student & Youth | Karlskrona | Kolonivägen 1J lgh 1003 | Move-in date: 1 Aug 2026 | 28 sqm | 1 room(s)",
+      "image": "https://lettingdocuments.blob.core.windows.net/public/10101_a51163b3-ab6d-42dc-810a-a910a217cafb/Area/3d83c23b-f76d-444e-99e9-677dec7020a2/4331795c-6342-48a1-9d9a-04064aad8364_tn.jpg"
+    },
+    {
+      "id": "https://sbsstudent.se/lediga-bostader/kolonivagen-1h-lgh-1101/",
+      "source": "SBS",
+      "url": "https://sbsstudent.se/lediga-bostader/kolonivagen-1h-lgh-1101/",
+      "title": "Kolonivägen 1H lgh 1101",
+      "price": 4339,
+      "details": "Student & Youth | Karlskrona | Kolonivägen 1H lgh 1101 | Move-in date: 1 Aug 2026 | 15 sqm | 1 room(s)",
+      "image": "https://lettingdocuments.blob.core.windows.net/public/10101_a51163b3-ab6d-42dc-810a-a910a217cafb/Area/3d83c23b-f76d-444e-99e9-677dec7020a2/4331795c-6342-48a1-9d9a-04064aad8364_tn.jpg"
+    },
+    {
+      "id": "https://sbsstudent.se/lediga-bostader/kolonivagen-1e-lgh-1004/",
+      "source": "SBS",
+      "url": "https://sbsstudent.se/lediga-bostader/kolonivagen-1e-lgh-1004/",
+      "title": "Kolonivägen 1E lgh 1004",
+      "price": 4339,
+      "details": "Student & Youth | Karlskrona | Kolonivägen 1E lgh 1004 | Move-in date: 1 Aug 2026 | 15 sqm | 1 room(s)",
+      "image": "https://lettingdocuments.blob.core.windows.net/public/10101_a51163b3-ab6d-42dc-810a-a910a217cafb/Area/3d83c23b-f76d-444e-99e9-677dec7020a2/4331795c-6342-48a1-9d9a-04064aad8364_tn.jpg"
+    },
+    {
+      "id": "https://marknad.karlskronahem.se/ledigt/detalj/id/1509-B2-1108",
+      "source": "Karlskronahem",
+      "url": "https://marknad.karlskronahem.se/ledigt/detalj/id/1509-B2-1108",
+      "title": "Blåportsgatan 2 B",
+      "price": 7604,
+      "details": "Blåportsgatan 2 B | 40 sqm | 1 room(s) och kök, 12 mån | 1509-B2-1108 | Bodirekt | Du betalar din förbrukning av el | Du betalar din förbrukning av kallvatten | Du betalar din förbrukning av varmvatten | Dusch | Egen köksavdelning | Egen spis/ugn | Egen toalett med dusch | Förråd | Gemensam tvättstuga | Handdukstork | Hiss | Hög tillgänglighet | Internet ingår i hyran | Kabel TV | Omöblerat | Säkerhetsdörr | Område: Pantarholmen | Tillgänglig fr.o.m: Nu | Dagar publicerad: 2 | Visa detaljer",
+      "image": "https://marknad.karlskronahem.se/Content/ImageUrl?guid=dfb09cef-eb33-4eee-96ea-ee4fb6243d87&width=415&height=280&crop=True&extension=.jpg&datechanged=2024-12-19T10:46:10.913"
+    },
+    {
+      "id": "https://marknad.karlskronahem.se/ledigt/detalj/id/1509-B2-1113",
+      "source": "Karlskronahem",
+      "url": "https://marknad.karlskronahem.se/ledigt/detalj/id/1509-B2-1113",
+      "title": "Blåportsgatan 2 B",
+      "price": 5546,
+      "details": "Blåportsgatan 2 B | 24 sqm | 1 room(s) och kök, 12 mån | 1509-B2-1113 | Bodirekt | Du betalar din förbrukning av el | Du betalar din förbrukning av kallvatten | Du betalar din förbrukning av varmvatten | Dusch | Egen köksavdelning | Egen spis/ugn | Egen toalett med dusch | Förrådsutrymme i lägenheten | Gemensam tvättstuga | Handdukstork | Hiss | Hög tillgänglighet | Internet ingår i hyran | Kabel TV | Omöblerat | Säkerhetsdörr | Område: Pantarholmen | Tillgänglig fr.o.m: Nu | Dagar publicerad: 2 | Visa detaljer",
+      "image": "https://marknad.karlskronahem.se/Content/ImageUrl?guid=dfb09cef-eb33-4eee-96ea-ee4fb6243d87&width=415&height=280&crop=True&extension=.jpg&datechanged=2024-12-19T10:46:10.913"
+    },
+    {
+      "id": "https://marknad.karlskronahem.se/ledigt/detalj/id/1509-B2-1211",
+      "source": "Karlskronahem",
+      "url": "https://marknad.karlskronahem.se/ledigt/detalj/id/1509-B2-1211",
+      "title": "Blåportsgatan 2 B",
+      "price": 5546,
+      "details": "Blåportsgatan 2 B | 24 sqm | 1 room(s) och kök, 12 mån | 1509-B2-1211 | Bodirekt | Du betalar din förbrukning av el | Du betalar din förbrukning av kallvatten | Du betalar din förbrukning av varmvatten | Dusch | Egen köksavdelning | Egen spis/ugn | Egen toalett med dusch | Förrådsutrymme i lägenheten | Gemensam tvättstuga | Handdukstork | Hiss | Hög tillgänglighet | Internet ingår i hyran | Kabel TV | Omöblerat | Säkerhetsdörr | Område: Pantarholmen | Tillgänglig fr.o.m: Nu | Dagar publicerad: 2 | Visa detaljer",
+      "image": "https://marknad.karlskronahem.se/Content/ImageUrl?guid=dfb09cef-eb33-4eee-96ea-ee4fb6243d87&width=415&height=280&crop=True&extension=.jpg&datechanged=2024-12-19T10:46:10.913"
+    },
+    {
+      "id": "https://marknad.karlskronahem.se/ledigt/detalj/id/1509-B2-1212",
+      "source": "Karlskronahem",
+      "url": "https://marknad.karlskronahem.se/ledigt/detalj/id/1509-B2-1212",
+      "title": "Blåportsgatan 2 B",
+      "price": 5546,
+      "details": "Blåportsgatan 2 B | 24 sqm | 1 room(s) och kök, 12 mån | 1509-B2-1212 | Bodirekt | Du betalar din förbrukning av el | Du betalar din förbrukning av kallvatten | Du betalar din förbrukning av varmvatten | Dusch | Egen köksavdelning | Egen spis/ugn | Egen toalett med dusch | Förrådsutrymme i lägenheten | Gemensam tvättstuga | Handdukstork | Hiss | Hög tillgänglighet | Internet ingår i hyran | Kabel TV | Omöblerat | Säkerhetsdörr | Område: Pantarholmen | Tillgänglig fr.o.m: 2026-09-01 | Dagar publicerad: 2 | Visa detaljer",
+      "image": "https://marknad.karlskronahem.se/Content/ImageUrl?guid=dfb09cef-eb33-4eee-96ea-ee4fb6243d87&width=415&height=280&crop=True&extension=.jpg&datechanged=2024-12-19T10:46:10.913"
+    },
+    {
+      "id": "https://marknad.karlskronahem.se/ledigt/detalj/id/1509-B2-1405",
+      "source": "Karlskronahem",
+      "url": "https://marknad.karlskronahem.se/ledigt/detalj/id/1509-B2-1405",
+      "title": "Blåportsgatan 2 B",
+      "price": 5546,
+      "details": "Blåportsgatan 2 B | 24 sqm | 1 room(s) och kök, 12 mån | 1509-B2-1405 | Bodirekt | Du betalar din förbrukning av el | Du betalar din förbrukning av kallvatten | Du betalar din förbrukning av varmvatten | Dusch | Egen köksavdelning | Egen spis/ugn | Egen toalett med dusch | Förrådsutrymme i lägenheten | Gemensam tvättstuga | Handdukstork | Hiss | Hög tillgänglighet | Internet ingår i hyran | Kabel TV | Omöblerat | Säkerhetsdörr | Område: Pantarholmen | Tillgänglig fr.o.m: 2026-09-01 | Dagar publicerad: 2 | Visa detaljer",
+      "image": "https://marknad.karlskronahem.se/Content/ImageUrl?guid=dfb09cef-eb33-4eee-96ea-ee4fb6243d87&width=415&height=280&crop=True&extension=.jpg&datechanged=2024-12-19T10:46:10.913"
+    },
+    {
+      "id": "https://marknad.karlskronahem.se/ledigt/detalj/id/1509-B2-1409",
+      "source": "Karlskronahem",
+      "url": "https://marknad.karlskronahem.se/ledigt/detalj/id/1509-B2-1409",
+      "title": "Blåportsgatan 2 B",
+      "price": 5546,
+      "details": "Blåportsgatan 2 B | 24 sqm | 1 room(s) och kök, 12 mån | 1509-B2-1409 | Bodirekt | Du betalar din förbrukning av el | Du betalar din förbrukning av kallvatten | Du betalar din förbrukning av varmvatten | Dusch | Egen köksavdelning | Egen spis/ugn | Egen toalett med dusch | Förrådsutrymme i lägenheten | Gemensam tvättstuga | Handdukstork | Hiss | Hög tillgänglighet | Internet ingår i hyran | Kabel TV | Omöblerat | Säkerhetsdörr | Område: Pantarholmen | Tillgänglig fr.o.m: Nu | Dagar publicerad: 2 | Visa detaljer",
+      "image": "https://marknad.karlskronahem.se/Content/ImageUrl?guid=dfb09cef-eb33-4eee-96ea-ee4fb6243d87&width=415&height=280&crop=True&extension=.jpg&datechanged=2024-12-19T10:46:10.913"
+    },
+    {
+      "id": "https://marknad.karlskronahem.se/ledigt/detalj/id/1509-B2-1504",
+      "source": "Karlskronahem",
+      "url": "https://marknad.karlskronahem.se/ledigt/detalj/id/1509-B2-1504",
+      "title": "Blåportsgatan 2 B",
+      "price": 5546,
+      "details": "Blåportsgatan 2 B | 24 sqm | 1 room(s) och kök, 12 mån | 1509-B2-1504 | Bodirekt | Du betalar din förbrukning av el | Du betalar din förbrukning av kallvatten | Du betalar din förbrukning av varmvatten | Dusch | Egen köksavdelning | Egen spis/ugn | Egen toalett med dusch | Förrådsutrymme i lägenheten | Gemensam tvättstuga | Handdukstork | Hiss | Hög tillgänglighet | Internet ingår i hyran | Kabel TV | Omöblerat | Säkerhetsdörr | Område: Pantarholmen | Tillgänglig fr.o.m: Nu | Tillträde: Nu | Dagar publicerad: 2 | Visa detaljer",
+      "image": "https://marknad.karlskronahem.se/Content/ImageUrl?guid=dfb09cef-eb33-4eee-96ea-ee4fb6243d87&width=415&height=280&crop=True&extension=.jpg&datechanged=2024-12-19T10:46:10.913"
+    },
+    {
+      "id": "https://marknad.karlskronahem.se/ledigt/detalj/id/1509-B2-1517",
+      "source": "Karlskronahem",
+      "url": "https://marknad.karlskronahem.se/ledigt/detalj/id/1509-B2-1517",
+      "title": "Blåportsgatan 2 B",
+      "price": 5546,
+      "details": "Blåportsgatan 2 B | 24 sqm | 1 room(s) och kök, 12 mån | 1509-B2-1517 | Bodirekt | Du betalar din förbrukning av el | Du betalar din förbrukning av kallvatten | Du betalar din förbrukning av varmvatten | Dusch | Egen köksavdelning | Egen spis/ugn | Egen toalett med dusch | Förrådsutrymme i lägenheten | Gemensam tvättstuga | Handdukstork | Hiss | Hög tillgänglighet | Internet ingår i hyran | Kabel TV | Omöblerat | Säkerhetsdörr | Område: Pantarholmen | Tillgänglig fr.o.m: 2026-08-01 | Dagar publicerad: 2 | Visa detaljer",
+      "image": "https://marknad.karlskronahem.se/Content/ImageUrl?guid=dfb09cef-eb33-4eee-96ea-ee4fb6243d87&width=415&height=280&crop=True&extension=.jpg&datechanged=2024-12-19T10:46:10.913"
+    },
+    {
+      "id": "https://marknad.karlskronahem.se/ledigt/detalj/id/1202-B1-0005",
+      "source": "Karlskronahem",
+      "url": "https://marknad.karlskronahem.se/ledigt/detalj/id/1202-B1-0005",
+      "title": "Bredgatan 16",
+      "price": 5663,
+      "details": "Bredgatan 16 | 23 sqm | 1 room(s) och pentry 10 mån | 1202-B1-0005 | Bodirekt | 10-monthers hyra - hyresfri sommar | Egen köksavdelning | Egen toalett med dusch | El ingår i hyran | Fransk balkong | Gemensamt kök | Hiss | Internet ingår i hyran | Kabel TV | Omöblerat | Rum i korridor | Område: Trossö | Tillgänglig fr.o.m: 2026-09-01 | Dagar publicerad: 2 | Visa detaljer",
+      "image": "https://marknad.karlskronahem.se/Content/ImageUrl?guid=98f6aa01-e3ea-4d62-aa29-03b93bae6b15&width=415&height=280&crop=True&extension=.jpg&datechanged=2023-06-15T13:47:19.477"
+    },
+    {
+      "id": "https://marknad.karlskronahem.se/ledigt/detalj/id/1202-B1-0007",
+      "source": "Karlskronahem",
+      "url": "https://marknad.karlskronahem.se/ledigt/detalj/id/1202-B1-0007",
+      "title": "Bredgatan 16",
+      "price": 5663,
+      "details": "Bredgatan 16 | 23 sqm | 1 room(s) och pentry 10 mån | 1202-B1-0007 | Bodirekt | 10-monthers hyra - hyresfri sommar | Egen köksavdelning | Egen toalett med dusch | El ingår i hyran | Fransk balkong | Gemensamt kök | Hiss | Internet ingår i hyran | Kabel TV | Omöblerat | Rum i korridor | Område: Trossö | Tillgänglig fr.o.m: Nu | Dagar publicerad: 2 | Visa detaljer",
+      "image": "https://marknad.karlskronahem.se/Content/ImageUrl?guid=98f6aa01-e3ea-4d62-aa29-03b93bae6b15&width=415&height=280&crop=True&extension=.jpg&datechanged=2023-06-15T13:47:19.477"
+    },
+    {
+      "id": "https://marknad.karlskronahem.se/ledigt/detalj/id/1202-B1-0008",
+      "source": "Karlskronahem",
+      "url": "https://marknad.karlskronahem.se/ledigt/detalj/id/1202-B1-0008",
+      "title": "Bredgatan 16",
+      "price": 5663,
+      "details": "Bredgatan 16 | 23 sqm | 1 room(s) och pentry, gymbo | 1202-B1-0008 | Bodirekt | 10-monthers hyra - hyresfri sommar | Egen köksavdelning | Egen toalett med dusch | El ingår i hyran | Fransk balkong | Gemensamt kök | Hiss | Internet ingår i hyran | Kabel TV | Omöblerat | Rum i korridor | Område: Trossö | Tillgänglig fr.o.m: Nu | Dagar publicerad: 2 | Visa detaljer",
+      "image": "https://marknad.karlskronahem.se/Content/ImageUrl?guid=98f6aa01-e3ea-4d62-aa29-03b93bae6b15&width=415&height=280&crop=True&extension=.jpg&datechanged=2023-06-15T13:47:19.477"
+    },
+    {
+      "id": "https://marknad.karlskronahem.se/ledigt/detalj/id/1202-B1-0009",
+      "source": "Karlskronahem",
+      "url": "https://marknad.karlskronahem.se/ledigt/detalj/id/1202-B1-0009",
+      "title": "Bredgatan 16",
+      "price": 6431,
+      "details": "Bredgatan 16 | 23 sqm | 1 room(s) och pentry 10 mån | 1202-B1-0009 | Bodirekt | 10-monthers hyra - hyresfri sommar | Egen köksavdelning | Egen toalett med dusch | El ingår i hyran | Fransk balkong | Gemensamt kök | Hiss | Internet ingår i hyran | Kabel TV | Omöblerat | Rum i korridor | Område: Trossö | Tillgänglig fr.o.m: 2026-08-16 | Dagar publicerad: 2 | Visa detaljer",
+      "image": "https://marknad.karlskronahem.se/Content/ImageUrl?guid=98f6aa01-e3ea-4d62-aa29-03b93bae6b15&width=415&height=280&crop=True&extension=.jpg&datechanged=2023-06-15T13:47:19.477"
     }
   ]
 }
