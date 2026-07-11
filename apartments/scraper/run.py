@@ -56,6 +56,36 @@ def is_close_to_bth(text):
         return True
     return True 
 
+def translate_to_english(text):
+    replacements = {
+        'Student & Ungdom': 'Student & Youth',
+        'Studentbostad': 'Student Housing',
+        'Inflyttning:': 'Move-in date:',
+        'Enligt överenskommelse': 'Upon agreement',
+        'omgående': 'Immediately',
+        'kr/månad': 'SEK/month',
+        'kr/mån': 'SEK/month',
+        'rum': 'room(s)',
+        'månad': 'month',
+        ' aug. ': ' Aug ',
+        ' sep. ': ' Sep ',
+        ' okt. ': ' Oct ',
+        ' nov. ': ' Nov ',
+        ' dec. ': ' Dec ',
+        ' jan. ': ' Jan ',
+        ' feb. ': ' Feb ',
+        ' mar. ': ' Mar ',
+        ' apr. ': ' Apr ',
+        ' maj. ': ' May ',
+        ' jun. ': ' Jun ',
+        ' jul. ': ' Jul '
+    }
+    for k, v in replacements.items():
+        # case-insensitive replace could be better, but exact match for most works
+        # Let's do a simple replace
+        text = text.replace(k, v)
+    return text
+
 def scrape_sbs(page):
     results = []
     try:
@@ -91,9 +121,9 @@ def scrape_sbs(page):
                         'id': href,
                         'source': 'SBS',
                         'url': href,
-                        'title': text.split(' | ')[2] if len(text.split(' | ')) > 2 else 'Student Apartment',
+                        'title': translate_to_english(text).split(' | ')[2] if len(text.split(' | ')) > 2 else 'Student Apartment',
                         'price': price,
-                        'details': text,
+                        'details': translate_to_english(text),
                         'image': img_url
                     })
     except Exception as e:
@@ -128,9 +158,9 @@ def scrape_karlskronahem(page):
                         'id': href,
                         'source': 'Karlskronahem',
                         'url': href,
-                        'title': text.split(' | ')[0] if len(text.split(' | ')) > 0 else 'Student Apartment',
+                        'title': translate_to_english(text).split(' | ')[0] if len(text.split(' | ')) > 0 else 'Student Apartment',
                         'price': price,
-                        'details': text,
+                        'details': translate_to_english(text),
                         'image': img_url
                     })
     except Exception as e:
