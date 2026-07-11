@@ -81,10 +81,20 @@ def translate_to_english(text):
         ' jul. ': ' Jul '
     }
     for k, v in replacements.items():
-        # case-insensitive replace could be better, but exact match for most works
-        # Let's do a simple replace
         text = text.replace(k, v)
-    return text
+        
+    # Split the details to remove the price part and convert m²
+    parts = [p.strip() for p in text.split('|')]
+    new_parts = []
+    for p in parts:
+        # Skip if it's the price part
+        if 'SEK/month' in p or re.search(r'\d[\d\s]*kr', p):
+            continue
+        # Convert m² to sqm
+        p = p.replace('m²', 'sqm')
+        new_parts.append(p)
+        
+    return ' | '.join(new_parts)
 
 def scrape_sbs(page):
     results = []
