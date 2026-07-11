@@ -83,21 +83,35 @@ def translate_to_english(text):
     for k, v in replacements.items():
         text = text.replace(k, v)
         
-    # Split the details to remove the price part and convert m²
     parts = [p.strip() for p in text.split('|')]
     new_parts = []
     for p in parts:
-        # Skip if it's the price part
         if 'SEK/month' in p or re.search(r'\d[\d\s]*kr', p):
             continue
-        # Convert m² to sqm
         p = p.replace('m²', 'sqm')
         new_parts.append(p)
         
     return ' | '.join(new_parts)
 
+def extract_image(a_tag, base_url=""):
+    img = a_tag.find('img')
+    if img and img.get('src'):
+        src = img.get('src')
+        return base_url + src if src.startswith('/') else src
+        
+    for child in a_tag.find_all(True):
+        style = child.get('style', '')
+        if 'background-image' in style:
+            match = re.search(r"url\(['\"]?(.*?)['\"]?\)", style)
+            if match:
+                src = match.group(1)
+                return base_url + src if src.startswith('/') else src
+                
+    return 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&auto=format&fit=crop&q=60'
+
 def scrape_sbs(page):
     results = []
+    others = []
     try:
         page.goto("https://sbsstudent.se/lediga-bostader/?qt_mll_search_tags=Karlskrona")
         page.wait_for_timeout(4000)
@@ -107,42 +121,45 @@ def scrape_sbs(page):
             text = a.get_text(separator=' | ', strip=True)
             if "kr/mån" in text and "Karlskrona" in text:
                 price = parse_price(text)
-                if price and price >= 5000:
-                    continue
-                    
-                date_match = re.search(r'Inflyttning:\s*([^|]+)', text)
-                if date_match:
-                    date_str = date_match.group(1).strip()
-                    if not check_date(date_str):
-                        continue
-                        
-                if not is_close_to_bth(text):
-                    continue
-                    
                 href = a.get('href', '')
+                img_url = extract_image(a, "")
                 
-                # Extract image or set default
-                # SBS images are usually background images or within img tags, we'll try to find an image inside the a tag
-                img = a.find('img')
-                img_url = img.get('src') if img else 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&auto=format&fit=crop&q=60'
-
-                if href not in [r['url'] for r in results]:
-                    results.append({
-                        'id': href,
-                        'source': 'SBS',
-                        'url': href,
-                        'title': translate_to_english(text).split(' | ')[2] if len(text.split(' | ')) > 2 else 'Student Apartment',
-                        'price': price,
-                        'details': translate_to_english(text),
-                        'image': img_url
-                    })
+                item = {
+                    'id': href,
+                    'source': 'SBS',
+                    'url': href,
+                    'title': translate_to_english(text).split(' | ')[2] if len(text.split(' | ')) > 2 else 'Student Apartment',
+                    'price': price,
+                    'details': translate_to_english(text),
+                    'image': img_url
+                }
+                
+                # Validation
+                valid = True
+                if price and price >= 5000:
+                    valid = False
+                
+                date_match = re.search(r'Inflyttning:\s*([^|]+)', text)
+                if date_match and valid:
+                    if not check_date(date_match.group(1).strip()):
+                        valid = False
+                        
+                if valid and not is_close_to_bth(text):
+                    valid = False
+                    
+                if href not in [r['url'] for r in results] and href not in [r['url'] for r in others]:
+                    if valid:
+                        results.append(item)
+                    else:
+                        others.append(item)
     except Exception as e:
         print(f"Error scraping SBS: {e}")
         
-    return results
+    return results, others
 
 def scrape_karlskronahem(page):
     results = []
+    others = []
     try:
         page.goto("https://marknad.karlskronahem.se/ledigt/studentlagenhet")
         page.wait_for_timeout(5000)
@@ -152,31 +169,34 @@ def scrape_karlskronahem(page):
             text = a.get_text(separator=' | ', strip=True)
             if "kr/mån" in text or "kr/månad" in text:
                 price = parse_price(text)
-                if price and price >= 5000:
-                    continue
-                    
-                if not is_close_to_bth(text):
-                    continue
-                    
                 href = "https://marknad.karlskronahem.se" + a.get('href', '') if a.get('href', '').startswith('/') else a.get('href', '')
+                img_url = extract_image(a, "https://marknad.karlskronahem.se")
                 
-                img = a.find('img')
-                img_url = "https://marknad.karlskronahem.se" + img.get('src') if img and img.get('src').startswith('/') else (img.get('src') if img else 'https://images.unsplash.com/photo-1554995207-c18c203602cb?w=800&auto=format&fit=crop&q=60')
-
-                if href not in [r['url'] for r in results]:
-                    results.append({
-                        'id': href,
-                        'source': 'Karlskronahem',
-                        'url': href,
-                        'title': translate_to_english(text).split(' | ')[0] if len(text.split(' | ')) > 0 else 'Student Apartment',
-                        'price': price,
-                        'details': translate_to_english(text),
-                        'image': img_url
-                    })
+                item = {
+                    'id': href,
+                    'source': 'Karlskronahem',
+                    'url': href,
+                    'title': translate_to_english(text).split(' | ')[0] if len(text.split(' | ')) > 0 else 'Student Apartment',
+                    'price': price,
+                    'details': translate_to_english(text),
+                    'image': img_url
+                }
+                
+                valid = True
+                if price and price >= 5000:
+                    valid = False
+                if valid and not is_close_to_bth(text):
+                    valid = False
+                    
+                if href not in [r['url'] for r in results] and href not in [r['url'] for r in others]:
+                    if valid:
+                        results.append(item)
+                    else:
+                        others.append(item)
     except Exception as e:
         print(f"Error scraping Karlskronahem: {e}")
         
-    return results
+    return results, others
 
 def main():
     print(f"[{datetime.now()}] Starting apartment monitor...")
@@ -185,24 +205,26 @@ def main():
         browser = p.chromium.launch(headless=True)
         page = browser.new_page()
         
-        sbs_results = scrape_sbs(page)
-        kh_results = scrape_karlskronahem(page)
+        sbs_ok, sbs_other = scrape_sbs(page)
+        kh_ok, kh_other = scrape_karlskronahem(page)
         
         browser.close()
         
-    all_results = sbs_results + kh_results
+    all_ok = sbs_ok + kh_ok
+    all_other = sbs_other + kh_other
     
     data = {
         'last_updated': datetime.now().isoformat(),
-        'count': len(all_results),
-        'apartments': all_results
+        'count': len(all_ok),
+        'apartments': all_ok,
+        'other_apartments': all_other
     }
     
     out_path = '/data/data.json'
     try:
         with open(out_path, 'w') as f:
             json.dump(data, f, indent=2, ensure_ascii=False)
-        print(f"[{datetime.now()}] Successfully saved {len(all_results)} apartments to {out_path}")
+        print(f"[{datetime.now()}] Successfully saved {len(all_ok)} ok and {len(all_other)} other to {out_path}")
     except Exception as e:
         print(f"Failed to write data: {e}")
 
