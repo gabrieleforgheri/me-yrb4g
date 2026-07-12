@@ -1,6 +1,6 @@
 {
-  "last_updated": "2026-07-12T00:52:24.747282",
-  "count": 1,
+  "last_updated": "2026-07-12T12:36:01.546834",
+  "count": 4,
   "apartments": [
     {
       "id": "https://sbsstudent.se/lediga-bostader/kolonivagen-1h-lgh-1002-2/",
@@ -10,18 +10,36 @@
       "price": 4605,
       "details": "Student & Youth | Karlskrona | Kolonivägen 1H lgh 1002 | Move-in date: Upon agreement | 18 sqm | 1 room(s)",
       "image": "https://lettingdocuments.blob.core.windows.net/public/10101_a51163b3-ab6d-42dc-810a-a910a217cafb/Area/3d83c23b-f76d-444e-99e9-677dec7020a2/4331795c-6342-48a1-9d9a-04064aad8364_tn.jpg"
+    },
+    {
+      "id": "https://marknad.karlskronahem.se/ledigt/detalj/id/2302-B1-6412",
+      "source": "Karlskronahem",
+      "url": "https://marknad.karlskronahem.se/ledigt/detalj/id/2302-B1-6412",
+      "title": "Kungsmarksvägen 67",
+      "price": 3516,
+      "details": "Kungsmarksvägen 67 | 26 sqm | 1 room(s) delat kök, 10 mån | 2302-B1-6412 | Bodirekt | 10-monthers hyra - hyresfri sommar | El ingår i hyran | Gemensam balkong,  common balcony | Gemensam toalett & dusch | Gemensamt kök | Hiss | Internet ingår i hyran | Kabel TV | Möblerat, furnished apartment | Rum i delad lägenhet | Område: Kungsmarken | Tillgänglig fr.o.m: Nu | Tillträde: Nu | Dagar publicerad: 2 | Visa detaljer",
+      "image": "https://marknad.karlskronahem.se/Content/ImageUrl?guid=1a00d301-06a4-4fa0-aa8c-d0be529680ed&width=415&height=280&crop=True&extension=.jpg&datechanged=2025-09-30T14:54:06.923"
+    },
+    {
+      "id": "https://marknad.karlskronahem.se/ledigt/detalj/id/1217-B1-12061",
+      "source": "Karlskronahem",
+      "url": "https://marknad.karlskronahem.se/ledigt/detalj/id/1217-B1-12061",
+      "title": "Östra Prinsgatan 15",
+      "price": 4655,
+      "details": "Östra Prinsgatan 15 | 28 sqm | 1 room(s) delat kök, 12 mån | 1217-B1-12061 | Bodirekt | Du betalar din förbrukning av el | Gemensam toalett & dusch | Gemensamt kök | Hiss | Internet ingår i hyran | Kabel TV | Omöblerat | Rum i delad lägenhet | Område: Trossö | Tillgänglig fr.o.m: 2026-08-10 | Dagar publicerad: 2 | Visa detaljer",
+      "image": "https://marknad.karlskronahem.se/Content/ImageUrl?guid=136138b8-8f02-4bca-b41c-f97035b9a60f&width=415&height=280&crop=True&extension=.jpg&datechanged=2024-12-16T11:41:46.747"
+    },
+    {
+      "id": "https://marknad.karlskronahem.se/ledigt/detalj/id/1217-B1-11061",
+      "source": "Karlskronahem",
+      "url": "https://marknad.karlskronahem.se/ledigt/detalj/id/1217-B1-11061",
+      "title": "Östra Prinsgatan 15",
+      "price": 4655,
+      "details": "Östra Prinsgatan 15 | 28 sqm | 1 room(s) delat kök, 12 mån | 1217-B1-11061 | Bodirekt | Du betalar din förbrukning av el | Gemensam toalett & dusch | Gemensamt kök | Hiss | Internet ingår i hyran | Kabel TV | Omöblerat | Rum i delad lägenhet | Område: Trossö | Tillgänglig fr.o.m: Nu | Dagar publicerad: 39 | Visa detaljer",
+      "image": "https://marknad.karlskronahem.se/Content/ImageUrl?guid=136138b8-8f02-4bca-b41c-f97035b9a60f&width=415&height=280&crop=True&extension=.jpg&datechanged=2024-12-16T11:41:46.747"
     }
   ],
   "other_apartments": [
-    {
-      "id": "https://sbsstudent.se/lediga-bostader/kolonivagen-1g-lgh-1004/",
-      "source": "SBS",
-      "url": "https://sbsstudent.se/lediga-bostader/kolonivagen-1g-lgh-1004/",
-      "title": "Kolonivägen 1G lgh 1004",
-      "price": 4339,
-      "details": "Student & Youth | Karlskrona | Kolonivägen 1G lgh 1004 | Move-in date: 1 Aug 2026 | 15 sqm | 1 room(s)",
-      "image": "https://lettingdocuments.blob.core.windows.net/public/10101_a51163b3-ab6d-42dc-810a-a910a217cafb/Area/3d83c23b-f76d-444e-99e9-677dec7020a2/4331795c-6342-48a1-9d9a-04064aad8364_tn.jpg"
-    },
     {
       "id": "https://sbsstudent.se/lediga-bostader/kolonivagen-1h-lgh-1104/",
       "source": "SBS",
@@ -165,6 +183,150 @@
       "price": 6431,
       "details": "Bredgatan 16 | 23 sqm | 1 room(s) och pentry 10 mån | 1202-B1-0009 | Bodirekt | 10-monthers hyra - hyresfri sommar | Egen köksavdelning | Egen toalett med dusch | El ingår i hyran | Fransk balkong | Gemensamt kök | Hiss | Internet ingår i hyran | Kabel TV | Omöblerat | Rum i korridor | Område: Trossö | Tillgänglig fr.o.m: 2026-08-16 | Dagar publicerad: 2 | Visa detaljer",
       "image": "https://marknad.karlskronahem.se/Content/ImageUrl?guid=98f6aa01-e3ea-4d62-aa29-03b93bae6b15&width=415&height=280&crop=True&extension=.jpg&datechanged=2023-06-15T13:47:19.477"
+    },
+    {
+      "id": "https://marknad.karlskronahem.se/ledigt/detalj/id/1605-B1-0020",
+      "source": "Karlskronahem",
+      "url": "https://marknad.karlskronahem.se/ledigt/detalj/id/1605-B1-0020",
+      "title": "Minervavägen 22 A",
+      "price": 5262,
+      "details": "Minervavägen 22 A | 22 sqm | 1 room(s) och pentry 10 mån | 1605-B1-0020 | Bodirekt | 10-monthers hyra - hyresfri sommar | Dusch | El ingår i hyran | Förvaring i lägenhet | Handdukstork | Hiss | Internet ingår i hyran | Kabel TV | Omöblerat | Tvättmaskin | Område: Gräsvik | Tillgänglig fr.o.m: Nu | Dagar publicerad: 2 | Visa detaljer",
+      "image": "https://marknad.karlskronahem.se/Content/ImageUrl?guid=9dff299b-f2e5-45d6-954d-148f30db87f3&width=415&height=280&crop=True&extension=.jpg&datechanged=2026-07-10T10:22:56.127"
+    },
+    {
+      "id": "https://marknad.karlskronahem.se/ledigt/detalj/id/1605-B1-0022",
+      "source": "Karlskronahem",
+      "url": "https://marknad.karlskronahem.se/ledigt/detalj/id/1605-B1-0022",
+      "title": "Minervavägen 22 A",
+      "price": 5262,
+      "details": "Minervavägen 22 A | 22 sqm | 1 room(s) och pentry 10 mån | 1605-B1-0022 | Bodirekt | 10-monthers hyra - hyresfri sommar | Dusch | El ingår i hyran | Förvaring i lägenhet | Handdukstork | Hiss | Internet ingår i hyran | Kabel TV | Omöblerat | Tvättmaskin | Område: Gräsvik | Tillgänglig fr.o.m: 2026-08-01 | Dagar publicerad: 2 | Visa detaljer",
+      "image": "https://marknad.karlskronahem.se/Content/ImageUrl?guid=9dff299b-f2e5-45d6-954d-148f30db87f3&width=415&height=280&crop=True&extension=.jpg&datechanged=2026-07-10T10:22:56.127"
+    },
+    {
+      "id": "https://marknad.karlskronahem.se/ledigt/detalj/id/1605-B1-0026",
+      "source": "Karlskronahem",
+      "url": "https://marknad.karlskronahem.se/ledigt/detalj/id/1605-B1-0026",
+      "title": "Minervavägen 22 A",
+      "price": 5262,
+      "details": "Minervavägen 22 A | 22 sqm | 1 room(s) och pentry 10 mån | 1605-B1-0026 | Bodirekt | 10-monthers hyra - hyresfri sommar | Dusch | El ingår i hyran | Förvaring i lägenhet | Handdukstork | Hiss | Internet ingår i hyran | Kabel TV | Omöblerat | Tvättmaskin | Område: Gräsvik | Tillgänglig fr.o.m: Nu | Dagar publicerad: 2 | Visa detaljer",
+      "image": "https://marknad.karlskronahem.se/Content/ImageUrl?guid=9dff299b-f2e5-45d6-954d-148f30db87f3&width=415&height=280&crop=True&extension=.jpg&datechanged=2026-07-10T10:22:56.127"
+    },
+    {
+      "id": "https://marknad.karlskronahem.se/ledigt/detalj/id/1605-B1-0049",
+      "source": "Karlskronahem",
+      "url": "https://marknad.karlskronahem.se/ledigt/detalj/id/1605-B1-0049",
+      "title": "Minervavägen 22 A",
+      "price": 5262,
+      "details": "Minervavägen 22 A | 22 sqm | 1 room(s) och pentry 10 mån | 1605-B1-0049 | Bodirekt | 10-monthers hyra - hyresfri sommar | Dusch | El ingår i hyran | Förvaring i lägenhet | Handdukstork | Hiss | Internet ingår i hyran | Kabel TV | Omöblerat | Tvättmaskin | Område: Gräsvik | Tillgänglig fr.o.m: 2026-08-01 | Dagar publicerad: 2 | Visa detaljer",
+      "image": "https://marknad.karlskronahem.se/Content/ImageUrl?guid=9dff299b-f2e5-45d6-954d-148f30db87f3&width=415&height=280&crop=True&extension=.jpg&datechanged=2026-07-10T10:22:56.127"
+    },
+    {
+      "id": "https://marknad.karlskronahem.se/ledigt/detalj/id/1605-B1-0055",
+      "source": "Karlskronahem",
+      "url": "https://marknad.karlskronahem.se/ledigt/detalj/id/1605-B1-0055",
+      "title": "Minervavägen 22 A",
+      "price": 5262,
+      "details": "Minervavägen 22 A | 22 sqm | 1 room(s) och pentry 10 mån | 1605-B1-0055 | Bodirekt | 10-monthers hyra - hyresfri sommar | Dusch | El ingår i hyran | Förvaring i lägenhet | Handdukstork | Hiss | Internet ingår i hyran | Kabel TV | Omöblerat | Tvättmaskin | Område: Gräsvik | Tillgänglig fr.o.m: Nu | Dagar publicerad: 2 | Visa detaljer",
+      "image": "https://marknad.karlskronahem.se/Content/ImageUrl?guid=9dff299b-f2e5-45d6-954d-148f30db87f3&width=415&height=280&crop=True&extension=.jpg&datechanged=2026-07-10T10:22:56.127"
+    },
+    {
+      "id": "https://marknad.karlskronahem.se/ledigt/detalj/id/1605-B1-0158",
+      "source": "Karlskronahem",
+      "url": "https://marknad.karlskronahem.se/ledigt/detalj/id/1605-B1-0158",
+      "title": "Minervavägen 22 A",
+      "price": 5145,
+      "details": "Minervavägen 22 A | 18 sqm | 1 room(s) och kök, 10 mån | 1605-B1-0158 | Bodirekt | 10-monthers hyra - hyresfri sommar | Dusch | El ingår i hyran | Förråd | Gemensam tvättstuga | Handdukstork | Internet ingår i hyran | Kabel TV | Omöblerat | Område: Gräsvik | Tillgänglig fr.o.m: 2026-08-01 | Dagar publicerad: 2 | Visa detaljer",
+      "image": "https://marknad.karlskronahem.se/Content/ImageUrl?guid=2ff970ad-47f0-4380-96e5-520c199fb272&width=415&height=280&crop=True&extension=.jpg&datechanged=2025-09-30T08:51:36.063"
+    },
+    {
+      "id": "https://marknad.karlskronahem.se/ledigt/detalj/id/1605-B2-0107",
+      "source": "Karlskronahem",
+      "url": "https://marknad.karlskronahem.se/ledigt/detalj/id/1605-B2-0107",
+      "title": "Minervavägen 22 B",
+      "price": 5262,
+      "details": "Minervavägen 22 B | 22 sqm | 1 room(s) och kök, 10 mån | 1605-B2-0107 | Bodirekt | 10-monthers hyra - hyresfri sommar | Dusch | El ingår i hyran | Förvaring i lägenhet | Handdukstork | Hiss | Internet ingår i hyran | Kabel TV | Omöblerat | Tvättmaskin | Område: Gräsvik | Tillgänglig fr.o.m: Nu | Dagar publicerad: 2 | Visa detaljer",
+      "image": "https://marknad.karlskronahem.se/Content/ImageUrl?guid=9dff299b-f2e5-45d6-954d-148f30db87f3&width=415&height=280&crop=True&extension=.jpg&datechanged=2026-07-10T10:22:56.127"
+    },
+    {
+      "id": "https://marknad.karlskronahem.se/ledigt/detalj/id/1605-B2-0108",
+      "source": "Karlskronahem",
+      "url": "https://marknad.karlskronahem.se/ledigt/detalj/id/1605-B2-0108",
+      "title": "Minervavägen 22 B",
+      "price": 5262,
+      "details": "Minervavägen 22 B | 22 sqm | 1 room(s) och kök, 10 mån | 1605-B2-0108 | Bodirekt | 10-monthers hyra - hyresfri sommar | Dusch | El ingår i hyran | Förvaring i lägenhet | Handdukstork | Hiss | Internet ingår i hyran | Kabel TV | Omöblerat | Tvättmaskin | Område: Gräsvik | Tillgänglig fr.o.m: 2026-08-01 | Dagar publicerad: 2 | Visa detaljer",
+      "image": "https://marknad.karlskronahem.se/Content/ImageUrl?guid=9dff299b-f2e5-45d6-954d-148f30db87f3&width=415&height=280&crop=True&extension=.jpg&datechanged=2026-07-10T10:22:56.127"
+    },
+    {
+      "id": "https://marknad.karlskronahem.se/ledigt/detalj/id/1605-B2-0167",
+      "source": "Karlskronahem",
+      "url": "https://marknad.karlskronahem.se/ledigt/detalj/id/1605-B2-0167",
+      "title": "Minervavägen 22 B",
+      "price": 5716,
+      "details": "Minervavägen 22 B | 24 sqm | 1 room(s) och kök, 10 mån | 1605-B2-0167 | Bodirekt | 10-monthers hyra - hyresfri sommar | Dusch | El ingår i hyran | Förråd | Gemensam tvättstuga | Handdukstork | Hiss | Internet ingår i hyran | Kabel TV | Omöblerat | Område: Gräsvik | Tillgänglig fr.o.m: Nu | Dagar publicerad: 2 | Visa detaljer",
+      "image": "https://marknad.karlskronahem.se/Content/ImageUrl?guid=2ff970ad-47f0-4380-96e5-520c199fb272&width=415&height=280&crop=True&extension=.jpg&datechanged=2025-09-30T08:51:36.063"
+    },
+    {
+      "id": "https://marknad.karlskronahem.se/ledigt/detalj/id/1605-B2-0176",
+      "source": "Karlskronahem",
+      "url": "https://marknad.karlskronahem.se/ledigt/detalj/id/1605-B2-0176",
+      "title": "Minervavägen 22 B",
+      "price": 5119,
+      "details": "Minervavägen 22 B | 18 sqm | 1 room(s) och kök, 10 mån | 1605-B2-0176 | Bodirekt | 10-monthers hyra - hyresfri sommar | Dusch | El ingår i hyran | Förråd | Gemensam tvättstuga | Handdukstork | Internet ingår i hyran | Kabel TV | Omöblerat | Område: Gräsvik | Tillgänglig fr.o.m: 2026-08-01 | Dagar publicerad: 2 | Visa detaljer",
+      "image": "https://marknad.karlskronahem.se/Content/ImageUrl?guid=2ff970ad-47f0-4380-96e5-520c199fb272&width=415&height=280&crop=True&extension=.jpg&datechanged=2025-09-30T08:51:36.063"
+    },
+    {
+      "id": "https://marknad.karlskronahem.se/ledigt/detalj/id/1217-B1-1009",
+      "source": "Karlskronahem",
+      "url": "https://marknad.karlskronahem.se/ledigt/detalj/id/1217-B1-1009",
+      "title": "Östra Prinsgatan 15",
+      "price": 6686,
+      "details": "Östra Prinsgatan 15 | 41 sqm | 2 room(s) och kök, 12 mån | 1217-B1-1009 | Bodirekt | Du betalar din förbrukning av el | Egen köksavdelning | Egen toalett med dusch | Hiss | Internet ingår i hyran | Kabel TV | Omöblerat | Område: Trossö | Tillgänglig fr.o.m: 2026-08-01 | Dagar publicerad: 2 | Visa detaljer",
+      "image": "https://marknad.karlskronahem.se/Content/ImageUrl?guid=3a86f8fd-d173-41f2-8340-b62b54f9cc4b&width=415&height=280&crop=True&extension=.jpg&datechanged=2025-09-29T13:33:58.61"
+    },
+    {
+      "id": "https://marknad.karlskronahem.se/ledigt/detalj/id/1217-B1-1103",
+      "source": "Karlskronahem",
+      "url": "https://marknad.karlskronahem.se/ledigt/detalj/id/1217-B1-1103",
+      "title": "Östra Prinsgatan 17",
+      "price": 5284,
+      "details": "Östra Prinsgatan 17 | 28 sqm | 1 room(s) och kök, 12 mån | 1217-B1-1103 | Bodirekt | Du betalar din förbrukning av el | Egen köksavdelning | Egen toalett med dusch | Hiss | Internet ingår i hyran | Kabel TV | Omöblerat | Område: Trossö | Tillgänglig fr.o.m: 2026-09-01 | Dagar publicerad: 2 | Visa detaljer",
+      "image": "https://marknad.karlskronahem.se/Content/ImageUrl?guid=136138b8-8f02-4bca-b41c-f97035b9a60f&width=415&height=280&crop=True&extension=.jpg&datechanged=2024-12-16T11:41:46.747"
+    },
+    {
+      "id": "https://marknad.karlskronahem.se/ledigt/detalj/id/1217-B1-1105",
+      "source": "Karlskronahem",
+      "url": "https://marknad.karlskronahem.se/ledigt/detalj/id/1217-B1-1105",
+      "title": "Östra Prinsgatan 17",
+      "price": 9400,
+      "details": "Östra Prinsgatan 17 | 57 sqm | 2 room(s) och kök, 12 mån | 1217-B1-1105 | Bodirekt | Du betalar din förbrukning av el | Egen köksavdelning | Egen toalett med dusch | Hiss | Internet ingår i hyran | Kabel TV | Omöblerat | Område: Trossö | Tillgänglig fr.o.m: Nu | Dagar publicerad: 2 | Visa detaljer",
+      "image": "https://marknad.karlskronahem.se/Content/ImageUrl?guid=ea4e168a-67ec-44a4-a825-79258e82db94&width=415&height=280&crop=True&extension=.jpg&datechanged=2024-12-16T11:42:30.23"
+    },
+    {
+      "id": "https://marknad.karlskronahem.se/ledigt/detalj/id/1217-B1-1203",
+      "source": "Karlskronahem",
+      "url": "https://marknad.karlskronahem.se/ledigt/detalj/id/1217-B1-1203",
+      "title": "Östra Prinsgatan 17",
+      "price": 5284,
+      "details": "Östra Prinsgatan 17 | 28 sqm | 1 room(s) och kök, 12 mån | 1217-B1-1203 | Bodirekt | Du betalar din förbrukning av el | Egen köksavdelning | Egen toalett med dusch | Hiss | Internet ingår i hyran | Kabel TV | Omöblerat | Område: Trossö | Tillgänglig fr.o.m: 2026-08-01 | Dagar publicerad: 2 | Visa detaljer",
+      "image": "https://marknad.karlskronahem.se/Content/ImageUrl?guid=861dceb0-4248-485b-a027-8725d5ededbe&width=415&height=280&crop=True&extension=.jpg&datechanged=2025-10-01T10:33:18.1"
+    },
+    {
+      "id": "https://marknad.karlskronahem.se/ledigt/detalj/id/1217-B1-1005",
+      "source": "Karlskronahem",
+      "url": "https://marknad.karlskronahem.se/ledigt/detalj/id/1217-B1-1005",
+      "title": "Östra Prinsgatan 17",
+      "price": 9400,
+      "details": "Östra Prinsgatan 17 | 57 sqm | 2 room(s) och kök, 12 mån | 1217-B1-1005 | Bodirekt | Du betalar din förbrukning av el | Egen köksavdelning | Egen toalett med dusch | Hiss | Internet ingår i hyran | Kabel TV | Omöblerat | Område: Trossö | Tillgänglig fr.o.m: Nu | Dagar publicerad: 3 | Visa detaljer",
+      "image": "https://marknad.karlskronahem.se/Content/ImageUrl?guid=8f40ee5d-df1a-44f1-b58d-f09fc0b7e965&width=415&height=280&crop=True&extension=.jpg&datechanged=2025-10-01T10:30:21.767"
+    },
+    {
+      "id": "https://marknad.karlskronahem.se/ledigt/detalj/id/1217-B1-1006",
+      "source": "Karlskronahem",
+      "url": "https://marknad.karlskronahem.se/ledigt/detalj/id/1217-B1-1006",
+      "title": "Östra Prinsgatan 15",
+      "price": 9562,
+      "details": "Östra Prinsgatan 15 | 58 sqm | 2 room(s) och kök, 12 mån | 1217-B1-1006 | Bodirekt | Du betalar din förbrukning av el | Dusch | Egen köksavdelning | Egen toalett med dusch | Hiss | Internet ingår i hyran | Kabel TV | Omöblerat | Område: Trossö | Tillgänglig fr.o.m: Nu | Dagar publicerad: 18 | Visa detaljer",
+      "image": "https://marknad.karlskronahem.se/Content/ImageUrl?guid=480b4a8a-df93-42fd-b43e-c186106bdcd0&width=415&height=280&crop=True&extension=.jpg&datechanged=2025-05-06T13:28:34.017"
     }
   ]
 }

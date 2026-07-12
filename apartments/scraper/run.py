@@ -163,6 +163,19 @@ def scrape_karlskronahem(page):
     try:
         page.goto("https://marknad.karlskronahem.se/ledigt/studentlagenhet")
         page.wait_for_timeout(5000)
+        
+        # Click 'Hämta fler' to load all apartments
+        while True:
+            try:
+                btn = page.get_by_text("Hämta fler", exact=False)
+                if btn.is_visible():
+                    btn.click()
+                    page.wait_for_timeout(3000)
+                else:
+                    break
+            except Exception:
+                break
+                
         soup = BeautifulSoup(page.content(), 'html.parser')
         
         cards = soup.find_all('div', class_=lambda c: c and 'object-preview-cc' in c)
