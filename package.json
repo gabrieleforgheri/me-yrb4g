@@ -12,6 +12,6 @@
     "test": "node scripts/selftest.js"
   },
   "dependencies": {
-    "nodemailer": "^6.9.7"
+    "nodemailer": "^10.0.10"
   }
 }
