@@ -1,9 +1,0 @@
-# The site itself no longer needs a container: `npm start` serves it (see index.js).
-# Only the apartment scraper does — it needs Playwright's Chromium image.
-services:
-  apartments-scraper:
-    build: ./apartments/scraper
-    container_name: yrb4g-apartments-scraper
-    restart: unless-stopped
-    volumes:
-      - ./apartments:/data

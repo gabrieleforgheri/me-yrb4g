@@ -12,9 +12,10 @@ for (const attack of ["/../../etc/passwd", "/%2e%2e/%2e%2e/etc/passwd", "//etc/p
   assert.strictEqual(resolveFile(resolveRelativePath(attack)), null, `must not escape root: ${attack}`);
 }
 assert.strictEqual(resolveRelativePath("/.env"), null, "dotfiles must be refused");
-assert.strictEqual(resolveRelativePath("/contact-api/server.js"), null);
 assert.strictEqual(resolveRelativePath("/package.json"), null);
-assert.strictEqual(resolveRelativePath("/nginx.conf"), null);
+assert.strictEqual(resolveRelativePath("/package-lock.json"), null);
+assert.strictEqual(resolveRelativePath("/scripts/selftest.js"), null);
+assert.strictEqual(resolveRelativePath("/node_modules/nodemailer/package.json"), null);
 
 // directory index, the thing plain fs.readFile got wrong
 assert.strictEqual(resolveFile("contact"), path.join(__dirname, "..", "contact", "index.html"));

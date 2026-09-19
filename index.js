@@ -34,7 +34,7 @@ const MIME_TYPES = {
 const CACHEABLE = /\.(css|js|woff2|jpeg|jpg|png|gif|ico|svg|webp)$/i;
 
 // Everything nginx used to deny: dotfiles, the old backend, build and deploy files.
-const DENIED = /(^|\/)(\.|contact-api\/|scripts\/|node_modules\/|apartments\/scraper\/|docker-compose|nginx\.conf|Dockerfile|package(-lock)?\.json)/i;
+const DENIED = /(^|\/)(\.|scripts\/|node_modules\/|package(-lock)?\.json)/i;
 
 const SECURITY_HEADERS = {
   "X-Content-Type-Options": "nosniff",
@@ -282,7 +282,9 @@ const server = http.createServer((request, response) => {
 
 if (require.main === module) {
   server.listen(port, host, () => {
-    console.log(`yrb4g.com ready at http://${host}:${port}`);
+    // Wings flips the panel from "starting" to "running" only on one of the egg's
+    // config_startup.done strings — "Server started" is one of them. Do not reword.
+    console.log(`Server started - yrb4g.com on http://${host}:${port}`);
   });
 
   const shutdown = () => {
